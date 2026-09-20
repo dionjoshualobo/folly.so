@@ -52,6 +52,7 @@ function starterOptions(): ChoiceOption[] {
 export default function Editor() {
   const { formId = '' } = useParams()
   const navigate = useNavigate()
+  const storeReady = useForms((s) => s.ready)
   const form = useForms((s) => s.forms.find((f) => f.id === formId))
   const createForm = useForms((s) => s.createForm)
   const updateBlock = useForms((s) => s.updateBlock)
@@ -256,8 +257,20 @@ export default function Editor() {
     setOverIndex(null)
   }
 
-  if (!ready || !form) {
+  if (!storeReady) {
     return <div className="flex min-h-screen items-center justify-center text-sm text-ink/40">Loading…</div>
+  }
+
+  if (!form) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#fafafb] px-6 text-center">
+        <h1 className="text-2xl font-bold text-ink">This form is unavailable</h1>
+        <p className="max-w-sm text-[15px] text-ink/50">It may have been deleted, or the link is missing a few characters.</p>
+        <Link to="/forms" className="text-sm font-semibold text-brand-600 hover:underline">
+          ← Back to forms
+        </Link>
+      </div>
+    )
   }
 
   const responseCount = submissions.filter((s) => s.formId === form.id).length
@@ -292,6 +305,10 @@ export default function Editor() {
             </div>
           )}
           <TitleEditor title={form.settings.title} onChange={(t) => updateSettings(form.id, { title: t })} />
+          <DescriptionEditor
+            description={form.settings.description}
+            onChange={(d) => updateSettings(form.id, { description: d })}
+          />
 
           <div className="mt-8 space-y-1 pb-24">
             {rowLayout(form.blocks).map((row) => {
@@ -479,6 +496,138 @@ function TitleEditor({ title, onChange }: { title: string; onChange: (t: string)
       data-placeholder="Untitled form"
       className="empty-placeholder w-full cursor-text text-[38px] font-semibold leading-[1.15] tracking-tight text-ink outline-none sm:text-[44px]"
     />
+  )
+}
+
+function DescriptionEditor({ description, onChange }: { description?: string; onChange: (d: string) => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [open, setOpen] = useState(!!description && description.trim().length > 0)
+  const [focused, setFocused] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (el && document.activeElement !== el && el.textContent !== (description ?? '')) {
+      el.textContent = description ?? ''
+    }
+  }, [description])
+
+  useEffect(() => {
+    if (focused && ref.current) ref.current.focus()
+  }, [focused])
+
+  const commit = () => onChange((ref.current?.textContent ?? '').trim())
+
+  const applyFormat = (pre: string, post: string) => {
+    const el = ref.current
+    if (!el) return
+    const text = el.textContent ?? ''
+    const sel = window.getSelection()
+    let start = text.length
+    let end = text.length
+    if (sel && sel.rangeCount > 0 && sel.containsNode(el, true)) {
+      const range = sel.getRangeAt(0)
+      const before = range.cloneRange()
+      before.selectNodeContents(el)
+      before.setEnd(range.startContainer, range.startOffset)
+      start = before.toString().length
+      end = start + range.toString().length
+    }
+    const piece = text.slice(start, end)
+    const next = text.slice(0, start) + pre + piece + post + text.slice(end)
+    el.textContent = next
+    onChange(next.trim())
+    const caret = start + piece.length + pre.length + post.length
+    requestAnimationFrame(() => {
+      const node = (el.firstChild ?? el) as Node
+      const r = document.createRange()
+      r.setStart(node, Math.min(caret, node.textContent?.length ?? 0))
+      r.collapse(true)
+      const s = window.getSelection()
+      s?.removeAllRanges()
+      s?.addRange(r)
+      el.focus()
+    })
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => {
+          setOpen(true)
+          setFocused(true)
+        }}
+        className="mt-2 flex cursor-text items-center gap-1.5 text-[14px] font-medium text-ink/35 transition hover:text-ink/60"
+      >
+        <Icon name="plus" className="flex h-3.5 w-3.5 items-center" />
+        Add a description
+      </button>
+    )
+  }
+
+  return (
+    <div className="mt-1">
+      <div
+        ref={ref}
+        contentEditable
+        suppressContentEditableWarning
+        onBlur={() => {
+          setFocused(false)
+          commit()
+        }}
+        onFocus={() => setFocused(true)}
+        onInput={() => onChange(ref.current?.textContent ?? '')}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            ;(e.currentTarget as HTMLElement).blur()
+          }
+          if (e.key === 'Escape') {
+            setOpen(false)
+            ;(e.currentTarget as HTMLElement).blur()
+          }
+        }}
+        data-placeholder="Add a description or subtitle"
+        className="empty-placeholder w-full cursor-text text-[17px] leading-relaxed text-ink/60 outline-none"
+      />
+      {focused && (
+        <div className="mt-1.5 flex items-center gap-0.5">
+          <button
+            onMouseDown={(e) => {
+              e.preventDefault()
+              applyFormat('**', '**')
+            }}
+            title="Bold"
+            className="flex h-6 w-6 items-center justify-center rounded text-[12px] font-bold text-ink/45 transition hover:bg-ink/[0.05] hover:text-ink"
+          >
+            B
+          </button>
+          <button
+            onMouseDown={(e) => {
+              e.preventDefault()
+              applyFormat('*', '*')
+            }}
+            title="Italic"
+            className="flex h-6 w-6 items-center justify-center rounded text-[12px] italic text-ink/45 transition hover:bg-ink/[0.05] hover:text-ink"
+          >
+            I
+          </button>
+          <span className="mx-1 h-4 w-px bg-ink/10" />
+          <button
+            onMouseDown={(e) => {
+              e.preventDefault()
+            }}
+            onClick={() => {
+              onChange('')
+              setOpen(false)
+            }}
+            title="Remove description"
+            className="flex h-6 w-6 items-center justify-center rounded text-ink/45 transition hover:bg-brand-50 hover:text-brand-600"
+          >
+            <Icon name="trash" />
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
 
