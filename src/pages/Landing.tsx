@@ -12,46 +12,34 @@ function Art({ children }: { children: React.ReactNode }) {
   )
 }
 
-function FaceGrin() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" className="h-14 w-14 drop-shadow-md sm:h-16 sm:w-16" aria-hidden>
-      <circle cx="12" cy="12" r="10" />
-      <path d="M8 9.4h.02M16 9.4h.02" />
-      <path d="M7.4 13.7c1.2 2 2.9 3.1 4.6 3.1s3.4-1.1 4.6-3.1" />
-    </svg>
-  )
-}
+const FACE_INK = '#0b0f19'
 
-function FaceStarry() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" className="h-14 w-14 drop-shadow-md sm:h-16 sm:w-16" aria-hidden>
-      <circle cx="12" cy="12" r="10" />
-      <path d="M8.5 7.6l.55 1.4 1.4.55-1.4.55-.55 1.4-.55-1.4-1.4-.55 1.4-.55Z" fill="currentColor" stroke="none" />
-      <path d="M15.5 7.6l.55 1.4 1.4.55-1.4.55-.55 1.4-.55-1.4-1.4-.55 1.4-.55Z" fill="currentColor" stroke="none" />
-      <path d="M7.4 13.7c1.2 2 2.9 3.1 4.6 3.1s3.4-1.1 4.6-3.1" />
-    </svg>
-  )
-}
+type HairStyle = 'cap' | 'bang' | 'twin' | 'tuft'
 
-function FaceLove() {
+function PersonFace({ hair, skin, hairStyle }: { hair: string; skin: string; hairStyle: HairStyle }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" className="h-14 w-14 drop-shadow-md sm:h-16 sm:w-16" aria-hidden>
-      <circle cx="12" cy="12" r="10" />
-      <path d="M8 9.2h.02M16 9.2h.02" />
-      <path d="M12 18.9c-2.6-1.5-4.5-3-4.5-5a2.6 2.6 0 0 1 4.5-1.8 2.6 2.6 0 0 1 4.5 1.8c0 2-1.9 3.5-4.5 5Z" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-function FaceParty() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" className="h-14 w-14 drop-shadow-md sm:h-16 sm:w-16" aria-hidden>
-      <circle cx="12" cy="12" r="10" />
-      <path d="M8 9.2h.02M16 9.2h.02" />
-      <path d="M7.2 13.9c1.3 2.3 3.1 3.4 4.8 3.4s3.5-1.1 4.8-3.4" />
-      <path d="M5.2 4.8l.4 1 .9.4-.9.4-.4 1-.4-1-.9-.4.9-.4Z" fill="currentColor" stroke="none" />
-      <path d="M18.6 6.3l.4 1 .9.4-.9.4-.4 1-.4-1-.9-.4.9-.4Z" fill="currentColor" stroke="none" />
-      <path d="M4.6 15.2l.3.8.8.3-.8.3-.3.8-.3-.8-.8-.3.8-.3Z" fill="currentColor" stroke="none" />
+    <svg viewBox="0 0 24 24" className="h-14 w-14 drop-shadow-md sm:h-16 sm:w-16" aria-hidden>
+      <circle cx="12" cy="13.4" r="9" fill={skin} />
+      <path d="M3.4 9.8a8.6 8.6 0 0 1 17.2 0c0 1.3-1.1 2.4-2.4 2.4H5.8c-1.3 0-2.4-1.1-2.4-2.4Z" fill={hair} />
+      {hairStyle === 'bang' && (
+        <>
+          <circle cx="7.6" cy="14.6" r="1.7" fill={skin} />
+          <circle cx="10.6" cy="15.5" r="1.7" fill={skin} />
+          <circle cx="13.6" cy="15.5" r="1.7" fill={skin} />
+          <circle cx="16.5" cy="14.5" r="1.7" fill={skin} />
+        </>
+      )}
+      {hairStyle === 'twin' && (
+        <>
+          <circle cx="7.5" cy="3.2" r="1.8" fill={hair} />
+          <circle cx="16.5" cy="3.2" r="1.8" fill={hair} />
+        </>
+      )}
+      {hairStyle === 'tuft' && (
+        <path d="M10.6 4.6c.8-1.5 2.4-1.7 3.1-.6.5 1 .1 2-.6 2.4" fill="none" stroke={hair} strokeWidth="2.2" strokeLinecap="round" />
+      )}
+      <path d="M8.3 14.3h.02M15.7 14.3h.02" stroke={FACE_INK} strokeWidth="2.1" strokeLinecap="round" fill="none" />
+      <path d="M9.8 17.3c1.3.9 3.1.9 4.4 0" stroke={FACE_INK} strokeWidth="1.7" strokeLinecap="round" fill="none" />
     </svg>
   )
 }
@@ -168,17 +156,17 @@ function Hero() {
     <section className="relative overflow-hidden" onMouseMove={handleMouseMove}>
       <div className="dot-bg absolute inset-0 -z-10 opacity-60 animate-fade" />
       <div className="mx-auto max-w-5xl px-6 pt-16 pb-20 text-center sm:pt-24 sm:pb-28">
-        <Face className="left-[8%] top-24 hidden text-ink md:block" style={{ transform: `translate(${mouseOffset.x * -0.6}px, ${mouseOffset.y * -0.6}px) rotate(-8deg)` }}>
-          <FaceGrin />
+        <Face className="left-[8%] top-24 hidden md:block" style={{ transform: `translate(${mouseOffset.x * -0.6}px, ${mouseOffset.y * -0.6}px) rotate(-8deg)` }}>
+          <PersonFace hair="#0b0f19" skin="#ffe5cf" hairStyle="cap" />
         </Face>
-        <Face className="right-[10%] top-40 hidden text-brand-500 md:block" style={{ transform: `translate(${mouseOffset.x * 0.8}px, ${mouseOffset.y * 0.8}px) rotate(10deg)` }}>
-          <FaceStarry />
+        <Face className="right-[10%] top-40 hidden md:block" style={{ transform: `translate(${mouseOffset.x * 0.8}px, ${mouseOffset.y * 0.8}px) rotate(10deg)` }}>
+          <PersonFace hair="#f43f5e" skin="#ffdbc4" hairStyle="bang" />
         </Face>
-        <Face className="left-[16%] top-[70%] hidden text-brand-600 md:block" style={{ transform: `translate(${mouseOffset.x * -0.4}px, ${mouseOffset.y * -0.4}px) rotate(6deg)` }}>
-          <FaceLove />
+        <Face className="left-[16%] top-[70%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * -0.4}px, ${mouseOffset.y * -0.4}px) rotate(6deg)` }}>
+          <PersonFace hair="#be123c" skin="#fad1b6" hairStyle="twin" />
         </Face>
-        <Face className="right-[14%] top-[64%] hidden text-amber-500 md:block" style={{ transform: `translate(${mouseOffset.x * 0.5}px, ${mouseOffset.y * 0.5}px) rotate(-6deg)` }}>
-          <FaceParty />
+        <Face className="right-[14%] top-[64%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * 0.5}px, ${mouseOffset.y * 0.5}px) rotate(-6deg)` }}>
+          <PersonFace hair="#f59e0b" skin="#ffe7d0" hairStyle="tuft" />
         </Face>
 
         <a
