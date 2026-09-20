@@ -83,19 +83,19 @@ function NpsControl({ block, value, onChange }: { block: Block; value: number | 
             type="button"
             onClick={() => onChange(n)}
             className={`rounded-lg py-2.5 text-[13px] font-semibold transition ${
-              value === n ? 'bg-ink text-white shadow-md' : 'bg-ink/[0.05] text-ink/70 hover:bg-ink/10'
+              value === n ? 'bg-ink text-white shadow-md' : 'bg-ink/[0.05] text-ink dark:text-white/70 hover:bg-ink/10'
             }`}
           >
             {n}
           </button>
         ))}
       </div>
-      <div className="mt-2 flex justify-between text-[12px] text-ink/45">
+      <div className="mt-2 flex justify-between text-[12px] text-ink dark:text-white/45">
         <span>{block.npsMinLabel || 'Not at all likely'}</span>
         <span>{block.npsMaxLabel || 'Extremely likely'}</span>
       </div>
       {(block.npsMinLabel || block.npsMaxLabel) && (
-        <div className="flex justify-between text-[12px] font-semibold text-ink/65 sm:hidden">
+        <div className="flex justify-between text-[12px] font-semibold text-ink dark:text-white/65 sm:hidden">
           <span>{block.npsMinLabel}</span>
           <span>{block.npsMaxLabel}</span>
         </div>
@@ -117,7 +117,7 @@ function LinearControl({ block, value, onChange }: { block: Block; value: number
               type="button"
               onClick={() => onChange(n)}
               className={`aspect-square rounded-lg text-[13px] font-semibold transition ${
-                value === n ? 'bg-ink text-white shadow-md' : 'bg-ink/[0.05] text-ink/70 hover:bg-ink/10'
+                value === n ? 'bg-ink text-white shadow-md' : 'bg-ink/[0.05] text-ink dark:text-white/70 hover:bg-ink/10'
               }`}
             >
               {n}
@@ -126,7 +126,7 @@ function LinearControl({ block, value, onChange }: { block: Block; value: number
         </div>
       </div>
       {(block.linearMinLabel || block.linearMaxLabel) && (
-        <div className="mt-2 flex justify-between text-[12px] text-ink/45">
+        <div className="mt-2 flex justify-between text-[12px] text-ink dark:text-white/45">
           <span>{block.linearMinLabel}</span>
           <span>{block.linearMaxLabel}</span>
         </div>
@@ -186,7 +186,7 @@ function ChoiceControl({
               onChange={() => toggle(o.label)}
               disabled={preview}
             />
-            <span className="text-[15px] text-ink/85">{o.label}</span>
+            <span className="text-[15px] text-ink dark:text-white/85">{o.label}</span>
           </label>
         ) : (
           <label
@@ -206,7 +206,7 @@ function ChoiceControl({
               onChange={() => onChange(o.label)}
               disabled={preview}
             />
-            <span className="text-[15px] text-ink/85">{o.label}</span>
+            <span className="text-[15px] text-ink dark:text-white/85">{o.label}</span>
           </label>
         ),
       )}
@@ -216,7 +216,7 @@ function ChoiceControl({
             <div className="flex w-fit items-center gap-3 rounded-2xl border border-ink/15 px-4 py-2 transition hover:border-ink/30">
               <input type="checkbox" className="h-[18px] w-[18px] accent-ink" disabled={preview} onChange={() => {}} />
               <input
-                className="bg-transparent text-[15px] text-ink outline-none placeholder:text-ink/35"
+                className="bg-transparent text-[15px] text-ink dark:text-white outline-none placeholder:text-ink dark:text-white/35"
                 placeholder="Other…"
                 onChange={(e) => {
                   if (multiple) onChange([...(Array.isArray(value) ? value : []), e.target.value].filter(Boolean))
@@ -228,7 +228,7 @@ function ChoiceControl({
             <div className="flex w-fit items-center gap-3 rounded-2xl border border-ink/15 px-4 py-2 transition hover:border-ink/30">
               <input type="radio" className="h-[18px] w-[18px] accent-ink" checked={otherActive} disabled={preview} onChange={() => {}} />
               <input
-                className="bg-transparent text-[15px] text-ink outline-none placeholder:text-ink/35"
+                className="bg-transparent text-[15px] text-ink dark:text-white outline-none placeholder:text-ink dark:text-white/35"
                 placeholder="Other…"
                 onChange={(e) => onChange(e.target.value)}
                 disabled={preview}
@@ -257,7 +257,7 @@ function DropdownControl({
         id={id}
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full cursor-pointer appearance-none rounded-2xl border border-ink/20 bg-white px-4 py-3 pr-10 text-[15px] text-ink outline-none transition hover:border-ink/40 focus:border-ink"
+        className="w-full cursor-pointer appearance-none rounded-2xl border border-ink/20 bg-white dark:bg-white/10 px-4 py-3 pr-10 text-[15px] text-ink dark:text-white outline-none transition hover:border-ink/40 focus:border-ink"
       >
         <option value="" disabled>
           Select an option…
@@ -268,7 +268,7 @@ function DropdownControl({
           </option>
         ))}
       </select>
-      <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink/40">
+      <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink dark:text-white/40">
         <svg viewBox="0 0 16 16" className="h-4 w-4">
           <path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
@@ -295,8 +295,8 @@ function FileControl({
       {value ? (
         <div className="flex items-center gap-3 rounded-2xl border border-ink/15 bg-ink/[0.02] px-4 py-3">
           <span className="text-xl">📎</span>
-          <span className="flex-1 truncate text-[14px] text-ink/80">{value.name}</span>
-          <span className="text-[12px] text-ink/40">{(value.size / 1024).toFixed(1)} KB</span>
+          <span className="flex-1 truncate text-[14px] text-ink dark:text-white/80">{value.name}</span>
+          <span className="text-[12px] text-ink dark:text-white/40">{(value.size / 1024).toFixed(1)} KB</span>
           <button
             type="button"
             onClick={() => {
@@ -312,7 +312,7 @@ function FileControl({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="flex w-fit items-center gap-2 rounded-2xl border-2 border-dashed border-ink/20 bg-ink/[0.02] px-5 py-3.5 text-[15px] font-medium text-ink/60 transition hover:border-ink/40 hover:text-ink"
+          className="flex w-fit items-center gap-2 rounded-2xl border-2 border-dashed border-ink/20 bg-ink/[0.02] px-5 py-3.5 text-[15px] font-medium text-ink dark:text-white/60 transition hover:border-ink/40 hover:text-ink dark:text-white"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5">
             <path d="M12 15V5m0 0L8 9m4-4 4 4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -337,7 +337,7 @@ function FileControl({
           onChange({ name: f.name, size: f.size })
         }}
       />
-      <p className="mt-2 text-[12px] text-ink/40">
+      <p className="mt-2 text-[12px] text-ink dark:text-white/40">
         {block.fileTypes?.slice(0, 4).join(', ')} — up to {maxMb} MB
       </p>
       {tooBig && <p className="mt-1 text-[12px] font-medium text-brand-600">That file is larger than {maxMb} MB.</p>}
@@ -374,7 +374,7 @@ function SignatureControl({
         ref={padRef}
         className={`relative h-44 w-full touch-none select-none cursor-crosshair overflow-hidden rounded-2xl border ${
           drawing ? 'border-ink/40' : 'border-ink/20'
-        } bg-white`}
+        } bg-white dark:bg-white/10`}
         onPointerDown={(e) => {
           e.preventDefault()
           e.currentTarget.setPointerCapture(e.pointerId)
@@ -400,7 +400,7 @@ function SignatureControl({
         }}
       >
         {visible.length === 0 && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-[14px] text-ink/25">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-[14px] text-ink dark:text-white/25">
             Draw your signature above
           </div>
         )}
@@ -419,7 +419,7 @@ function SignatureControl({
         </svg>
       </div>
       <div className="mt-2 flex items-center justify-between px-1">
-        <span className="text-[12px] text-ink/35">
+        <span className="text-[12px] text-ink dark:text-white/35">
           {visible.length === 0 ? 'Use your mouse or finger to sign' : `${visible.length} stroke${visible.length === 1 ? '' : 's'}`}
         </span>
         {strokes.length > 0 && (
@@ -435,8 +435,8 @@ function SignatureControl({
 function ScoreControl({ value, count }: { value: number; count: number }) {
   return (
     <div className="flex w-fit items-center gap-4 rounded-2xl border border-ink/15 bg-ink/[0.02] px-5 py-3">
-      <span className="text-4xl font-bold tabular-nums text-ink">{value}</span>
-      <span className="text-[13px] leading-tight text-ink/45">
+      <span className="text-4xl font-bold tabular-nums text-ink dark:text-white">{value}</span>
+      <span className="text-[13px] leading-tight text-ink dark:text-white/45">
         {count === 0 ? 'No questions selected' : count === 1 ? 'Based on 1 answer' : `Based on ${count} answers`}
       </span>
     </div>
@@ -455,7 +455,7 @@ function CsatControl({ block, value, onChange }: { block: Block; value: number |
               type="button"
               onClick={() => onChange(n)}
               className={`rounded-lg py-2.5 text-[13px] font-semibold transition ${
-                value === n ? 'bg-ink text-white shadow-md' : 'bg-ink/[0.05] text-ink/70 hover:bg-ink/10'
+                value === n ? 'bg-ink text-white shadow-md' : 'bg-ink/[0.05] text-ink dark:text-white/70 hover:bg-ink/10'
               }`}
             >
               {n}
@@ -463,7 +463,7 @@ function CsatControl({ block, value, onChange }: { block: Block; value: number |
           ))}
         </div>
       </div>
-      <div className="mt-2 flex justify-between text-[12px] text-ink/45">
+      <div className="mt-2 flex justify-between text-[12px] text-ink dark:text-white/45">
         <span>{block.csatMinLabel || 'Very unsatisfied'}</span>
         <span>{block.csatMaxLabel || 'Very satisfied'}</span>
       </div>
@@ -499,16 +499,16 @@ function MultiSelectControl({
           setOpen((v) => !v)
           setQuery('')
         }}
-        className="flex w-full min-h-[50px] cursor-pointer items-center gap-2 rounded-2xl border border-ink/20 bg-white px-3 py-2 text-left transition hover:border-ink/40"
+        className="flex w-full min-h-[50px] cursor-pointer items-center gap-2 rounded-2xl border border-ink/20 bg-white dark:bg-white/10 px-3 py-2 text-left transition hover:border-ink/40"
       >
         {selected.length === 0 ? (
-          <span className="px-1 text-[15px] text-ink/35">Select options</span>
+          <span className="px-1 text-[15px] text-ink dark:text-white/35">Select options</span>
         ) : (
           <span className="flex flex-wrap gap-1.5">
             {selected.map((s) => (
               <span
                 key={s}
-                className="flex items-center gap-1 rounded-full bg-ink/[0.06] px-2.5 py-1 text-[12px] font-medium text-ink/80"
+                className="flex items-center gap-1 rounded-full bg-ink/[0.06] px-2.5 py-1 text-[12px] font-medium text-ink dark:text-white/80"
               >
                 {s}
                 <button
@@ -517,7 +517,7 @@ function MultiSelectControl({
                     e.stopPropagation()
                     toggle(s)
                   }}
-                  className="text-ink/40 hover:text-ink"
+                  className="text-ink dark:text-white/40 hover:text-ink dark:text-white"
                   aria-label={`Remove ${s}`}
                 >
                   ✕
@@ -528,25 +528,25 @@ function MultiSelectControl({
         )}
         <svg
           viewBox="0 0 16 16"
-          className={`ml-auto h-4 w-4 shrink-0 text-ink/40 transition ${open ? 'rotate-180' : ''}`}
+          className={`ml-auto h-4 w-4 shrink-0 text-ink dark:text-white/40 transition ${open ? 'rotate-180' : ''}`}
         >
           <path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-2xl border border-ink/15 bg-white shadow-pop">
+        <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-2xl border border-ink/15 bg-white dark:bg-white/10 shadow-pop">
           <div className="border-b border-ink/[0.06] p-2">
             <input
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search options…"
-              className="w-full rounded-lg bg-ink/[0.04] px-3 py-2 text-[13px] text-ink outline-none placeholder:text-ink/35"
+              className="w-full rounded-lg bg-ink/[0.04] px-3 py-2 text-[13px] text-ink dark:text-white outline-none placeholder:text-ink dark:text-white/35"
             />
           </div>
           <div className="max-h-56 overflow-y-auto p-1.5">
-            {filtered.length === 0 && <div className="px-3 py-4 text-center text-[12px] text-ink/40">No options match.</div>}
+            {filtered.length === 0 && <div className="px-3 py-4 text-center text-[12px] text-ink dark:text-white/40">No options match.</div>}
             {filtered.map((o) => (
               <label
                 key={o.id}
@@ -558,7 +558,7 @@ function MultiSelectControl({
                   checked={selected.includes(o.label)}
                   onChange={() => toggle(o.label)}
                 />
-                <span className="text-[14px] text-ink/85">{o.label}</span>
+                <span className="text-[14px] text-ink dark:text-white/85">{o.label}</span>
               </label>
             ))}
           </div>
@@ -613,12 +613,12 @@ function RankingControl({
           >
             <span
               className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[12px] font-bold ${
-                placed ? 'bg-ink text-white' : 'bg-ink/[0.06] text-ink/40'
+                placed ? 'bg-ink text-white' : 'bg-ink/[0.06] text-ink dark:text-white/40'
               }`}
             >
               {rank ?? '·'}
             </span>
-            <span className="flex-1 text-[15px] text-ink/85">{o.label}</span>
+            <span className="flex-1 text-[15px] text-ink dark:text-white/85">{o.label}</span>
             <button
               type="button"
               disabled={!placed}
@@ -626,7 +626,7 @@ function RankingControl({
                 const i = order.indexOf(o.label)
                 move(i, -1)
               }}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-ink/40 transition hover:bg-ink/[0.05] hover:text-ink disabled:opacity-20"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-ink dark:text-white/40 transition hover:bg-ink/[0.05] hover:text-ink dark:text-white disabled:opacity-20"
               aria-label="Move up"
             >
               ↑
@@ -635,7 +635,7 @@ function RankingControl({
               type="button"
               onClick={() => select(o.label)}
               className={`rounded-md px-2.5 py-1 text-[11px] font-semibold transition ${
-                placed ? 'text-ink/40 hover:bg-ink/[0.05]' : 'bg-ink text-white hover:bg-black'
+                placed ? 'text-ink dark:text-white/40 hover:bg-ink/[0.05]' : 'bg-ink text-white hover:bg-black'
               }`}
               title={placed ? 'Move to end' : 'Add to ranking'}
             >
@@ -669,7 +669,7 @@ function MatrixControl({
           <tr>
             <th className="p-2" />
             {columns.map((c) => (
-              <th key={c} className="p-2 text-center text-[13px] font-semibold text-ink/70">
+              <th key={c} className="p-2 text-center text-[13px] font-semibold text-ink dark:text-white/70">
                 {c}
               </th>
             ))}
@@ -678,7 +678,7 @@ function MatrixControl({
         <tbody>
           {rows.map((row) => (
             <tr key={row}>
-              <td className="p-2 text-[15px] text-ink/85">{row}</td>
+              <td className="p-2 text-[15px] text-ink dark:text-white/85">{row}</td>
               {columns.map((col) => (
                 <td key={col} className="p-2 text-center">
                   <input
@@ -721,7 +721,7 @@ export function FieldControl({
           onChange={(e) => onChange(e.target.value)}
           placeholder={block.placeholder ?? (block.type === 'email' ? 'you@example.com' : block.type === 'link' ? 'https://…' : 'Type your answer')}
           disabled={preview}
-          className="w-full max-w-xl rounded-2xl border border-ink/20 bg-white px-4 py-3 text-[15px] text-ink outline-none transition placeholder:text-ink/35 hover:border-ink/40 focus:border-ink focus:ring-4 focus:ring-ink/[0.06]"
+          className="w-full max-w-xl rounded-2xl border border-ink/20 bg-white dark:bg-white/10 px-4 py-3 text-[15px] text-ink dark:text-white outline-none transition placeholder:text-ink dark:text-white/35 hover:border-ink/40 focus:border-ink focus:ring-4 focus:ring-ink/[0.06]"
         />
       )
     case 'number':
@@ -731,7 +731,7 @@ export function FieldControl({
           value={value === null || value === undefined ? '' : String(value)}
           onChange={(e) => onChange(e.target.value === '' ? null : Number(e.target.value))}
           placeholder={block.placeholder ?? '0'}
-          className="w-full max-w-xl rounded-2xl border border-ink/20 bg-white px-4 py-3 text-[15px] text-ink outline-none transition placeholder:text-ink/35 hover:border-ink/40 focus:border-ink focus:ring-4 focus:ring-ink/[0.06]"
+          className="w-full max-w-xl rounded-2xl border border-ink/20 bg-white dark:bg-white/10 px-4 py-3 text-[15px] text-ink dark:text-white outline-none transition placeholder:text-ink dark:text-white/35 hover:border-ink/40 focus:border-ink focus:ring-4 focus:ring-ink/[0.06]"
         />
       )
     case 'date':
@@ -741,7 +741,7 @@ export function FieldControl({
           type={block.type}
           value={(value as string) ?? ''}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full max-w-xl rounded-2xl border border-ink/20 bg-white px-4 py-3 text-[15px] text-ink outline-none transition hover:border-ink/40 focus:border-ink focus:ring-4 focus:ring-ink/[0.06]"
+          className="w-full max-w-xl rounded-2xl border border-ink/20 bg-white dark:bg-white/10 px-4 py-3 text-[15px] text-ink dark:text-white outline-none transition hover:border-ink/40 focus:border-ink focus:ring-4 focus:ring-ink/[0.06]"
         />
       )
     case 'longText':
@@ -752,7 +752,7 @@ export function FieldControl({
           onChange={(e) => onChange(e.target.value)}
           placeholder={block.placeholder ?? 'Write a longer answer…'}
           disabled={preview}
-          className="w-full max-w-xl rounded-2xl border border-ink/20 bg-white px-4 py-3 text-[15px] leading-relaxed text-ink outline-none transition placeholder:text-ink/35 hover:border-ink/40 focus:border-ink focus:ring-4 focus:ring-ink/[0.06]"
+          className="w-full max-w-xl rounded-2xl border border-ink/20 bg-white dark:bg-white/10 px-4 py-3 text-[15px] leading-relaxed text-ink dark:text-white outline-none transition placeholder:text-ink dark:text-white/35 hover:border-ink/40 focus:border-ink focus:ring-4 focus:ring-ink/[0.06]"
         />
       )
     case 'rating':

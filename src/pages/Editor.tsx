@@ -275,6 +275,21 @@ export default function Editor() {
 
   const responseCount = submissions.filter((s) => s.formId === form.id).length
 
+  useEffect(() => {
+    let injectedCss = ''
+    if (form?.settings.theme.customFontBase64 && form?.settings.theme.font === 'custom') {
+      injectedCss += `@font-face { font-family: "CustomFont"; src: url("${form.settings.theme.customFontBase64}"); }\n`
+    }
+    if (!injectedCss) return
+    const el = document.createElement('style')
+    el.setAttribute('data-folly-custom-font', '')
+    el.textContent = injectedCss
+    document.head.appendChild(el)
+    return () => {
+      document.head.removeChild(el)
+    }
+  }, [form?.settings.theme.customFontBase64, form?.settings.theme.font])
+
   return (
     <div className="flex min-h-screen flex-col bg-[#fafafb]">
       <TopBar
@@ -285,8 +300,8 @@ export default function Editor() {
       />
 
       <main
-        className="editor-canvas flex-1 overflow-y-auto"
-        style={{ background: form.settings.theme.background, fontFamily: themeFont(form.settings.theme.font) }}
+        className={`editor-canvas flex-1 overflow-y-auto ${form.settings.theme.darkMode ? 'dark' : ''}`}
+        style={{ background: form.settings.theme.background, fontFamily: themeFont(form.settings.theme.font), color: form.settings.theme.darkMode ? '#f5f5f5' : '#0b0f19' }}
       >
         {form.settings.coverImageUrl && (
           <div className="w-full h-[180px] sm:h-[220px] overflow-hidden relative">
@@ -494,7 +509,8 @@ function TitleEditor({ title, onChange }: { title: string; onChange: (t: string)
         if (e.key === 'Escape') (e.currentTarget as HTMLElement).blur()
       }}
       data-placeholder="Untitled form"
-      className="empty-placeholder w-full cursor-text text-[38px] font-semibold leading-[1.15] tracking-tight text-ink outline-none sm:text-[44px]"
+      className="empty-placeholder w-full cursor-text text-[38px] font-semibold leading-[1.15] tracking-tight outline-none sm:text-[44px]"
+      style={{ color: 'inherit' }}
     />
   )
 }
@@ -587,7 +603,8 @@ function DescriptionEditor({ description, onChange }: { description?: string; on
           }
         }}
         data-placeholder="Add a description or subtitle"
-        className="empty-placeholder w-full cursor-text text-[17px] leading-relaxed text-ink/60 outline-none"
+        className="empty-placeholder w-full cursor-text text-[17px] leading-relaxed outline-none opacity-60"
+        style={{ color: 'inherit' }}
       />
       {focused && (
         <div className="mt-1.5 flex items-center gap-0.5">
