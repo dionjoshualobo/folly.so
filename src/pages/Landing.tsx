@@ -1,7 +1,80 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Logo, LogoMark } from '../components/ui'
+import { icons } from '../blockCatalog'
 import { useForms } from '../store'
+
+function Art({ children }: { children: React.ReactNode }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6" aria-hidden>
+      {children}
+    </svg>
+  )
+}
+
+function FaceGrin() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" className="h-14 w-14 drop-shadow-md sm:h-16 sm:w-16" aria-hidden>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M8 9.4h.02M16 9.4h.02" />
+      <path d="M7.4 13.7c1.2 2 2.9 3.1 4.6 3.1s3.4-1.1 4.6-3.1" />
+    </svg>
+  )
+}
+
+function FaceStarry() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" className="h-14 w-14 drop-shadow-md sm:h-16 sm:w-16" aria-hidden>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M8.5 7.6l.55 1.4 1.4.55-1.4.55-.55 1.4-.55-1.4-1.4-.55 1.4-.55Z" fill="currentColor" stroke="none" />
+      <path d="M15.5 7.6l.55 1.4 1.4.55-1.4.55-.55 1.4-.55-1.4-1.4-.55 1.4-.55Z" fill="currentColor" stroke="none" />
+      <path d="M7.4 13.7c1.2 2 2.9 3.1 4.6 3.1s3.4-1.1 4.6-3.1" />
+    </svg>
+  )
+}
+
+function FaceLove() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" className="h-14 w-14 drop-shadow-md sm:h-16 sm:w-16" aria-hidden>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M8 9.2h.02M16 9.2h.02" />
+      <path d="M12 18.9c-2.6-1.5-4.5-3-4.5-5a2.6 2.6 0 0 1 4.5-1.8 2.6 2.6 0 0 1 4.5 1.8c0 2-1.9 3.5-4.5 5Z" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function FaceParty() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" className="h-14 w-14 drop-shadow-md sm:h-16 sm:w-16" aria-hidden>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M8 9.2h.02M16 9.2h.02" />
+      <path d="M7.2 13.9c1.3 2.3 3.1 3.4 4.8 3.4s3.5-1.1 4.8-3.4" />
+      <path d="M5.2 4.8l.4 1 .9.4-.9.4-.4 1-.4-1-.9-.4.9-.4Z" fill="currentColor" stroke="none" />
+      <path d="M18.6 6.3l.4 1 .9.4-.9.4-.4 1-.4-1-.9-.4.9-.4Z" fill="currentColor" stroke="none" />
+      <path d="M4.6 15.2l.3.8.8.3-.8.3-.3.8-.3-.8-.8-.3.8-.3Z" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function Face({
+  children,
+  className,
+  style,
+}: {
+  children: React.ReactNode
+  className?: string
+  style?: React.CSSProperties
+}) {
+  return (
+    <span
+      className={`pointer-events-none absolute select-none transition-transform duration-300 ease-out ${className ?? ''}`}
+      style={style}
+      aria-hidden
+    >
+      {children}
+    </span>
+  )
+}
 
 export interface PreviewTheme {
   label: string
@@ -76,26 +149,6 @@ const FAQ = [
   },
 ]
 
-function Face({
-  emoji,
-  className,
-  style,
-}: {
-  emoji: string
-  className?: string
-  style?: React.CSSProperties
-}) {
-  return (
-    <span
-      className={`pointer-events-none absolute select-none text-5xl drop-shadow-md sm:text-6xl transition-transform duration-300 ease-out ${className ?? ''}`}
-      style={style}
-      aria-hidden
-    >
-      {emoji}
-    </span>
-  )
-}
-
 function Hero() {
   const go = () => {
     useForms.getState().createForm()
@@ -115,26 +168,18 @@ function Hero() {
     <section className="relative overflow-hidden" onMouseMove={handleMouseMove}>
       <div className="dot-bg absolute inset-0 -z-10 opacity-60 animate-fade" />
       <div className="mx-auto max-w-5xl px-6 pt-16 pb-20 text-center sm:pt-24 sm:pb-28">
-        <Face
-          emoji="😀"
-          className="left-[8%] top-24 hidden md:block"
-          style={{ transform: `translate(${mouseOffset.x * -0.6}px, ${mouseOffset.y * -0.6}px) rotate(-8deg)` }}
-        />
-        <Face
-          emoji="🤩"
-          className="right-[10%] top-40 hidden md:block"
-          style={{ transform: `translate(${mouseOffset.x * 0.8}px, ${mouseOffset.y * 0.8}px) rotate(10deg)` }}
-        />
-        <Face
-          emoji="😍"
-          className="left-[16%] top-[70%] hidden md:block"
-          style={{ transform: `translate(${mouseOffset.x * -0.4}px, ${mouseOffset.y * -0.4}px) rotate(6deg)` }}
-        />
-        <Face
-          emoji="🥳"
-          className="right-[14%] top-[64%] hidden md:block"
-          style={{ transform: `translate(${mouseOffset.x * 0.5}px, ${mouseOffset.y * 0.5}px) rotate(-6deg)` }}
-        />
+        <Face className="left-[8%] top-24 hidden text-ink md:block" style={{ transform: `translate(${mouseOffset.x * -0.6}px, ${mouseOffset.y * -0.6}px) rotate(-8deg)` }}>
+          <FaceGrin />
+        </Face>
+        <Face className="right-[10%] top-40 hidden text-brand-500 md:block" style={{ transform: `translate(${mouseOffset.x * 0.8}px, ${mouseOffset.y * 0.8}px) rotate(10deg)` }}>
+          <FaceStarry />
+        </Face>
+        <Face className="left-[16%] top-[70%] hidden text-brand-600 md:block" style={{ transform: `translate(${mouseOffset.x * -0.4}px, ${mouseOffset.y * -0.4}px) rotate(6deg)` }}>
+          <FaceLove />
+        </Face>
+        <Face className="right-[14%] top-[64%] hidden text-amber-500 md:block" style={{ transform: `translate(${mouseOffset.x * 0.5}px, ${mouseOffset.y * 0.5}px) rotate(-6deg)` }}>
+          <FaceParty />
+        </Face>
 
         <a
           href="#/"
@@ -368,22 +413,22 @@ function Features({ theme }: { theme: PreviewTheme }) {
 }
 
 const INPUT_TYPES = [
-  { icon: 'Aa', label: 'Short text' },
-  { icon: '¶', label: 'Long text' },
-  { icon: '@', label: 'Email' },
-  { icon: '123', label: 'Numbers' },
-  { icon: '✓', label: 'Multiple choice' },
-  { icon: '▣', label: 'Checkbox' },
-  { icon: '▾', label: 'Dropdown' },
-  { icon: '★', label: 'Rating' },
-  { icon: '✎', label: 'Signature' },
-  { icon: '📅', label: 'Date & time' },
-  { icon: '🔗', label: 'Links' },
-  { icon: '↥', label: 'File upload' },
-  { icon: '⧉', label: 'Matrix' },
-  { icon: '◔', label: 'NPS score' },
-  { icon: '₿', label: 'Payments' },
-  { icon: '🧩', label: 'Embed video' },
+  { icon: 'shortText', label: 'Short text' },
+  { icon: 'longText', label: 'Long text' },
+  { icon: 'email', label: 'Email' },
+  { icon: 'number', label: 'Numbers' },
+  { icon: 'multipleChoice', label: 'Multiple choice' },
+  { icon: 'checkbox', label: 'Checkbox' },
+  { icon: 'dropdown', label: 'Dropdown' },
+  { icon: 'rating', label: 'Rating' },
+  { icon: 'signature', label: 'Signature' },
+  { icon: 'date', label: 'Date & time' },
+  { icon: 'link', label: 'Links' },
+  { icon: 'fileUpload', label: 'File upload' },
+  { icon: 'matrix', label: 'Matrix' },
+  { icon: 'nps', label: 'NPS score' },
+  { icon: 'payments', label: 'Payments' },
+  { icon: 'embed', label: 'Embed video' },
 ]
 
 function InputTypes() {
@@ -412,8 +457,8 @@ function InputTypes() {
               key={t.label}
               className="group flex flex-col items-center gap-2 rounded-2xl border border-ink/10 bg-white p-4 text-center shadow-sm transition hover:-translate-y-1 hover:border-brand-200 hover:shadow-card"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-ink/[0.04] text-[15px] font-bold text-ink transition group-hover:bg-brand-50 group-hover:text-brand-600">
-                {t.icon}
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-ink/[0.04] text-ink transition group-hover:bg-brand-50 group-hover:text-brand-600">
+                <span className="[&_svg]:h-[22px] [&_svg]:w-[22px]">{icons[t.icon]}</span>
               </span>
               <span className="text-[12px] font-medium leading-tight text-ink/60">{t.label}</span>
             </div>
@@ -426,22 +471,48 @@ function InputTypes() {
 
 const SMART = [
   {
-    icon: '⚡',
+    icon: (
+      <Art>
+        <circle cx="12" cy="4.5" r="2" />
+        <circle cx="5" cy="19.5" r="2" />
+        <circle cx="19" cy="19.5" r="2" />
+        <path d="M12 6.5v1a3 3 0 0 1-3 3H7a3 3 0 0 0-3 3v2" />
+        <path d="M12 6.5v1a3 3 0 0 0 3 3h2a3 3 0 0 1 3 3v2" />
+      </Art>
+    ),
     title: 'Conditional logic',
     desc: 'Build dynamic forms that adapt to answers — show, hide and skip questions based on prior input.',
   },
   {
-    icon: '🧮',
+    icon: (
+      <Art>
+        <rect x="4" y="3" width="16" height="18" rx="3" />
+        <path d="M8 7.5h8" />
+        <path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01M16 17h.01" />
+      </Art>
+    ),
     title: 'Calculator',
     desc: 'Use variables to create dynamic content, scores and prices. Compute values as respondents type.',
   },
   {
-    icon: '🫥',
+    icon: (
+      <Art>
+        <path d="M3 12.5s3.1-5.5 8.5-5.5 8.5 5.5 8.5 5.5-3.1 5.5-8.5 5.5-8.5-5.5-8.5-5.5Z" />
+        <circle cx="11.5" cy="12.5" r="2.6" />
+        <path d="M19.5 5.5 16.5 8.5M19.5 5.5H16V8" />
+      </Art>
+    ),
     title: 'Hidden fields',
     desc: 'Pass data through your form URL. Pre-fill fields and pipe answers into later questions.',
   },
   {
-    icon: '🧭',
+    icon: (
+      <Art>
+        <path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z" />
+        <path d="m4 12 8 4.5 8-4.5" />
+        <path d="m4 16.5 8 4.5 8-4.5" />
+      </Art>
+    ),
     title: 'Multi-page forms',
     desc: 'Split long surveys into pages with a gentle progress bar. One tap per section.',
   },
@@ -463,7 +534,9 @@ function Smart() {
               key={f.title}
               className="group rounded-2xl border border-white/10 bg-white/[0.04] p-6 transition hover:border-white/25 hover:bg-white/[0.07]"
             >
-              <span className="text-3xl">{f.icon}</span>
+              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-400/15 text-brand-300 transition group-hover:bg-brand-400/25 group-hover:text-brand-200 [&_svg]:h-6 [&_svg]:w-6">
+                {f.icon}
+              </span>
               <h3 className="mt-4 text-lg font-bold">{f.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-white/60">{f.desc}</p>
             </div>
@@ -625,7 +698,18 @@ function Footer() {
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink/50">
               The free form builder for people who can’t stand form builders.
             </p>
-            <p className="mt-6 text-xs text-ink/35">Made with 🤍 · Runs entirely in your browser</p>
+            <p className="mt-6 text-xs text-ink/35">
+              Made with{' '}
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="inline h-3.5 w-3.5 -translate-y-[1px] text-brand-500"
+                aria-hidden
+              >
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+              </svg>{' '}
+              · Runs entirely in your browser
+            </p>
           </div>
           {cols.map(([title, links]) => (
             <div key={title}>

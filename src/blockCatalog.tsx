@@ -182,6 +182,13 @@ export const icons: Record<string, ReactNode> = {
       <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
     </Svg>
   ),
+  payments: (
+    <Svg>
+      <rect x="3" y="6" width="18" height="12" rx="3" />
+      <path d="M3 10h18" />
+      <path d="M6.5 14.5h4" />
+    </Svg>
+  ),
   signature: (
     <Svg>
       <path d="M3 17c4-8 10-10 14-6 1.4 1.4 1.4 3.4 0 4.8-1.4 1.4-3.4 1.4-4.8 0-1.3-1.4-.8-3.4 1.2-4.4 2.6-1.3 5.5.4 6.6 2.6 1 2 0 4.5-2 6" />
