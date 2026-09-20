@@ -106,37 +106,41 @@ const FAQ = [
   },
 ]
 
+function BackgroundPeeps() {
+  return (
+    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      <Face className="left-[2%] top-[15%] hidden lg:block opacity-70">
+        <PeepBangsRose className="h-32 w-auto" />
+      </Face>
+      <Face className="right-[2%] top-[12%] hidden lg:block opacity-70">
+        <PeepBunInk className="h-32 w-auto" />
+      </Face>
+      <Face className="left-[8%] top-[45%] hidden lg:block opacity-70">
+        <PeepShortMoustache className="h-32 w-auto" />
+      </Face>
+      <Face className="right-[5%] top-[55%] hidden lg:block opacity-70">
+        <PeepCurlyDress className="h-32 w-auto" />
+      </Face>
+      <Face className="left-[4%] top-[75%] hidden lg:block opacity-70">
+        <PeepBangsRose className="h-32 w-auto scale-x-[-1]" />
+      </Face>
+      <Face className="right-[8%] top-[85%] hidden lg:block opacity-70">
+        <PeepBunInk className="h-32 w-auto scale-x-[-1]" />
+      </Face>
+    </div>
+  )
+}
+
 function Hero() {
   const go = () => {
     useForms.getState().createForm()
     window.location.hash = '#/forms'
   }
 
-  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 })
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const { clientX, clientY } = e
-    const x = (clientX - window.innerWidth / 2) / 25
-    const y = (clientY - window.innerHeight / 2) / 25
-    setMouseOffset({ x, y })
-  }
-
   return (
-    <section className="relative overflow-hidden" onMouseMove={handleMouseMove}>
+    <section className="relative overflow-hidden z-10">
       <div className="dot-bg absolute inset-0 -z-10 opacity-60 animate-fade" />
       <div className="mx-auto max-w-5xl px-6 pt-16 pb-20 text-center sm:pt-24 sm:pb-28">
-        <Face className="left-[5%] bottom-[26%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * -0.35}px, ${mouseOffset.y * -0.35}px)` }}>
-          <PeepBangsRose className="h-24 sm:h-32 w-auto" />
-        </Face>
-        <Face className="right-[9%] bottom-[34%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * 0.45}px, ${mouseOffset.y * 0.45}px)` }}>
-          <PeepBunInk className="h-24 sm:h-32 w-auto" />
-        </Face>
-        <Face className="left-[7%] bottom-[4%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * -0.5}px, ${mouseOffset.y * -0.5}px)` }}>
-          <PeepShortMoustache className="h-24 sm:h-32 w-auto" />
-        </Face>
-        <Face className="right-[9%] bottom-[5%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * 0.4}px, ${mouseOffset.y * 0.4}px)` }}>
-          <PeepCurlyDress className="h-24 sm:h-32 w-auto" />
-        </Face>
 
         <a
           href="#/"
@@ -705,7 +709,8 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-full bg-white">
+    <div className="min-h-full bg-white relative">
+      <BackgroundPeeps />
       <header className="sticky top-0 z-40 border-b border-ink/[0.06] bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Logo />
