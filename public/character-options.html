@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Character illustration options — Folly</title>
+<link rel="icon" href="/favicon.svg" />
+<style>
+  :root {
+    --ink: #0b0f19;
+    --rose: #e11d48;
+    --rose-soft: #fdf0f3;
+    --paper: #f7f5f2;
+    --card: #ffffff;
+    --line: #e9e4dd;
+    --muted: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  header {
+    padding: 40px 24px 20px;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  header h1 { font-size: 26px; margin: 0 0 6px; letter-spacing: -0.02em; }
+  header p  { margin: 0; color: var(--muted); font-size: 15px; max-width: 720px; }
+  #pickbar {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 14px;
+  }
+  #pickbar b { color: var(--rose); }
+  #pickbar .none { color: var(--muted); font-style: italic; }
+  .grid {
+    max-width: 1180px; margin: 0 auto; padding: 24px 24px 80px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 20px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px;
+    display: flex; flex-direction: column; gap: 12px;
+    transition: box-shadow .15s, transform .15s, border-color .15s;
+  }
+  .card:hover { box-shadow: 0 10px 28px rgba(11,15,25,.08); transform: translateY(-2px); }
+  .card.picked { border-color: var(--rose); box-shadow: 0 0 0 2px rgba(225,29,72,.25); }
+  .card .head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .card h2 { margin: 0; font-size: 18px; letter-spacing: -0.01em; }
+  .badge {
+    font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+  }
+  .badge.cc0 { background: #eef8f3; color: #047857; }
+  .badge.mit { background: #eef4fb; color: #1d4ed8; }
+  .badge.free { background: #f3f0e9; color: #92400e; }
+  .card .desc { margin: 0; font-size: 13.5px; color: var(--muted); }
+  .card .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .card .tag {
+    font-size: 11.5px; color: #444c5c; background: #f1eee9;
+    padding: 2px 8px; border-radius: 6px;
+  }
+  .thumbs {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%;
+  }
+  .tile {
+    aspect-ratio: 1 / 1;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    overflow: hidden;
+    padding: 0;
+  }
+  .tile img {
+    width: 100%; height: 100%; object-fit: contain;
+    padding: 10px;
+    flex: 1;
+  }
+  .tile figcaption {
+    font-size: 11px; color: var(--muted); text-align: center;
+    padding: 4px 2px 7px; width: 100%;
+    border-top: 1px solid var(--line);
+    font-weight: 600; letter-spacing: .02em;
+  }
+  .tile.soft { background: linear-gradient(160deg,#eef6f8,#fdf6ec); }
+  .tile.sub { cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+  .tile.sub:hover { border-color: var(--rose); }
+  .card.picked .tile.sub.picked-sub { border-color: var(--rose); box-shadow: 0 0 0 2px rgba(225,29,72,.25); }
+  .card.picked .tile.sub.picked-sub figcaption { color: var(--rose); }
+  .meta { font-size: 12px; color: var(--muted); }
+  .meta a { color: #0b5cad; text-decoration: none; }
+  .meta a:hover { text-decoration: underline; }
+  .hint { font-size: 12px; color: var(--muted); font-style: italic; }
+  .pick {
+    margin-top: auto;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 9px;
+    padding: 9px 12px;
+    font-size: 14px; font-weight: 600; color: var(--ink);
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .pick:hover { background: var(--rose-soft); border-color: var(--rose); color: var(--rose); }
+  .card.picked .pick { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .card.picked .pick.subpicked { background: var(--rose); border-color: var(--rose); }
+  .foot { max-width: 1180px; margin: 0 auto; padding: 0 24px 60px; color: var(--muted); font-size: 13px; }
+  .foot a { color: #0b5cad; text-decoration: none; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Character illustration options</h1>
+    <p>Freely-licensable illustration sets — all mix-and-match people art in the spirit of Open Peeps. Thumbnails are cached real samples, so what you see is what you'd get. None of this changes the site yet; pick a style (click a tile on the multi-style cards).</p>
+  </header>
+
+  <div id="pickbar">
+    <span>Current pick:</span>
+    <span id="curpick" class="none">none yet</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="foot">
+    Licenses: <b>CC0</b> = public domain, no credit needed. <b>MIT</b> = free, keep the license notice. <b>FREE</b> = free for personal &amp; commercial use, but check each site's terms (DrawKit &amp; Blush free collections request attribution on some packs). Doodle Ipsum and Stubborn Generator are generators — samples are cached batches. Still more worth a look (JS-loaded, no live tiles here): <a href="https://storyset.com" target="_blank" rel="noopener">Storyset</a>, <a href="https://gallery.manypixels.co" target="_blank" rel="noopener">ManyPixels</a>, <a href="https://iradesign.io" target="_blank" rel="noopener">IRA Design</a>.
+  </div>
+
+<script>
+const STYLE = "folly.charOption";
+const OPTS = [
+  {
+    name: "Open Peeps", license: "CC0", by: "Pablo Stanley",
+    tags: ["current hero", "busts / heads", "ink outlines", "mix parts"],
+    desc: "What is on the hero right now. Loose hand-drawn bust characters; you can swap hairstyles, faces, clothes and accessories to build your own. Small mug-shot characters work great floating at the edges.",
+    src: "openpeeps.com",
+    thumbs: ["peeps-preview/peeps-1.png", "peeps-preview/peeps-2.png", "peeps-preview/peeps-3.png", "peeps-preview/peeps-4.png"]
+  },
+  {
+    name: "DiceBear", license: "FREE", by: "dicebear.com",
+    tags: ["many styles", "API-driven", "avatars", "one click each"],
+    desc: "A full library of avatar/character styles behind a free API — each style is a different art direction. Click a tile to pick that exact style; every avatar is generated from options (hair, face, clothes), and one SVG per person is a single API call. Represents 6 of ~30 styles.",
+    src: "dicebear.com",
+    subs: [
+      { label: "Micah",        file: "dicebear/micah.svg",        bg: "linear-gradient(160deg,#eef6f8,#fdf6ec)" },
+      { label: "Notionists",   file: "dicebear/notionists.svg",   bg: "none" },
+      { label: "Avataaars",    file: "dicebear/avataaars.svg",    bg: "none" },
+      { label: "Adventurer",   file: "dicebear/adventurer.svg",   bg: "none" },
+      { label: "Lorelei",      file: "dicebear/lorelei.svg",      bg: "none" },
+      { label: "Thumbs",       file: "dicebear/thumbs.svg",       bg: "none" }
+    ]
+  },
+  {
+    name: "Humaaans", license: "CC0", by: "Pablo Stanley",
+    tags: ["full-body", "flat vector", "mix parts", "no outlines"],
+    desc: "Same creator as Peeps, but full standing / sitting people with zero outlines — soft flat silhouettes. Far more mix-and-match pieces (heads, bodies, arms, clothes) and background scenes. More illustrative, less cartoon.",
+    src: "humaaans.com",
+    thumbs: [
+      "https://raw.githubusercontent.com/Calinou/humaaans/master/Flat%20Assets/Humaaans/standing-1.svg",
+      "https://raw.githubusercontent.com/Calinou/humaaans/master/Flat%20Assets/Humaaans/standing-4.svg",
+      "https://raw.githubusercontent.com/Calinou/humaaans/master/Flat%20Assets/Humaaans/standing-12.svg",
+      "https://raw.githubusercontent.com/Calinou/humaaans/master/Flat%20Assets/Humaaans/sitting-2.svg",
+      "https://raw.githubusercontent.com/Calinou/humaaans/master/Flat%20Assets/Humaaans/sitting-5.svg"
+    ]
+  },
+  {
+    name: "Open Doodles", license: "CC0", by: "Pablo Stanley",
+    tags: ["single action poses", "sketchy", "one color", "no mixing"],
+    desc: "A loose, scribbly one-gesture character set — running, meditating, levitating, coffee. No black outline, single fill color, so you'd recolor everything. Better as decorative accents than brand characters.",
+    src: "opendoodles.com",
+    thumbs: [
+      "https://opendoodles.s3-us-west-1.amazonaws.com/coffee.svg",
+      "https://opendoodles.s3-us-west-1.amazonaws.com/running.svg",
+      "https://opendoodles.s3-us-west-1.amazonaws.com/meditating.svg",
+      "https://opendoodles.s3-us-west-1.amazonaws.com/reading.svg",
+      "https://opendoodles.s3-us-west-1.amazonaws.com/levitate.svg",
+      "https://opendoodles.s3-us-west-1.amazonaws.com/dancing.svg"
+    ]
+  },
+  {
+    name: "unDraw", license: "MIT", by: "Katerina Limpitsouni",
+    tags: ["flat people scenes", "minimal", "palette-matched", "huge set"],
+    desc: "Modern flat illustration library with 1300+ scenes. People have simple rounded geometry and no outlines. Great quality-to-effort ratio and one of the most complete sets for team/community scenes.",
+    src: "undraw.co",
+    thumbs: [
+      "https://raw.githubusercontent.com/bagitom/undraw-svg-collection/main/svgs/creative-team.svg",
+      "https://raw.githubusercontent.com/bagitom/undraw-svg-collection/main/svgs/meet-the-team.svg",
+      "https://raw.githubusercontent.com/bagitom/undraw-svg-collection/main/svgs/hiring.svg",
+      "https://raw.githubusercontent.com/bagitom/undraw-svg-collection/main/svgs/good-team.svg",
+      "https://raw.githubusercontent.com/bagitom/undraw-svg-collection/main/svgs/feeling-happy.svg",
+      "https://raw.githubusercontent.com/bagitom/undraw-svg-collection/main/svgs/design-team.svg"
+    ]
+  },
+  {
+    name: "Lukasz Adam · Characters", license: "CC0", by: "Lukasz Adam",
+    tags: ["flat & outlined packs", "tech/people scenes", "weekly drops", "no attribution"],
+    desc: "A large CC0 library of flat and hand-outlined character illustrations — coders, workers, coffee breaks, avatars. Mix of single figures and small scenes; clean, consistent line of work and no attribution required.",
+    src: "lukaszadam.com",
+    thumbs: [
+      "lukasz/flat_character_illustrations.svg",
+      "lukasz/small_character_illustrations.svg",
+      "lukasz/outlined_characters.svg",
+      "lukasz/character_illutrations_new.svg",
+      "lukasz/woman_desk.svg",
+      "lukasz/woman_working_1.svg"
+    ]
+  },
+  {
+    name: "illlustrations", license: "MIT", by: "Vijay Verma",
+    tags: ["warm flat", "rounded shapes", "100-day style", "objects + people"],
+    desc: "A warm, hand-crafted 100-day illustration library. Rounded, friendly shapes with a slightly textured flat look. 120+ icons and scenes; people are single setups, not mix-and-match.",
+    src: "illlustrations.co",
+    thumbs: [
+      "https://raw.githubusercontent.com/realvjy/illlustrations/develop/content/illlustrations/105/105-freelancer.svg",
+      "https://raw.githubusercontent.com/realvjy/illlustrations/develop/content/illlustrations/101/101-gym-guy.svg",
+      "https://raw.githubusercontent.com/realvjy/illlustrations/develop/content/illlustrations/111/111-coding.svg",
+      "https://raw.githubusercontent.com/realvjy/illlustrations/develop/content/illlustrations/119/119-working.svg",
+      "https://raw.githubusercontent.com/realvjy/illlustrations/develop/content/illlustrations/121/121-work-from-home-1.svg",
+      "https://raw.githubusercontent.com/realvjy/illlustrations/develop/content/illlustrations/106/106-italy.svg"
+    ]
+  },
+  {
+    name: "Doodle Ipsum", license: "CC0", by: "doodleipsum.com",
+    tags: ["whimsical", "generated on demand", "3 styles", "background scenes"],
+    desc: "A quirky SVG doodle generator — every call returns a different hand-drawn-style scene, seeded to stay constant. Great value as ambient decoration, but style consistency across characters is looser. Samples below are a cached batch; reload the generator page to roll new ones.",
+    src: "doodleipsum.com",
+    thumbs: [
+      "doodles/doodle-1.png",
+      "doodles/doodle-2.png",
+      "doodles/doodle-3.png",
+      "doodles/doodle-4.png",
+      "doodles/doodle-5.png",
+      "doodles/doodle-6.png"
+    ]
+  },
+  {
+    name: "Blush", license: "FREE", by: "Various Artists",
+    tags: ["platform", "customizable", "many styles", "mix parts"],
+    desc: "A platform hosting collections from many artists (including Pablo Stanley). Customize composition, colors, and elements directly in-browser. Has several hand-drawn 'doodle' packs. Tiles below are collection/topic covers — the artwork itself is fully editable in the browser.",
+    src: "blush.design",
+    thumbs: [
+      "blush/bl-1.png",
+      "blush/bl-2.png",
+      "blush/bl-3.png",
+      "blush/bl-4.png",
+      "blush/bl-5.png",
+      "blush/bl-6.png"
+    ]
+  },
+  {
+    name: "DrawKit", license: "FREE", by: "James Daly",
+    tags: ["hand-drawn packs", "vector scenes", "frequent updates"],
+    desc: "A massive variety of beautiful, hand-drawn illustration packs. While they have premium options, they maintain a large library of high-quality free resources updated frequently.",
+    src: "drawkit.com",
+    thumbs: [
+      "drawkit/dk-1.png",
+      "drawkit/dk-2.png",
+      "drawkit/dk-3.png",
+      "drawkit/dk-4.png",
+      "drawkit/dk-5.png"
+    ]
+  },
+  {
+    name: "Stubborn Generator", license: "CC0", by: "Craftwork Studio",
+    tags: ["quirky", "character builder", "bold style", "mix parts"],
+    desc: "A fun character generator that lets you mix and match elements (heads, bodies, accessories) to build custom people with a bolder, more graphic vector style. 25 characters + 50 background objects.",
+    src: "craftwork.design/product/stubborn-generator",
+    thumbs: [
+      "stubborn/sb-1.svg",
+      "stubborn/sb-2.svg",
+      "stubborn/sb-3.svg",
+      "stubborn/sb-4.svg",
+      "stubborn/sb-5.svg",
+      "stubborn/sb-6.svg"
+    ]
+  }
+];
+
+const cur = document.getElementById("curpick");
+function render() {
+  const picked = localStorage.getItem(STYLE) || "";
+  cur.textContent = picked ? picked : "none yet";
+  cur.className = picked ? "" : "none";
+  const grid = document.getElementById("grid");
+  grid.innerHTML = OPTS.map(o => {
+    const isPicked = picked === o.name;
+    const hasSub = Array.isArray(o.subs);
+    if (hasSub) {
+      const subPicked = picked.startsWith(o.name + " · ") ? picked.slice(o.name.length + 3) : null;
+      const tiles = o.subs.map(s => `
+        <figure class="tile sub ${subPicked === s.label ? "picked-sub" : ""}" data-label="${s.label}" role="button" tabindex="0">
+          <img loading="lazy" alt="${o.name} — ${s.label} sample" src="${s.file}" style="background:${s.bg || "#fff"}"/>
+          <figcaption>${s.label}</figcaption>
+        </figure>`).join("");
+      return `
+      <article class="card ${isPicked || subPicked ? "picked" : ""}" data-name="${o.name}">
+        <div class="head"><h2>${o.name}</h2><span class="badge ${o.license.toLowerCase()}">${o.license}</span></div>
+        <p class="desc">${o.desc}</p>
+        <div class="tags">${o.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+        <div class="thumbs">${tiles}</div>
+        <div class="hint">Click a tile above to pick that style.</div>
+        <div class="meta">by ${o.by} &middot; <a href="https://${o.src}" target="_blank" rel="noopener">${o.src}</a></div>
+      </article>`;
+    }
+    const all = [...o.thumbs, ...Array.from({length: Math.max(0, 6 - o.thumbs.length)}, () => null)];
+    return `
+    <article class="card ${isPicked ? "picked" : ""}" data-name="${o.name}">
+      <div class="head"><h2>${o.name}</h2><span class="badge ${o.license.toLowerCase()}">${o.license}</span></div>
+      <p class="desc">${o.desc}</p>
+      <div class="tags">${o.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+      <div class="thumbs">${all.map(t => t
+        ? `<div class="tile ${o.name === "Doodle Ipsum" ? "soft" : ""}"><img loading="lazy" alt="${o.name} sample" src="${t}"/></div>`
+        : `<div class="tile"></div>`).join("")}</div>
+      <div class="meta">by ${o.by} &middot; <a href="https://${o.src}" target="_blank" rel="noopener">${o.src}</a></div>
+      <button class="pick" type="button">${isPicked ? "Picked" : (picked ? `Pick ${o.name} instead` : `Pick ${o.name}`)}</button>
+    </article>`;
+  }).join("");
+
+  document.querySelectorAll(".tile.sub").forEach(tile => {
+    const pick = () => {
+      const card = tile.closest(".card");
+      const name = card.dataset.name;
+      const label = tile.dataset.label;
+      localStorage.setItem(STYLE, `${name} · ${label}`);
+      render();
+    };
+    tile.addEventListener("click", pick);
+    tile.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+  });
+  grid.querySelectorAll(".pick").forEach(btn => {
+    btn.addEventListener("click", () => {
+      localStorage.setItem(STYLE, btn.closest("article").dataset.name);
+      render();
+    });
+  });
+}
+render();
+</script>
+</body>
+</html>
