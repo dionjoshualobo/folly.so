@@ -14,32 +14,50 @@ function Art({ children }: { children: React.ReactNode }) {
 
 const FACE_INK = '#0b0f19'
 
-type HairStyle = 'cap' | 'bang' | 'twin' | 'tuft'
+type Person = 'wave' | 'cheer' | 'thumbs' | 'stand'
 
-function PersonFace({ hair, skin, hairStyle }: { hair: string; skin: string; hairStyle: HairStyle }) {
+const ARMS: Record<Person, [string, string]> = {
+  wave: ['M8.4 20.2l-3.6-4.6', 'M15.6 20.2l2 4.2'],
+  cheer: ['M8.2 20l-3.4-4.2', 'M15.8 20l3.4-4.2'],
+  thumbs: ['M8.6 20.4l-2.6 3.4', 'M15.6 20.4l2.6-4.2'],
+  stand: ['M8.6 20.4l-2.6 3.6', 'M15.4 20.4l2.6 3.6'],
+}
+
+function MiniPerson({
+  hair,
+  skin,
+  shirt,
+  person,
+}: {
+  hair: string
+  skin: string
+  shirt: string
+  person: Person
+}) {
+  const [armL, armR] = ARMS[person]
   return (
-    <svg viewBox="0 0 24 24" className="h-14 w-14 drop-shadow-md sm:h-16 sm:w-16" aria-hidden>
-      <circle cx="12" cy="13.4" r="9" fill={skin} />
-      <path d="M3.4 9.8a8.6 8.6 0 0 1 17.2 0c0 1.3-1.1 2.4-2.4 2.4H5.8c-1.3 0-2.4-1.1-2.4-2.4Z" fill={hair} />
-      {hairStyle === 'bang' && (
+    <svg viewBox="0 0 24 40" className="h-20 w-12 sm:h-24 sm:w-[57.6px]" aria-hidden>
+      <ellipse cx="12" cy="38.4" rx="8.6" ry="1.7" fill="rgba(11,15,25,0.08)" />
+      <path d="M9.9 26.8v6.4" stroke={FACE_INK} strokeWidth="2.8" strokeLinecap="round" />
+      <path d="M14.1 26.8v6.4" stroke={FACE_INK} strokeWidth="2.8" strokeLinecap="round" />
+      <path d="M8.4 33.6h3.2M14.4 33.6h3.2" stroke={FACE_INK} strokeWidth="2.5" strokeLinecap="round" />
+      <rect x="8.3" y="17.6" width="7.4" height="9.6" rx="3.6" fill={shirt} />
+      <path d={armL} fill="none" stroke={shirt} strokeWidth="2.6" strokeLinecap="round" />
+      <path d={armR} fill="none" stroke={shirt} strokeWidth="2.6" strokeLinecap="round" />
+      <circle cx="12" cy="10.8" r="6.6" fill={skin} />
+      <path d="M5.2 10.8a6.8 6.8 0 0 1 13.6 0c0 1.2-1 2.2-2.2 2.2H7.4c-1.2 0-2.2-1-2.2-2.2Z" fill={hair} />
+      {person === 'stand' && <circle cx="12" cy="3" r="2" fill={hair} />}
+      {person === 'cheer' && <path d="M10.4 4.4c.9-1.4 2.6-1.6 3.3-.6.5 1 .2 1.9-.5 2.3" fill="none" stroke={hair} strokeWidth="2" strokeLinecap="round" />}
+      {person === 'thumbs' && (
         <>
-          <circle cx="7.6" cy="14.6" r="1.7" fill={skin} />
-          <circle cx="10.6" cy="15.5" r="1.7" fill={skin} />
-          <circle cx="13.6" cy="15.5" r="1.7" fill={skin} />
-          <circle cx="16.5" cy="14.5" r="1.7" fill={skin} />
+          <circle cx="7.4" cy="13.6" r="1.6" fill={skin} />
+          <circle cx="10.2" cy="14.6" r="1.6" fill={skin} />
+          <circle cx="13.9" cy="14.6" r="1.6" fill={skin} />
+          <circle cx="16.7" cy="13.5" r="1.6" fill={skin} />
         </>
       )}
-      {hairStyle === 'twin' && (
-        <>
-          <circle cx="7.5" cy="3.2" r="1.8" fill={hair} />
-          <circle cx="16.5" cy="3.2" r="1.8" fill={hair} />
-        </>
-      )}
-      {hairStyle === 'tuft' && (
-        <path d="M10.6 4.6c.8-1.5 2.4-1.7 3.1-.6.5 1 .1 2-.6 2.4" fill="none" stroke={hair} strokeWidth="2.2" strokeLinecap="round" />
-      )}
-      <path d="M8.3 14.3h.02M15.7 14.3h.02" stroke={FACE_INK} strokeWidth="2.1" strokeLinecap="round" fill="none" />
-      <path d="M9.8 17.3c1.3.9 3.1.9 4.4 0" stroke={FACE_INK} strokeWidth="1.7" strokeLinecap="round" fill="none" />
+      <path d="M9.1 13.2h.01M14.9 13.2h.01" stroke={FACE_INK} strokeWidth="1.9" strokeLinecap="round" fill="none" />
+      <path d="M9.7 15.5c1.5 1 2.9 1 4.4 0" stroke={FACE_INK} strokeWidth="1.5" strokeLinecap="round" fill="none" />
     </svg>
   )
 }
@@ -156,17 +174,17 @@ function Hero() {
     <section className="relative overflow-hidden" onMouseMove={handleMouseMove}>
       <div className="dot-bg absolute inset-0 -z-10 opacity-60 animate-fade" />
       <div className="mx-auto max-w-5xl px-6 pt-16 pb-20 text-center sm:pt-24 sm:pb-28">
-        <Face className="left-[8%] top-24 hidden md:block" style={{ transform: `translate(${mouseOffset.x * -0.6}px, ${mouseOffset.y * -0.6}px) rotate(-8deg)` }}>
-          <PersonFace hair="#0b0f19" skin="#ffe5cf" hairStyle="cap" />
+        <Face className="left-[5%] bottom-[26%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * -0.35}px, ${mouseOffset.y * -0.35}px)` }}>
+          <MiniPerson hair="#0b0f19" skin="#ffe5cf" shirt="#fda4af" person="wave" />
         </Face>
-        <Face className="right-[10%] top-40 hidden md:block" style={{ transform: `translate(${mouseOffset.x * 0.8}px, ${mouseOffset.y * 0.8}px) rotate(10deg)` }}>
-          <PersonFace hair="#f43f5e" skin="#ffdbc4" hairStyle="bang" />
+        <Face className="right-[9%] bottom-[34%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * 0.45}px, ${mouseOffset.y * 0.45}px)` }}>
+          <MiniPerson hair="#f43f5e" skin="#ffdbc4" shirt="#be123c" person="cheer" />
         </Face>
-        <Face className="left-[16%] top-[70%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * -0.4}px, ${mouseOffset.y * -0.4}px) rotate(6deg)` }}>
-          <PersonFace hair="#be123c" skin="#fad1b6" hairStyle="twin" />
+        <Face className="left-[7%] bottom-[4%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * -0.5}px, ${mouseOffset.y * -0.5}px)` }}>
+          <MiniPerson hair="#f59e0b" skin="#ffe7d0" shirt="#0b0f19" person="stand" />
         </Face>
-        <Face className="right-[14%] top-[64%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * 0.5}px, ${mouseOffset.y * 0.5}px) rotate(-6deg)` }}>
-          <PersonFace hair="#f59e0b" skin="#ffe7d0" hairStyle="tuft" />
+        <Face className="right-[9%] bottom-[5%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * 0.4}px, ${mouseOffset.y * 0.4}px)` }}>
+          <MiniPerson hair="#be123c" skin="#fad1b6" shirt="#fb7185" person="thumbs" />
         </Face>
 
         <a
