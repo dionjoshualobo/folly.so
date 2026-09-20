@@ -9,6 +9,9 @@ export default function Dashboard() {
   const submissions = useForms((s) => s.submissions)
   const createForm = useForms((s) => s.createForm)
   const deleteForm = useForms((s) => s.deleteForm)
+  const ready = useForms((s) => s.ready)
+  const error = useForms((s) => s.error)
+  const hydrate = useForms((s) => s.hydrate)
   const navigate = useNavigate()
 
   const createNew = () => {
@@ -30,6 +33,25 @@ export default function Dashboard() {
       </header>
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+        {!ready ? (
+          <div className="mt-20 flex flex-col items-center text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-ink/[0.05]">
+              <span className="flex h-5 w-5 animate-spin items-center justify-center rounded-full border-2 border-ink/15 border-t-ink" />
+            </div>
+            {error && (
+              <p className="mt-4 max-w-sm text-[14px] text-ink/45">
+                Couldn’t reach the server.
+                <button
+                  onClick={() => hydrate()}
+                  className="ml-1.5 font-semibold text-brand-600 hover:underline"
+                >
+                  Retry
+                </button>
+              </p>
+            )}
+          </div>
+        ) : (
+        <>
         <div className="flex items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-ink">My forms</h1>
@@ -144,6 +166,8 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+        </>
+        )}
       </main>
     </div>
   )

@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: folly
+      POSTGRES_PASSWORD: folly
+      POSTGRES_DB: folly
+    ports:
+      - "5432:5432"
+    volumes:
+      - folly_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U folly -d folly"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://folly:folly@db:5432/folly
+      PORT: "3001"
+      SEED_DEMO: "true"
+    ports:
+      - "3001:3001"
+
+volumes:
+  folly_pg:

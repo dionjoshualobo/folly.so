@@ -26,5 +26,8 @@ dist-ssr
 # TypeScript build info
 *.tsbuildinfo
 
+# Local environment / secrets
+.env
+
 # Playwright MCP artifacts
 .playwright-mcp/

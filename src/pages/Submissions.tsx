@@ -14,9 +14,14 @@ function average(nums: number[]): string | null {
 
 export default function Submissions() {
   const { formId = '' } = useParams()
+  const ready = useForms((s) => s.ready)
   const form = useForms((s) => s.forms.find((f) => f.id === formId))
   const allSubmissions = useForms((s) => s.submissions)
   const submissions = useMemo(() => allSubmissions.filter((x) => x.formId === formId), [allSubmissions, formId])
+
+  if (!ready) {
+    return <div className="flex min-h-screen items-center justify-center text-sm text-ink/40">Loading…</div>
+  }
 
   if (!form) {
     return (

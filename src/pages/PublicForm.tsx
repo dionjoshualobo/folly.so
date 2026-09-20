@@ -155,13 +155,30 @@ export default function PublicForm() {
   const { formId = '' } = useParams()
   const form = useForms((s) => s.forms.find((f) => f.id === formId))
   const addSubmission = useForms((s) => s.addSubmission)
+  const ensureForm = useForms((s) => s.ensureForm)
 
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [currentPage, setCurrentPage] = useState(0)
   const [submitted, setSubmitted] = useState(false)
   const [visited, setVisited] = useState(false)
+  const [formFailed, setFormFailed] = useState(false)
   const topRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    let mounted = true
+    if (!form) {
+      setFormFailed(false)
+      ensureForm(formId).then((ok) => {
+        if (mounted) setFormFailed(!ok)
+      })
+    } else {
+      setFormFailed(false)
+    }
+    return () => {
+      mounted = false
+    }
+  }, [formId, form, ensureForm])
 
   const pages = useMemo(() => (form ? splitIntoPages(form.blocks, answers) : []), [form, answers])
   const safePage = Math.min(currentPage, Math.max(0, pages.length - 1))
@@ -199,7 +216,11 @@ export default function PublicForm() {
     }
   }, [form?.settings.customCss])
 
-  if (!form) return notFound()
+  if (formFailed) return notFound()
+
+  if (!form) {
+    return <div className="flex min-h-screen items-center justify-center text-sm text-ink/40">Loading…</div>
+  }
 
   const theme = form.settings.theme
   const font = themeFont(theme.font)
