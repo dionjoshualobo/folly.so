@@ -3,61 +3,12 @@ import { Link } from 'react-router-dom'
 import { Logo, LogoMark } from '../components/ui'
 import { icons } from '../blockCatalog'
 import { useForms } from '../store'
+import { PeepBangsRose, PeepBunInk, PeepShortMoustache, PeepCurlyDress } from '../components/openPeeps'
 
 function Art({ children }: { children: React.ReactNode }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6" aria-hidden>
       {children}
-    </svg>
-  )
-}
-
-const FACE_INK = '#0b0f19'
-
-type Person = 'wave' | 'cheer' | 'thumbs' | 'stand'
-
-const ARMS: Record<Person, [string, string]> = {
-  wave: ['M8.4 20.2l-3.6-4.6', 'M15.6 20.2l2 4.2'],
-  cheer: ['M8.2 20l-3.4-4.2', 'M15.8 20l3.4-4.2'],
-  thumbs: ['M8.6 20.4l-2.6 3.4', 'M15.6 20.4l2.6-4.2'],
-  stand: ['M8.6 20.4l-2.6 3.6', 'M15.4 20.4l2.6 3.6'],
-}
-
-function MiniPerson({
-  hair,
-  skin,
-  shirt,
-  person,
-}: {
-  hair: string
-  skin: string
-  shirt: string
-  person: Person
-}) {
-  const [armL, armR] = ARMS[person]
-  return (
-    <svg viewBox="0 0 24 40" className="h-20 w-12 sm:h-24 sm:w-[57.6px]" aria-hidden>
-      <ellipse cx="12" cy="38.4" rx="8.6" ry="1.7" fill="rgba(11,15,25,0.08)" />
-      <path d="M9.9 26.8v6.4" stroke={FACE_INK} strokeWidth="2.8" strokeLinecap="round" />
-      <path d="M14.1 26.8v6.4" stroke={FACE_INK} strokeWidth="2.8" strokeLinecap="round" />
-      <path d="M8.4 33.6h3.2M14.4 33.6h3.2" stroke={FACE_INK} strokeWidth="2.5" strokeLinecap="round" />
-      <rect x="8.3" y="17.6" width="7.4" height="9.6" rx="3.6" fill={shirt} />
-      <path d={armL} fill="none" stroke={shirt} strokeWidth="2.6" strokeLinecap="round" />
-      <path d={armR} fill="none" stroke={shirt} strokeWidth="2.6" strokeLinecap="round" />
-      <circle cx="12" cy="10.8" r="6.6" fill={skin} />
-      <path d="M5.2 10.8a6.8 6.8 0 0 1 13.6 0c0 1.2-1 2.2-2.2 2.2H7.4c-1.2 0-2.2-1-2.2-2.2Z" fill={hair} />
-      {person === 'stand' && <circle cx="12" cy="3" r="2" fill={hair} />}
-      {person === 'cheer' && <path d="M10.4 4.4c.9-1.4 2.6-1.6 3.3-.6.5 1 .2 1.9-.5 2.3" fill="none" stroke={hair} strokeWidth="2" strokeLinecap="round" />}
-      {person === 'thumbs' && (
-        <>
-          <circle cx="7.4" cy="13.6" r="1.6" fill={skin} />
-          <circle cx="10.2" cy="14.6" r="1.6" fill={skin} />
-          <circle cx="13.9" cy="14.6" r="1.6" fill={skin} />
-          <circle cx="16.7" cy="13.5" r="1.6" fill={skin} />
-        </>
-      )}
-      <path d="M9.1 13.2h.01M14.9 13.2h.01" stroke={FACE_INK} strokeWidth="1.9" strokeLinecap="round" fill="none" />
-      <path d="M9.7 15.5c1.5 1 2.9 1 4.4 0" stroke={FACE_INK} strokeWidth="1.5" strokeLinecap="round" fill="none" />
     </svg>
   )
 }
@@ -175,16 +126,16 @@ function Hero() {
       <div className="dot-bg absolute inset-0 -z-10 opacity-60 animate-fade" />
       <div className="mx-auto max-w-5xl px-6 pt-16 pb-20 text-center sm:pt-24 sm:pb-28">
         <Face className="left-[5%] bottom-[26%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * -0.35}px, ${mouseOffset.y * -0.35}px)` }}>
-          <MiniPerson hair="#0b0f19" skin="#ffe5cf" shirt="#fda4af" person="wave" />
+          <PeepBangsRose className="h-24 sm:h-32 w-auto" />
         </Face>
         <Face className="right-[9%] bottom-[34%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * 0.45}px, ${mouseOffset.y * 0.45}px)` }}>
-          <MiniPerson hair="#f43f5e" skin="#ffdbc4" shirt="#be123c" person="cheer" />
+          <PeepBunInk className="h-24 sm:h-32 w-auto" />
         </Face>
         <Face className="left-[7%] bottom-[4%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * -0.5}px, ${mouseOffset.y * -0.5}px)` }}>
-          <MiniPerson hair="#f59e0b" skin="#ffe7d0" shirt="#0b0f19" person="stand" />
+          <PeepShortMoustache className="h-24 sm:h-32 w-auto" />
         </Face>
         <Face className="right-[9%] bottom-[5%] hidden md:block" style={{ transform: `translate(${mouseOffset.x * 0.4}px, ${mouseOffset.y * 0.4}px)` }}>
-          <MiniPerson hair="#be123c" skin="#fad1b6" shirt="#fb7185" person="thumbs" />
+          <PeepCurlyDress className="h-24 sm:h-32 w-auto" />
         </Face>
 
         <a
