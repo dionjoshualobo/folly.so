@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import type { AnswerValue, Block, Form } from '../types'
 import { useForms } from '../store'
-import { blockVisible, formatWhen, getQuestionLabel, pipeText, splitIntoPages } from '../lib/logic'
+import { blockVisible, computeScore, formatWhen, getQuestionLabel, pipeText, splitIntoPages } from '../lib/logic'
 import { rowLayout } from '../lib/layout'
 import { embedInfo } from '../lib/embed'
 import { FieldControl, getDefaultValue, isFilled } from '../components/fields'
@@ -118,7 +118,11 @@ function BlockView({
         {block.required && <span className="ml-1 text-brand-500">*</span>}
       </label>
       <div onClick={(e) => e.stopPropagation()}>
-        <FieldControl block={block} value={answers[block.id] ?? getDefaultValue(block)} onChange={(v) => onChange(block.id, v)} />
+        <FieldControl
+          block={block}
+          value={block.type === 'score' ? computeScore(block, answers, form.blocks) : (answers[block.id] ?? getDefaultValue(block))}
+          onChange={(v) => onChange(block.id, v)}
+        />
       </div>
       {errors[block.id] && <p className="mt-1.5 text-[13px] font-medium text-brand-600">{errors[block.id]}</p>}
     </div>
@@ -210,9 +214,14 @@ export default function PublicForm() {
     setErrors((e) => ({ ...e, [blockId]: '' }))
   }
 
-  const validateVisible = (): boolean => {
+  const validateVisible = (scopePage?: number): boolean => {
     const errs: Record<string, string> = {}
-    for (const block of form.blocks) {
+    const scope =
+      scopePage === undefined
+        ? form.blocks
+        : (pages[scopePage] ?? []).flatMap((b) => (b.type === 'pageBreak' ? [] : [b]))
+    for (const block of scope) {
+      if (block.type === 'thankYou') continue
       if (!blockVisible(block, answers)) continue
       if (!block.required) continue
       if (!isFilled(answers[block.id])) {
@@ -224,7 +233,7 @@ export default function PublicForm() {
   }
 
   const goNext = () => {
-    if (!validateVisible()) return
+    if (!validateVisible(currentPage)) return
     topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     setCurrentPage((p) => Math.min(p + 1, pageCount - 1))
   }
@@ -234,9 +243,17 @@ export default function PublicForm() {
       topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       return
     }
-    const collected: Record<string, AnswerValue> = {}
+    const scorePatch: Record<string, number> = {}
+    for (const b of form.blocks) {
+      if (b.type !== 'score') continue
+      const seen = new Set(b.scoreSourceIds ?? [])
+      if (seen.has(b.id)) continue
+      scorePatch[b.id] = computeScore(b, answers, form.blocks)
+    }
+    const collected: Record<string, AnswerValue> = { ...scorePatch }
     for (const b of form.blocks) {
       if (NON_ANSWER_TYPES.includes(b.type)) continue
+      if (b.type === 'score') continue
       if (b.type !== 'fileUpload') {
         const v = answers[b.id]
         if (Array.isArray(v) && v.length === 0) collected[b.id] = null
@@ -252,6 +269,7 @@ export default function PublicForm() {
       }
     }
     addSubmission(form.id, collected)
+    setAnswers((a) => ({ ...a, ...scorePatch }))
 
     // Redirect logic:
     if (form.settings.thankYouRedirectUrl && form.settings.thankYouRedirectUrl.trim() !== '') {

@@ -25,6 +25,8 @@ const ANSWER_TYPES: BlockType[] = [
   'ranking',
   'matrix',
   'fileUpload',
+  'signature',
+  'score',
 ]
 
 export function isAnswerBlock(type: BlockType): boolean {
@@ -37,7 +39,10 @@ export function canHaveLogic(block: Block): boolean {
 
 function toList(answer: AnswerValue): string[] {
   if (answer === null || answer === undefined) return []
-  if (Array.isArray(answer)) return answer.map((a) => String(a))
+  if (Array.isArray(answer)) {
+    if (answer.length > 0 && typeof answer[0] !== 'string') return []
+    return (answer as string[]).map((a) => String(a))
+  }
   if (typeof answer === 'object' && 'name' in answer) return [String(answer.name)]
   if (typeof answer === 'object') return Object.values(answer).map((a) => String(a))
   return [String(answer)]
@@ -129,7 +134,14 @@ export function answerOptionsFor(block: Block): string[] {
 }
 
 export function formatAnswer(value: AnswerValue): string {
-  if (Array.isArray(value)) return value.join(', ')
+  if (Array.isArray(value)) {
+    if (value.length > 0 && typeof value[0] !== 'string') {
+      const sig = value as Array<{ points: unknown[] }>
+      const n = sig.filter((s) => s.points.length > 1).length
+      return `Signature (${n} stroke${n === 1 ? '' : 's'})`
+    }
+    return value.join(', ')
+  }
   if (value && typeof value === 'object' && 'name' in value) {
     const f = value as { name: string; size: number }
     return `${f.name} (${(f.size / 1024).toFixed(1)} KB)`
@@ -141,6 +153,80 @@ export function formatAnswer(value: AnswerValue): string {
   }
   if (value === null || value === undefined || value === '') return '—'
   return String(value)
+}
+
+export function numericValue(answer: AnswerValue): number {
+  if (typeof answer === 'number') return isNaN(answer) ? 0 : answer
+  if (answer === null || answer === undefined || answer === '') return 0
+  const n = Number(String(answer))
+  return isNaN(n) ? 0 : n
+}
+
+function optionPoints(label: string, options: Array<{ label: string }>, direction: -1 | 1): number {
+  const idx = options.findIndex((o) => o.label === label)
+  if (idx === -1) return 0
+  const position = idx + 1
+  return direction === 1 ? position : options.length - idx
+}
+
+export function computeScore(
+  block: Block,
+  answers: Record<string, AnswerValue>,
+  blocks: Block[],
+): number {
+  const ids = block.scoreSourceIds ?? []
+  if (ids.length === 0) return 0
+  let total = 0
+  for (const id of ids) {
+    const source = blocks.find((b) => b.id === id)
+    if (!source) continue
+    const value = answers[id]
+    if (value === null || value === undefined) continue
+    switch (source.type) {
+      case 'shortText':
+      case 'longText':
+      case 'number':
+      case 'rating':
+      case 'csat':
+      case 'nps':
+      case 'linear':
+        total += numericValue(value)
+        break
+      case 'multipleChoice':
+      case 'checkbox':
+      case 'dropdown':
+      case 'multiSelect': {
+        const options = source.options ?? []
+        const selected = (Array.isArray(value) ? value : [String(value)]) as string[]
+        for (const label of selected) {
+          total += optionPoints(label, options, 1)
+        }
+        break
+      }
+      case 'ranking': {
+        const options = (source.options ?? []).filter((o) => o.label.trim())
+        if (Array.isArray(value)) {
+          value.forEach((label, i) => {
+            total += Math.max(0, options.length - i)
+          })
+        }
+        break
+      }
+      case 'matrix': {
+        if (value && typeof value === 'object') {
+          const columns = source.matrixColumns ?? []
+          for (const col of Object.values(value)) {
+            const idx = columns.indexOf(String(col))
+            if (idx !== -1) total += idx + 1
+          }
+        }
+        break
+      }
+      default:
+        break
+    }
+  }
+  return total
 }
 
 export function formatWhen(ts: number): string {

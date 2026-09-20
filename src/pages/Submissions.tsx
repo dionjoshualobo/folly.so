@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useForms } from '../store'
 import { formatAnswer, formatWhen, getQuestionLabel } from '../lib/logic'
@@ -14,7 +15,8 @@ function average(nums: number[]): string | null {
 export default function Submissions() {
   const { formId = '' } = useParams()
   const form = useForms((s) => s.forms.find((f) => f.id === formId))
-  const submissions = useForms((s) => s.submissions.filter((x) => x.formId === formId))
+  const allSubmissions = useForms((s) => s.submissions)
+  const submissions = useMemo(() => allSubmissions.filter((x) => x.formId === formId), [allSubmissions, formId])
 
   if (!form) {
     return (
@@ -37,8 +39,10 @@ export default function Submissions() {
 
   const ratingBlock = form.blocks.find((b) => b.type === 'rating')
   const npsBlock = form.blocks.find((b) => b.type === 'nps')
+  const scoreBlock = form.blocks.find((b) => b.type === 'score')
   const ratingAvg = ratingBlock ? average(ratingVals(ratingBlock.id)) : null
   const npsAvg = npsBlock ? average(ratingVals(npsBlock.id)) : null
+  const scoreAvg = scoreBlock ? average(ratingVals(scoreBlock.id)) : null
 
   const exportToCSV = () => {
     if (submissions.length === 0) return
@@ -50,7 +54,14 @@ export default function Submissions() {
       ...questions.map(q => {
         const val = s.answers[q.id]
         if (val === undefined || val === null) return ''
-        if (Array.isArray(val)) return val.join('; ')
+        if (Array.isArray(val)) {
+          if (val.length > 0 && typeof val[0] !== 'string') {
+            const sig = val as Array<{ points: unknown[] }>
+            const n = sig.filter((s) => s.points.length > 1).length
+            return `Signature (${n} stroke${n === 1 ? '' : 's'})`
+          }
+          return val.join('; ')
+        }
         if (typeof val === 'object' && 'name' in val && 'size' in val) {
           const f = val as { name: string; size: number }
           return `${f.name} (${(f.size / 1024).toFixed(1)} KB)`
@@ -97,6 +108,7 @@ export default function Submissions() {
     { label: 'Total responses', value: String(submissions.length) },
     ...(ratingAvg ? [{ label: 'Avg rating', value: `★ ${ratingAvg}` }] : []),
     ...(npsAvg ? [{ label: 'Avg NPS', value: `${npsAvg} / 10` }] : []),
+    ...(scoreAvg ? [{ label: 'Avg score', value: String(scoreAvg) }] : []),
     { label: 'Questions', value: String(questions.length) },
   ]
 

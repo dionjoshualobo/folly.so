@@ -24,6 +24,8 @@ export type BlockType =
   | 'ranking'
   | 'matrix'
   | 'fileUpload'
+  | 'signature'
+  | 'score'
   | 'image'
   | 'embed'
   | 'pageBreak'
@@ -63,6 +65,7 @@ export interface Block {
   csatMaxLabel?: string
   matrixRows?: string[]
   matrixColumns?: string[]
+  scoreSourceIds?: string[]
   imageUrl?: string
   imageCaption?: string
   embedUrl?: string
@@ -119,7 +122,13 @@ export interface FilePayload {
   size: number
 }
 
-export type AnswerValue = string | string[] | number | Record<string, string> | FilePayload | null
+export interface SignatureStroke {
+  points: Array<[number, number]>
+}
+
+export type SignatureData = SignatureStroke[]
+
+export type AnswerValue = string | string[] | number | Record<string, string> | FilePayload | SignatureData | null
 
 export function uid(): string {
   return Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3)
@@ -153,6 +162,7 @@ export function makeBlock(partial: Partial<Block> & { type: BlockType }): Block 
     csatMaxLabel: partial.csatMaxLabel ?? 'Very satisfied',
     matrixRows: partial.matrixRows ?? (partial.type === 'matrix' ? ['Row 1', 'Row 2'] : undefined),
     matrixColumns: partial.matrixColumns ?? (partial.type === 'matrix' ? ['Column 1', 'Column 2'] : undefined),
+    scoreSourceIds: partial.scoreSourceIds ?? [],
     darkBackground: partial.darkBackground ?? false,
     imageUrl: partial.imageUrl,
     imageCaption: partial.imageCaption,

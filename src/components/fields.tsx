@@ -1,11 +1,13 @@
 import { useId, useRef, useState } from 'react'
-import type { AnswerValue, Block, FilePayload } from '../types'
+import type { AnswerValue, Block, FilePayload, SignatureData } from '../types'
 
 export function getDefaultValue(block: Block): AnswerValue {
   switch (block.type) {
     case 'checkbox':
     case 'multiSelect':
     case 'ranking':
+      return []
+    case 'signature':
       return []
     case 'matrix':
       return {}
@@ -15,6 +17,7 @@ export function getDefaultValue(block: Block): AnswerValue {
     case 'csat':
     case 'fileUpload':
     case 'dropdown':
+    case 'score':
       return null
     default:
       return ''
@@ -338,6 +341,104 @@ function FileControl({
         {block.fileTypes?.slice(0, 4).join(', ')} — up to {maxMb} MB
       </p>
       {tooBig && <p className="mt-1 text-[12px] font-medium text-brand-600">That file is larger than {maxMb} MB.</p>}
+    </div>
+  )
+}
+
+function SignatureControl({
+  block,
+  value,
+  onChange,
+}: {
+  block: Block
+  value: SignatureData | null
+  onChange: (v: SignatureData) => void
+}) {
+  const padRef = useRef<HTMLDivElement>(null)
+  const [drawing, setDrawing] = useState(false)
+  const [live, setLive] = useState<Array<[number, number]> | null>(null)
+  const current = useRef<Array<[number, number]>>([])
+  const strokes = value ?? []
+  const visible = live ? [...strokes, { points: live }] : strokes
+
+  const pointFrom = (clientX: number, clientY: number): [number, number] => {
+    const rect = padRef.current!.getBoundingClientRect()
+    const x = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width))
+    const y = Math.min(1, Math.max(0, (clientY - rect.top) / rect.height))
+    return [x, y]
+  }
+
+  return (
+    <div>
+      <div
+        ref={padRef}
+        className={`relative h-44 w-full touch-none select-none cursor-crosshair overflow-hidden rounded-2xl border ${
+          drawing ? 'border-ink/40' : 'border-ink/20'
+        } bg-white`}
+        onPointerDown={(e) => {
+          e.preventDefault()
+          e.currentTarget.setPointerCapture(e.pointerId)
+          setDrawing(true)
+          current.current = [pointFrom(e.clientX, e.clientY)]
+          setLive(current.current)
+        }}
+        onPointerMove={(e) => {
+          if (!drawing) return
+          current.current.push(pointFrom(e.clientX, e.clientY))
+          setLive(current.current.slice())
+        }}
+        onPointerUp={() => {
+          if (current.current.length > 1) onChange([...strokes, { points: current.current.slice() }])
+          setLive(null)
+          setDrawing(false)
+          current.current = []
+        }}
+        onPointerCancel={() => {
+          setLive(null)
+          setDrawing(false)
+          current.current = []
+        }}
+      >
+        {visible.length === 0 && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-[14px] text-ink/25">
+            Draw your signature above
+          </div>
+        )}
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+          {visible.map((s, i) => (
+            <polyline
+              key={i}
+              fill="none"
+              stroke="#0b0f19"
+              strokeWidth="0.35"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              points={s.points.map((p) => `${(p[0] * 100).toFixed(2)},${(p[1] * 100).toFixed(2)}`).join(' ')}
+            />
+          ))}
+        </svg>
+      </div>
+      <div className="mt-2 flex items-center justify-between px-1">
+        <span className="text-[12px] text-ink/35">
+          {visible.length === 0 ? 'Use your mouse or finger to sign' : `${visible.length} stroke${visible.length === 1 ? '' : 's'}`}
+        </span>
+        {strokes.length > 0 && (
+          <button type="button" onClick={() => onChange([])} className="text-[13px] font-medium text-brand-600 hover:underline">
+            Clear
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ScoreControl({ value, count }: { value: number; count: number }) {
+  return (
+    <div className="flex w-fit items-center gap-4 rounded-2xl border border-ink/15 bg-ink/[0.02] px-5 py-3">
+      <span className="text-4xl font-bold tabular-nums text-ink">{value}</span>
+      <span className="text-[13px] leading-tight text-ink/45">
+        {count === 0 ? 'No questions selected' : count === 1 ? 'Based on 1 answer' : `Based on ${count} answers`}
+      </span>
     </div>
   )
 }
@@ -682,6 +783,15 @@ export function FieldControl({
       return <MatrixControl block={block} value={(value as Record<string, string>) ?? {}} onChange={(v) => onChange(v)} />
     case 'fileUpload':
       return <FileControl block={block} value={value as FilePayload | null} onChange={(v) => onChange(v)} />
+    case 'signature':
+      return <SignatureControl block={block} value={(value as SignatureData) ?? []} onChange={(v) => onChange(v)} />
+    case 'score':
+      return (
+        <ScoreControl
+          value={typeof value === 'number' && !isNaN(value) ? value : 0}
+          count={(block.scoreSourceIds ?? []).length}
+        />
+      )
     default:
       return null
   }

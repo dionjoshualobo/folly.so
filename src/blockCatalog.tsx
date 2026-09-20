@@ -182,6 +182,18 @@ export const icons: Record<string, ReactNode> = {
       <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
     </Svg>
   ),
+  signature: (
+    <Svg>
+      <path d="M3 17c4-8 10-10 14-6 1.4 1.4 1.4 3.4 0 4.8-1.4 1.4-3.4 1.4-4.8 0-1.3-1.4-.8-3.4 1.2-4.4 2.6-1.3 5.5.4 6.6 2.6 1 2 0 4.5-2 6" />
+    </Svg>
+  ),
+  score: (
+    <Svg>
+      <rect x="3" y="5" width="18" height="15" rx="3" />
+      <path d="M7 12h4" />
+      <path d="m8 12 3 3 5-6" />
+    </Svg>
+  ),
   image: (
     <Svg>
       <rect x="4" y="5" width="16" height="14" rx="2" />
@@ -339,6 +351,7 @@ export const BLOCKS: BlockDef[] = [
   { type: 'date', label: 'Date', hint: 'Date picker', group: 'Inputs', shortcut: 'date' },
   { type: 'time', label: 'Time', hint: 'Time picker', group: 'Inputs', shortcut: 'time' },
   { type: 'fileUpload', label: 'File upload', hint: 'Collect files from respondents', group: 'Inputs', shortcut: 'file' },
+  { type: 'signature', label: 'Signature', hint: 'Collect a written signature', group: 'Inputs', shortcut: 'sign' },
   { type: 'multipleChoice', label: 'Multiple choice', hint: 'Pick one option from a list', group: 'Questions', shortcut: 'multiple [a]' },
   { type: 'checkbox', label: 'Checkbox', hint: 'Pick multiple options', group: 'Questions', shortcut: 'checkbox []' },
   { type: 'dropdown', label: 'Dropdown', hint: 'Choose one option from a dropdown', group: 'Questions', shortcut: 'dropdown [v]' },
@@ -349,6 +362,7 @@ export const BLOCKS: BlockDef[] = [
   { type: 'csat', label: 'CSAT', hint: 'Customer satisfaction scale (1–5)', group: 'Rating & Scale', shortcut: 'csat' },
   { type: 'linear', label: 'Linear scale', hint: 'Rate on a numeric scale', group: 'Rating & Scale', shortcut: 'linear' },
   { type: 'nps', label: 'NPS score', hint: 'Net promoter score (0–10)', group: 'Rating & Scale', shortcut: 'nps' },
+  { type: 'score', label: 'Score / Calculation', hint: 'Compute a value from earlier answers', group: 'Rating & Scale', shortcut: 'calc' },
   { type: 'pageBreak', label: 'Page break', hint: 'Split the form into pages', group: 'Page', shortcut: 'page' },
   { type: 'thankYou', label: 'Thank you page', hint: 'Custom completion message', group: 'Page', shortcut: 'thank' },
 ]

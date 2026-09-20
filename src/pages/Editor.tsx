@@ -42,6 +42,7 @@ function normalizeText(t: string): string {
 
 const INPUT_TEXT_TYPES: BlockType[] = ['shortText', 'longText', 'number', 'email', 'phone', 'link', 'time', 'date', 'fileUpload']
 const OPTION_TYPES: BlockType[] = ['multipleChoice', 'checkbox', 'dropdown', 'multiSelect', 'ranking']
+const SCOREABLE_TYPES: BlockType[] = ['shortText', 'longText', 'number', 'rating', 'csat', 'nps', 'linear', 'multipleChoice', 'checkbox', 'dropdown', 'multiSelect', 'ranking', 'matrix']
 const TEXT_HEADINGS: BlockType[] = ['heading', 'heading2', 'heading3', 'label']
 
 function starterOptions(): ChoiceOption[] {
@@ -330,6 +331,7 @@ export default function Editor() {
                     onDropBlock={(e) => onBlockDrop(e, block, index)}
                     overIndex={overIndex === index}
                     colZoneSide={colZone?.blockId === block.id ? colZone.side : null}
+                    formBlocks={form.blocks}
                   />
                 )
               }
@@ -550,6 +552,7 @@ function BlockRow({
   onDropBlock,
   overIndex,
   colZoneSide,
+  formBlocks,
 }: {
   formId: string
   block: Block
@@ -568,6 +571,7 @@ function BlockRow({
   onDropBlock: (e: React.DragEvent) => void
   overIndex: boolean
   colZoneSide: 'left' | 'right' | null
+  formBlocks: Block[]
 }) {
   const questionRef = useRef<HTMLDivElement>(null)
   const optionRefs = useRef<Map<string, HTMLSpanElement>>(new Map())
@@ -1044,6 +1048,89 @@ function BlockRow({
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+    )
+  }
+
+  if (block.type === 'signature') {
+    return (
+      <div onDragOver={onDragZone} onDrop={onDropBlock} className={`${wrapperCls} px-1 py-1.5`}>
+        {overIndex && <InsertLine />}
+        {colZoneSide && <ColEdgeLine side={colZoneSide} />}
+        <Rail onOpenSettings={onOpenSettings} onDragStart={onDragStart} onDragEnd={onDragEnd} />
+        <div
+          ref={questionRef}
+          contentEditable
+          suppressContentEditableWarning
+          data-placeholder="Your question"
+          onInput={handleQuestionInput}
+          onKeyDown={(e) => onKeyDown(e, block, index)}
+          onFocus={onFocusBlock}
+          className="empty-placeholder w-full cursor-text text-[19px] font-medium leading-snug text-ink outline-none"
+        />
+        <div className="pointer-events-none mt-3 pl-1">
+          <div className="flex h-36 w-full max-w-xl items-center justify-center rounded-2xl border-2 border-dashed border-ink/15 bg-white">
+            <span className="flex items-center gap-2 text-[14px] text-ink/35">
+              <Icon name="signature" /> Signature
+            </span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (block.type === 'score') {
+    const sources = formBlocks.filter((b) => b.id !== block.id && SCOREABLE_TYPES.includes(b.type))
+    const selected = block.scoreSourceIds ?? []
+    const toggleSource = (id: string) => {
+      const next = selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]
+      updateBlock(formId, block.id, { scoreSourceIds: next })
+    }
+    const count = sources.filter((b) => selected.includes(b.id)).length
+    return (
+      <div onDragOver={onDragZone} onDrop={onDropBlock} className={`${wrapperCls} px-1 py-1.5`}>
+        {overIndex && <InsertLine />}
+        {colZoneSide && <ColEdgeLine side={colZoneSide} />}
+        <Rail onOpenSettings={onOpenSettings} onDragStart={onDragStart} onDragEnd={onDragEnd} />
+        <div
+          ref={questionRef}
+          contentEditable
+          suppressContentEditableWarning
+          data-placeholder="Your question"
+          onInput={handleQuestionInput}
+          onKeyDown={(e) => onKeyDown(e, block, index)}
+          onFocus={onFocusBlock}
+          className="empty-placeholder w-full cursor-text text-[19px] font-medium leading-snug text-ink outline-none"
+        />
+        <div className="mt-3 space-y-3 pl-1">
+          <div className="flex flex-wrap gap-1.5">
+            {sources.length === 0 ? (
+              <span className="text-[13px] text-ink/35">Add a rated or numeric question above to sum its value.</span>
+            ) : (
+              sources.map((s) => {
+                const on = selected.includes(s.id)
+                return (
+                  <button
+                    key={s.id}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => toggleSource(s.id)}
+                    className={`rounded-full border px-3 py-1 text-[12px] font-medium transition ${
+                      on ? 'border-ink bg-ink text-white' : 'border-ink/15 bg-white text-ink/55 hover:border-ink/40'
+                    }`}
+                  >
+                    {s.text.trim() || BLOCKS.find((d) => d.type === s.type)?.label || '—'}
+                  </button>
+                )
+              })
+            )}
+          </div>
+          <div className="pointer-events-none flex w-fit items-center gap-4 rounded-2xl border border-ink/15 bg-white px-5 py-3">
+            <span className="text-3xl font-bold tabular-nums text-ink">0</span>
+            <span className="text-[13px] leading-tight text-ink/45">
+              {count === 0 ? 'No questions selected' : count === 1 ? 'Sums 1 answer' : `Sums ${count} answers`}
+            </span>
+          </div>
         </div>
       </div>
     )
