@@ -38,5 +38,6 @@ export function Logo({
 export function themeFont(font: FormTheme['font']): string {
   if (font === 'serif') return 'Georgia, "Times New Roman", serif'
   if (font === 'playful') return "'Space Grotesk', ui-monospace, monospace"
+  if (font === 'custom') return '"CustomFont", system-ui, -apple-system, sans-serif'
   return "'Inter', system-ui, -apple-system, sans-serif"
 }

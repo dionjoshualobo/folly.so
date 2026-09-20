@@ -123,12 +123,13 @@ export function ThemeDrawer({ form, onClose }: { form: Form; onClose: () => void
 
               <div className="mt-6">
                 <div className="mb-2 text-[12px] font-bold uppercase tracking-wider text-ink/40">Typography</div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-4 gap-2">
                   {(
                     [
                       { k: 'system', label: 'Modern', cls: 'font-sans' },
                       { k: 'serif', label: 'Serif', cls: 'font-form-serif' },
                       { k: 'playful', label: 'Mono', cls: 'font-mono' },
+                      { k: 'custom', label: 'Custom', cls: 'font-sans' },
                     ] as const
                   ).map((f) => (
                     <button
@@ -142,6 +143,25 @@ export function ThemeDrawer({ form, onClose }: { form: Form; onClose: () => void
                     </button>
                   ))}
                 </div>
+                {t.font === 'custom' && (
+                  <div className="mt-3 p-3 rounded-xl border border-ink/10 bg-ink/[0.02]">
+                    <div className="mb-1.5 text-[11px] font-medium text-ink/50">Upload Font File (TTF, OTF, WOFF)</div>
+                    <input
+                      type="file"
+                      accept=".ttf,.otf,.woff,.woff2"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        const reader = new FileReader()
+                        reader.onload = () => {
+                          updateTheme(form.id, { customFontBase64: reader.result as string })
+                        }
+                        reader.readAsDataURL(file)
+                      }}
+                      className="w-full text-[12px] file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-ink/[0.05] file:px-2 file:py-1 file:text-[11px] file:font-semibold hover:file:bg-ink/10"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="mt-6 border-t border-ink/[0.06] pt-5 space-y-3">

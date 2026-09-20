@@ -80,7 +80,8 @@ export interface FormTheme {
   background: string
   button: string
   buttonText: string
-  font: 'system' | 'serif' | 'playful'
+  font: 'system' | 'serif' | 'playful' | 'custom'
+  customFontBase64?: string
   darkMode: boolean
 }
 

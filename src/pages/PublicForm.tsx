@@ -205,16 +205,22 @@ export default function PublicForm() {
   }, [formId, form?.settings.hiddenFields])
 
   useEffect(() => {
+    let injectedCss = ''
+    if (form?.settings.theme.customFontBase64 && form?.settings.theme.font === 'custom') {
+      injectedCss += `@font-face { font-family: "CustomFont"; src: url("${form.settings.theme.customFontBase64}"); }\n`
+    }
     const css = form?.settings.customCss?.trim()
-    if (!css) return
+    if (css) injectedCss += css
+
+    if (!injectedCss) return
     const el = document.createElement('style')
     el.setAttribute('data-folly-custom-css', '')
-    el.textContent = css
+    el.textContent = injectedCss
     document.head.appendChild(el)
     return () => {
       document.head.removeChild(el)
     }
-  }, [form?.settings.customCss])
+  }, [form?.settings.customCss, form?.settings.theme.customFontBase64, form?.settings.theme.font])
 
   if (formFailed) return notFound()
 
