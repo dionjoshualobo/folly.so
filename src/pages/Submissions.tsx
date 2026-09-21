@@ -179,53 +179,57 @@ export default function Submissions() {
             </p>
           </div>
         ) : (
-          <div className="mt-8 space-y-3">
-            {submissions.map((s) => (
-              <div key={s.id} className="rounded-2xl border border-ink/10 bg-white shadow-sm">
-                <div className="flex items-center justify-between border-b border-ink/[0.05] px-5 py-3">
-                  <span className="text-[12px] font-semibold text-ink/45">
-                    Response · {formatWhen(s.submittedAt)}
-                  </span>
-                  <span className="rounded-full bg-ink/[0.05] px-2 py-0.5 text-[11px] font-semibold text-ink/45">
-                    {s.id.slice(0, 8)}
-                  </span>
-                </div>
-                <div className="divide-y divide-ink/[0.04]">
-                  {questions.map((q) => {
-                    const value = s.answers[q.id] as AnswerValue | undefined
-                    const hasValue =
-                      value !== undefined &&
-                      value !== null &&
-                      value !== '' &&
-                      !(Array.isArray(value) && value.length === 0)
-                    return (
-                      <div key={q.id} className="flex items-start gap-4 px-5 py-3">
-                        <span className="w-3/12 min-w-[140px] shrink-0 pt-0.5 text-[13px] font-medium text-ink/55">
-                          {getQuestionLabel(q)}
-                        </span>
-                        <span className={`flex-1 text-[14px] ${hasValue ? 'text-ink' : 'italic text-ink/35'}`}>
-                          {hasValue ? formatAnswer(value) : 'no answer'}
-                        </span>
-                      </div>
-                    )
-                  })}
-                  {(form.settings.hiddenFields ?? []).map((field) => {
-                    const value = s.answers[field] as AnswerValue | undefined
-                    const hasValue = value !== undefined && value !== null && value !== ''
-                    return (
-                      <div key={field} className="flex items-start gap-4 px-5 py-3 bg-brand-50/10">
-                        <span className="w-3/12 min-w-[140px] shrink-0 pt-0.5 text-[13px] font-medium text-brand-600/70">
-                          {field} <span className="ml-1 text-[9px] font-bold uppercase tracking-wider text-brand-500 bg-brand-50 px-1 py-0.5 rounded">Hidden</span>
-                        </span>
-                        <span className={`flex-1 text-[14px] ${hasValue ? 'text-ink' : 'italic text-ink/35'}`}>
-                          {hasValue ? formatAnswer(value) : '—'}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            ))}
+          <div className="mt-8 rounded-2xl border border-ink/10 bg-white shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-[13px]">
+                <thead className="bg-ink/[0.02] border-b border-ink/10">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold text-ink/50 whitespace-nowrap">Submitted At</th>
+                    <th className="px-4 py-3 font-semibold text-ink/50 whitespace-nowrap">ID</th>
+                    {questions.map((q) => (
+                      <th key={q.id} className="px-4 py-3 font-semibold text-ink/80 whitespace-nowrap max-w-xs truncate" title={getQuestionLabel(q)}>
+                        {getQuestionLabel(q)}
+                      </th>
+                    ))}
+                    {(form.settings.hiddenFields ?? []).map((field) => (
+                      <th key={field} className="px-4 py-3 font-semibold text-brand-600/70 whitespace-nowrap">
+                        {field} <span className="ml-1 text-[9px] font-bold uppercase tracking-wider text-brand-500 bg-brand-50 px-1 py-0.5 rounded">Hidden</span>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-ink/[0.04]">
+                  {submissions.map((s) => (
+                    <tr key={s.id} className="hover:bg-ink/[0.02] transition">
+                      <td className="px-4 py-3 text-ink/60 whitespace-nowrap">{formatWhen(s.submittedAt)}</td>
+                      <td className="px-4 py-3 font-mono text-[11px] text-ink/40 whitespace-nowrap">{s.id.slice(0, 8)}</td>
+                      {questions.map((q) => {
+                        const value = s.answers[q.id] as AnswerValue | undefined
+                        const hasValue =
+                          value !== undefined &&
+                          value !== null &&
+                          value !== '' &&
+                          !(Array.isArray(value) && value.length === 0)
+                        return (
+                          <td key={q.id} className={`px-4 py-3 max-w-sm truncate ${hasValue ? 'text-ink' : 'italic text-ink/35'}`} title={hasValue ? formatAnswer(value) : ''}>
+                            {hasValue ? formatAnswer(value) : '—'}
+                          </td>
+                        )
+                      })}
+                      {(form.settings.hiddenFields ?? []).map((field) => {
+                        const value = s.answers[field] as AnswerValue | undefined
+                        const hasValue = value !== undefined && value !== null && value !== ''
+                        return (
+                          <td key={field} className={`px-4 py-3 max-w-sm truncate bg-brand-50/10 ${hasValue ? 'text-ink' : 'italic text-ink/35'}`} title={hasValue ? formatAnswer(value) : ''}>
+                            {hasValue ? formatAnswer(value) : '—'}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </main>

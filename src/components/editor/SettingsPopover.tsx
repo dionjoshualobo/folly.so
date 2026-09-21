@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { BLOCKS, GROUPS, Icon } from '../../blockCatalog'
 import type { Block, BlockType, Form } from '../../types'
 import { useForms } from '../../store'
-import { answerOptionsFor, canHaveLogic, getQuestionLabel, questionOptions } from '../../lib/logic'
+import { answerOptionsFor, canHaveLogic, getQuestionLabel, questionOptions, isAnswerBlock } from '../../lib/logic'
 
 export function SettingsPopover({
   form,
@@ -128,6 +128,26 @@ export function SettingsPopover({
               <Toggle on={!!block.required} onChange={toggleRequired} />
             </Row>
 
+            {isAnswerBlock(block.type) && (
+              <div className="px-2 py-2">
+                <LabeledInput
+                  label="Help text"
+                  value={block.helpText ?? ''}
+                  onChange={(v) => updateBlock(formId, block.id, { helpText: v })}
+                />
+              </div>
+            )}
+
+            {['shortText', 'longText', 'number', 'email', 'phone', 'link'].includes(block.type) && (
+              <div className="px-2 pb-2">
+                <LabeledInput
+                  label="Placeholder"
+                  value={block.placeholder ?? ''}
+                  onChange={(v) => updateBlock(formId, block.id, { placeholder: v })}
+                />
+              </div>
+            )}
+
             {['multipleChoice', 'checkbox'].includes(block.type) && (
               <Row label="Allow multiple answers">
                 <Toggle
@@ -136,13 +156,40 @@ export function SettingsPopover({
                 />
               </Row>
             )}
-            {['multipleChoice', 'checkbox'].includes(block.type) && (
+            {['multipleChoice', 'checkbox', 'multiSelect', 'ranking'].includes(block.type) && (
               <Row label="Allow ‘other’ option">
                 <Toggle
                   on={!!block.allowOther}
                   onChange={() => updateBlock(formId, block.id, { allowOther: !block.allowOther })}
                 />
               </Row>
+            )}
+
+            {['checkbox', 'multiSelect'].includes(block.type) && (
+              <div className="space-y-2 px-2 py-2 border-y border-ink/[0.06]">
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <div className="mb-1 text-[11px] font-semibold text-ink/45">Min choices</div>
+                    <input
+                      type="number"
+                      min={0}
+                      value={block.minChoices ?? ''}
+                      onChange={(e) => updateBlock(formId, block.id, { minChoices: e.target.value ? Number(e.target.value) : undefined })}
+                      className="w-full rounded-lg border border-ink/15 px-2 py-1.5 text-[13px] outline-none focus:border-ink"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <div className="mb-1 text-[11px] font-semibold text-ink/45">Max choices</div>
+                    <input
+                      type="number"
+                      min={0}
+                      value={block.maxChoices ?? ''}
+                      onChange={(e) => updateBlock(formId, block.id, { maxChoices: e.target.value ? Number(e.target.value) : undefined })}
+                      className="w-full rounded-lg border border-ink/15 px-2 py-1.5 text-[13px] outline-none focus:border-ink"
+                    />
+                  </div>
+                </div>
+              </div>
             )}
 
             {block.type === 'rating' && (
@@ -213,14 +260,7 @@ export function SettingsPopover({
               </div>
             )}
 
-            {['multiSelect', 'ranking'].includes(block.type) && (
-              <Row label="Allow ‘other’ option">
-                <Toggle
-                  on={!!block.allowOther}
-                  onChange={() => updateBlock(formId, block.id, { allowOther: !block.allowOther })}
-                />
-              </Row>
-            )}
+
 
             {block.type === 'embed' && (
               <div className="space-y-2 px-2 py-2">
@@ -266,6 +306,34 @@ export function SettingsPopover({
                   value={block.text}
                   onChange={(v) => updateBlock(formId, block.id, { text: v })}
                 />
+              </div>
+            )}
+
+            {block.type === 'score' && (
+              <div className="space-y-2 px-2 py-2 bg-ink/[0.02] border-t border-ink/[0.06]">
+                 <div className="text-[12px] font-bold text-ink/70">Score Sources</div>
+                 <div className="text-[11px] text-ink/40 mb-2">Select which questions contribute points to this calculation.</div>
+                 <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
+                   {questions.filter(q => q.id !== block.id).map(q => (
+                      <label key={q.id} className="flex items-start gap-2 p-1.5 hover:bg-ink/[0.04] rounded cursor-pointer">
+                         <input 
+                           type="checkbox" 
+                           checked={(block.scoreSourceIds ?? []).includes(q.id)}
+                           onChange={(e) => {
+                              const ids = new Set(block.scoreSourceIds ?? [])
+                              if (e.target.checked) ids.add(q.id)
+                              else ids.delete(q.id)
+                              updateBlock(formId, block.id, { scoreSourceIds: Array.from(ids) })
+                           }}
+                           className="mt-0.5 rounded text-brand-500 focus:ring-brand-500 border-ink/20"
+                         />
+                         <span className="text-[12px] text-ink/80 leading-tight">{q.label}</span>
+                      </label>
+                   ))}
+                   {questions.length === 0 && (
+                      <div className="text-[11px] text-ink/40 italic">No questions available.</div>
+                   )}
+                 </div>
               </div>
             )}
 

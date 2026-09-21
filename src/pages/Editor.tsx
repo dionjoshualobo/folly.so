@@ -7,6 +7,7 @@ import { BLOCKS, Icon } from '../blockCatalog'
 import { SlashMenu } from '../components/editor/SlashMenu'
 import { SettingsPopover } from '../components/editor/SettingsPopover'
 import { ShareDrawer, ThemeDrawer } from '../components/editor/Drawers'
+import { LogicDrawer } from '../components/editor/LogicDrawer'
 import { rowLayout, columnCount } from '../lib/layout'
 import { embedInfo } from '../lib/embed'
 import { themeFont } from '../components/ui'
@@ -71,6 +72,7 @@ export default function Editor() {
   const [settingsFor, setSettingsFor] = useState<string | null>(null)
   const [themeOpen, setThemeOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
+  const [logicOpen, setLogicOpen] = useState(false)
   const [dragId, setDragId] = useState<string | null>(null)
   const [overIndex, setOverIndex] = useState<number | null>(null)
   const [colZone, setColZone] = useState<{ blockId: string; side: 'left' | 'right' } | null>(null)
@@ -295,6 +297,7 @@ export default function Editor() {
       <TopBar
         form={form}
         responseCount={responseCount}
+        onOpenLogic={() => setLogicOpen(true)}
         onOpenTheme={() => setThemeOpen(true)}
         onOpenShare={() => setShareOpen(true)}
       />
@@ -303,22 +306,71 @@ export default function Editor() {
         className={`editor-canvas flex-1 overflow-y-auto ${form.settings.theme.darkMode ? 'dark' : ''}`}
         style={{ background: form.settings.theme.background, fontFamily: themeFont(form.settings.theme.font), color: form.settings.theme.darkMode ? '#f5f5f5' : '#0b0f19' }}
       >
-        {form.settings.coverImageUrl && (
-          <div className="w-full h-[180px] sm:h-[220px] overflow-hidden relative">
+        {form.settings.coverImageUrl ? (
+          <div className="group w-full h-[180px] sm:h-[220px] overflow-hidden relative">
             <img src={form.settings.coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/0 transition group-hover:bg-black/10 flex items-start justify-end p-4 opacity-0 group-hover:opacity-100">
+              <button 
+                onClick={() => {
+                  const url = prompt('Enter new cover image URL:', form.settings.coverImageUrl)
+                  if (url !== null) updateSettings(form.id, { coverImageUrl: url })
+                }}
+                className="bg-white text-ink/70 hover:text-ink shadow-sm text-[12px] font-semibold px-3 py-1.5 rounded-md"
+              >
+                Change cover
+              </button>
+            </div>
           </div>
+        ) : (
+          <div className="w-full h-0 sm:h-8" />
         )}
-        <div className="mx-auto w-full max-w-2xl px-5 pt-10 sm:px-8 relative">
+        <div className="mx-auto w-full max-w-2xl px-5 pt-8 sm:px-8 relative">
           {form.settings.logoUrl && (
             <div
-              className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-4 shadow-sm ${
+              className={`group w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-4 shadow-sm ${
                 form.settings.coverImageUrl ? '-mt-20 sm:-mt-22 mb-6 z-10 relative bg-white' : 'mb-6'
               }`}
               style={{ borderColor: '#ffffff' }}
             >
               <img src={form.settings.logoUrl} alt="Logo" className="w-full h-full object-cover" />
+              <div 
+                className="absolute inset-0 bg-black/0 transition group-hover:bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer"
+                onClick={() => {
+                  const url = prompt('Enter new logo URL:', form.settings.logoUrl)
+                  if (url !== null) updateSettings(form.id, { logoUrl: url })
+                }}
+              >
+                 <Icon name="image" className="text-white drop-shadow-md" />
+              </div>
             </div>
           )}
+
+          <div className={`flex items-center gap-3 text-ink/40 transition opacity-0 hover:opacity-100 focus-within:opacity-100 ${
+            (!form.settings.coverImageUrl || !form.settings.logoUrl) ? 'mb-4 opacity-100' : 'h-0 overflow-hidden'
+          }`}>
+            {!form.settings.coverImageUrl && (
+              <button 
+                 onClick={() => {
+                   const url = prompt('Enter cover image URL:')
+                   if (url) updateSettings(form.id, { coverImageUrl: url })
+                 }}
+                 className="flex items-center gap-1.5 text-[13px] font-semibold hover:bg-ink/[0.05] hover:text-ink px-2 py-1.5 rounded transition"
+              >
+                <Icon name="image" /> Add cover
+              </button>
+            )}
+            {!form.settings.logoUrl && (
+              <button 
+                 onClick={() => {
+                   const url = prompt('Enter logo image URL:')
+                   if (url) updateSettings(form.id, { logoUrl: url })
+                 }}
+                 className="flex items-center gap-1.5 text-[13px] font-semibold hover:bg-ink/[0.05] hover:text-ink px-2 py-1.5 rounded transition"
+              >
+                <Icon name="image" /> Add logo
+              </button>
+            )}
+          </div>
           <TitleEditor title={form.settings.title} onChange={(t) => updateSettings(form.id, { title: t })} />
           <DescriptionEditor
             description={form.settings.description}
@@ -417,6 +469,7 @@ export default function Editor() {
         />
       )}
 
+      {logicOpen && <LogicDrawer form={form} onClose={() => setLogicOpen(false)} onOpenSettings={(id) => { setLogicOpen(false); setSettingsFor(id); requestAnimationFrame(() => doFocus(id, 'end')); }} />}
       {themeOpen && <ThemeDrawer form={form} onClose={() => setThemeOpen(false)} />}
       {shareOpen && <ShareDrawer form={form} onClose={() => setShareOpen(false)} />}
     </div>
@@ -426,11 +479,13 @@ export default function Editor() {
 function TopBar({
   form,
   responseCount,
+  onOpenLogic,
   onOpenTheme,
   onOpenShare,
 }: {
   form: { id: string; settings: { title: string } }
   responseCount: number
+  onOpenLogic: () => void
   onOpenTheme: () => void
   onOpenShare: () => void
 }) {
@@ -467,6 +522,13 @@ function TopBar({
             <span className="rounded-full bg-ink/[0.07] px-1.5 py-0.5 text-[11px] font-bold text-ink/60">{responseCount}</span>
           )}
         </Link>
+        <button
+          onClick={onOpenLogic}
+          className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-semibold text-ink/60 transition hover:bg-ink/[0.05] hover:text-ink"
+        >
+          <Icon name="link" />
+          <span className="hidden sm:inline">Logic</span>
+        </button>
         <button
           onClick={onOpenTheme}
           className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-semibold text-ink/60 transition hover:bg-ink/[0.05] hover:text-ink"
