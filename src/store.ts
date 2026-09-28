@@ -148,8 +148,22 @@ export const useForms = create<State>()((set, get) => {
       mutateForm(formId, (f) => {
         if (fromIndex === toIndex) return f
         const blocks = [...f.blocks]
-        const [item] = blocks.splice(fromIndex, 1)
-        blocks.splice(toIndex, 0, item)
+        const [raw] = blocks.splice(fromIndex, 1)
+        blocks.splice(toIndex, 0, raw)
+
+        // Moving a block vertically out of its column breaks it out of that
+        // column, matching Tally: drag a block up or down to split the column.
+        let item = raw
+        if (raw.colId) {
+          const before = blocks[toIndex - 1]
+          const after = blocks[toIndex + 1]
+          const stillAdjoined = before?.colId === raw.colId || after?.colId === raw.colId
+          if (!stillAdjoined) {
+            const { colId, colWidth, ...rest } = raw
+            item = rest as Block
+          }
+        }
+        blocks[toIndex] = item
         return { ...f, blocks }
       }),
 

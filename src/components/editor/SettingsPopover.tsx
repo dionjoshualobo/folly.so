@@ -464,7 +464,11 @@ export function SettingsPopover({
               </ActionBtn>
               <ActionBtn onClick={() => duplicateBlock(form.id, block.id)}>⧉ Duplicate</ActionBtn>
               {block.colId && (
-                <ActionBtn onClick={() => updateBlock(form.id, block.id, { colId: undefined })}>⫴ Split column</ActionBtn>
+                <ActionBtn
+                  onClick={() => updateBlock(form.id, block.id, { colId: undefined, colWidth: undefined })}
+                >
+                  ⫴ Break out
+                </ActionBtn>
               )}
               <ActionBtn danger onClick={() => removeBlock(form.id, block.id)}>
                 ✕ Delete

@@ -8,7 +8,7 @@ import { SlashMenu } from '../components/editor/SlashMenu'
 import { SettingsPopover } from '../components/editor/SettingsPopover'
 import { ShareDrawer, ThemeDrawer } from '../components/editor/Drawers'
 import { LogicDrawer } from '../components/editor/LogicDrawer'
-import { rowLayout, columnCount } from '../lib/layout'
+import { rowLayout, resolveRow, canJoinColumn } from '../lib/layout'
 import { embedInfo } from '../lib/embed'
 import { themeFont } from '../components/ui'
 
@@ -100,7 +100,9 @@ export default function Editor() {
 
   const insertNewBlock = (index: number, type: BlockType, text = '') => {
     if (!form) return
-    const colId = form.blocks[index]?.colId
+    // A new question inherits the column of the block it was entered from, but
+    // page breaks and thank-you pages always take the full width.
+    const colId = canJoinColumn(type) ? form.blocks[index]?.colId : undefined
     const block = makeBlock({
       ...(OPTION_TYPES.includes(type) ? { options: starterOptions() } : {}),
       type,
@@ -215,6 +217,9 @@ export default function Editor() {
     const dragIdx = blocks.findIndex((b) => b.id === dragId)
     const targetIdx = blocks.findIndex((b) => b.id === targetId)
     if (dragIdx === -1 || targetIdx === -1 || dragIdx === targetIdx) return
+    // Page breaks and thank-you pages own a whole row — a page break wedged
+    // into a column cuts the row in half and orphans the rest of the column.
+    if (!canJoinColumn(blocks[dragIdx].type) || !canJoinColumn(blocks[targetIdx].type)) return
     let colId = blocks[targetIdx].colId
     if (!colId) colId = uid()
     const drag = { ...blocks[dragIdx], colId }
@@ -225,6 +230,19 @@ export default function Editor() {
     const at = rest.findIndex((b) => b.id === targetId)
     rest.splice(side === 'right' ? at + 1 : at, 0, drag)
     updateForm(form.id, { blocks: rest })
+  }
+
+  /** Sets every member of a column to the same width, like Tally's drag-the-edge resize. */
+  const colResize = (colId: string, widths: number[]) => {
+    if (!form) return
+    const colBlocks = form.blocks.filter((b) => b.colId === colId)
+    const widthFor = new Map(colBlocks.map((b, at) => [b.id, widths[at]]))
+    updateForm(form.id, {
+      blocks: form.blocks.map((b) => {
+        const w = widthFor.get(b.id)
+        return typeof w === 'number' ? { ...b, colWidth: Math.round(w * 100) / 100 } : b
+      }),
+    })
   }
 
   const onBlockDragOver = (e: React.DragEvent, block: Block) => {
@@ -379,7 +397,7 @@ export default function Editor() {
 
           <div className="mt-8 space-y-1 pb-24">
             {rowLayout(form.blocks).map((row) => {
-              const n = columnCount(row.blocks)
+              const resolved = resolveRow(row)
               const renderBlock = (block: Block) => {
                 const index = form.blocks.findIndex((b) => b.id === block.id)
                 return (
@@ -419,14 +437,25 @@ export default function Editor() {
                   />
                 )
               }
-              if (n === 1) return renderBlock(row.blocks[0])
+              if (!resolved.template) return renderBlock(row.blocks[0])
               return (
                 <div
                   key={row.key}
-                  className="col-split gap-x-6 gap-y-2"
-                  style={{ ['--cols' as never]: n === row.blocks.length ? n : row.blocks.length }}
+                  className="col-split group/col relative"
+                  style={{ gridTemplateColumns: resolved.template }}
+                  data-col-id={row.id}
                 >
                   {row.blocks.map(renderBlock)}
+                  {resolved.widths.slice(0, -1).map((_, i) => (
+                    <ColResizeHandle
+                      key={i}
+                      colId={row.id}
+                      index={i}
+                      leftPct={resolved.widths.slice(0, i + 1).reduce((a, b) => a + b, 0)}
+                      widths={resolved.widths}
+                      onResize={colResize}
+                    />
+                  ))}
                 </div>
               )
             })}
@@ -721,6 +750,83 @@ function ColEdgeLine({ side }: { side: 'left' | 'right' }) {
         side === 'left' ? '-left-1.5' : '-right-1.5'
       }`}
     />
+  )
+}
+
+/**
+ * Draggable gutter between two columns, mirroring Tally's "hover the edge they
+ * share and drag the grey line" resize. Dragging shifts the boundary between
+ * this column and the next, never below the minimum width.
+ */
+function ColResizeHandle({
+  colId,
+  index,
+  leftPct,
+  widths,
+  onResize,
+}: {
+  colId: string
+  index: number
+  leftPct: number
+  widths: number[]
+  onResize: (colId: string, widths: number[]) => void
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [dragging, setDragging] = useState(false)
+
+  useEffect(() => {
+    if (!dragging) return
+    const onMove = (e: MouseEvent) => {
+      const row = ref.current?.closest('.col-split') as HTMLElement | null
+      if (!row) return
+      const rect = row.getBoundingClientRect()
+      if (rect.width === 0) return
+      const boundaryPct = ((e.clientX - rect.left) / rect.width) * 100
+      const min = widths.length <= 4 ? 15 : 8
+      // The pointer is at a cumulative boundary; convert to this column's width.
+      const before = widths.slice(0, index).reduce((a, b) => a + b, 0)
+      const pairTotal = widths[index] + widths[index + 1]
+      const wanted = boundaryPct - before
+      // Clamp the width itself rather than a delta, so repeated mousemove
+      // events can never walk a column below its minimum.
+      const left = Math.max(min, Math.min(pairTotal - min, wanted))
+      const next = [...widths]
+      next[index] = Math.round(left * 100) / 100
+      next[index + 1] = Math.round((pairTotal - left) * 100) / 100
+      onResize(colId, next)
+    }
+    const onUp = () => setDragging(false)
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    return () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+  }, [dragging, widths, index, colId, onResize])
+
+  return (
+    <div
+      ref={ref}
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Resize column"
+      title="Drag to resize"
+      onMouseDown={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setDragging(true)
+      }}
+      style={{ left: `${leftPct}%` }}
+      className={`absolute inset-y-0 z-20 -ml-1.5 w-3 cursor-col-resize ${
+        dragging ? 'opacity-100' : 'opacity-0 group-hover/col:opacity-100'
+      } transition-opacity`}
+    >
+      <div className="mx-auto h-full w-0.5 rounded-full bg-ink/25" />
+    </div>
   )
 }
 
