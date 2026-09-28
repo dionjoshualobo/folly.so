@@ -21,7 +21,7 @@ loadEnv()
 
 export const config = {
   port: Number(process.env.PORT || 3001),
-  databaseUrl: process.env.DATABASE_URL || 'postgres://folly:folly@localhost:5432/folly',
+  databaseUrl: process.env.DATABASE_URL || 'postgres://folly:folly@localhost:5440/folly',
   seedDemo: process.env.SEED_DEMO !== 'false',
 }
 

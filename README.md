@@ -28,10 +28,10 @@ Requires Node 20+ and a Postgres database.
 
 ```bash
 npm install
-cp .env.example .env   # defaults to postgres://folly:folly@localhost:5432/folly
+cp .env.example .env   # defaults to postgres://folly:folly@localhost:5440/folly
 
 # Terminal 1 — Postgres (Docker) + API server
-npm run db:up          # start postgres:16 on :5432
+npm run db:up          # start postgres:16 on :5440
 npm run dev:api        # API + static server on :3001
 
 # Terminal 2 — Vite dev server (hot reload, proxies /api to :3001)
@@ -49,7 +49,7 @@ npm start              # serves dist/ + API on :3001 (reads .env)
 
 | Variable      | Default                                 | Description                          |
 | ------------- | --------------------------------------- | ------------------------------------ |
-| `DATABASE_URL`| `postgres://folly:folly@localhost:5432/folly` | Postgres connection string   |
+| `DATABASE_URL`| `postgres://folly:folly@localhost:5440/folly` | Postgres connection string   |
 | `PORT`        | `3001`                                  | Port for the API + static server     |
 | `SEED_DEMO`   | `true`                                  | Seed demo forms + responses when empty |
 

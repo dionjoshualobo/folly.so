@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: folly
       POSTGRES_DB: folly
     ports:
-      - "5432:5432"
+      - "5440:5432"
     volumes:
       - folly_pg:/var/lib/postgresql/data
     healthcheck:
