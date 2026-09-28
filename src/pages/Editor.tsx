@@ -259,6 +259,21 @@ export default function Editor() {
     setOverIndex(null)
   }
 
+  useEffect(() => {
+    let injectedCss = ''
+    if (form?.settings.theme.customFontBase64 && form?.settings.theme.font === 'custom') {
+      injectedCss += `@font-face { font-family: "CustomFont"; src: url("${form.settings.theme.customFontBase64}"); }\n`
+    }
+    if (!injectedCss) return
+    const el = document.createElement('style')
+    el.setAttribute('data-folly-custom-font', '')
+    el.textContent = injectedCss
+    document.head.appendChild(el)
+    return () => {
+      document.head.removeChild(el)
+    }
+  }, [form?.settings.theme.customFontBase64, form?.settings.theme.font])
+
   if (!storeReady) {
     return <div className="flex min-h-screen items-center justify-center text-sm text-ink/40">Loading…</div>
   }
@@ -276,21 +291,6 @@ export default function Editor() {
   }
 
   const responseCount = submissions.filter((s) => s.formId === form.id).length
-
-  useEffect(() => {
-    let injectedCss = ''
-    if (form?.settings.theme.customFontBase64 && form?.settings.theme.font === 'custom') {
-      injectedCss += `@font-face { font-family: "CustomFont"; src: url("${form.settings.theme.customFontBase64}"); }\n`
-    }
-    if (!injectedCss) return
-    const el = document.createElement('style')
-    el.setAttribute('data-folly-custom-font', '')
-    el.textContent = injectedCss
-    document.head.appendChild(el)
-    return () => {
-      document.head.removeChild(el)
-    }
-  }, [form?.settings.theme.customFontBase64, form?.settings.theme.font])
 
   return (
     <div className="flex min-h-screen flex-col bg-[#fafafb]">
