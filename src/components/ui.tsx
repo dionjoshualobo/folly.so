@@ -38,6 +38,10 @@ export function Logo({
 export function themeFont(font: FormTheme['font']): string {
   if (font === 'serif') return 'Georgia, "Times New Roman", serif'
   if (font === 'playful') return "'Space Grotesk', ui-monospace, monospace"
+  if (font === 'classic') return "'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif"
+  if (font === 'rounded') return "'SF Pro Rounded', 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif"
+  if (font === 'geometric') return "Futura, 'Century Gothic', 'Avenir Next', 'Trebuchet MS', sans-serif"
+  if (font === 'typewriter') return "ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace"
   if (font === 'custom') return '"CustomFont", system-ui, -apple-system, sans-serif'
   return "'Inter', system-ui, -apple-system, sans-serif"
 }

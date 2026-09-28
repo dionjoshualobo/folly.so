@@ -128,7 +128,11 @@ export function ThemeDrawer({ form, onClose }: { form: Form; onClose: () => void
                     [
                       { k: 'system', label: 'Modern', cls: 'font-sans' },
                       { k: 'serif', label: 'Serif', cls: 'font-form-serif' },
-                      { k: 'playful', label: 'Mono', cls: 'font-mono' },
+                      { k: 'playful', label: 'Grotesk', cls: 'font-mono' },
+                      { k: 'classic', label: 'Classic', cls: 'font-classic' },
+                      { k: 'rounded', label: 'Rounded', cls: 'font-rounded' },
+                      { k: 'geometric', label: 'Geometric', cls: 'font-geometric' },
+                      { k: 'typewriter', label: 'Typewriter', cls: 'font-typewriter' },
                       { k: 'custom', label: 'Custom', cls: 'font-sans' },
                     ] as const
                   ).map((f) => (

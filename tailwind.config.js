@@ -9,6 +9,10 @@ export default {
         serif: ['Fraunces', 'Georgia', 'serif'],
         display: ['DM Serif Display', 'Georgia', 'serif'],
         mono: ['Space Grotesk', 'ui-monospace', 'monospace'],
+        classic: ['Iowan Old Style', 'Palatino Linotype', 'Palatino', 'Georgia', 'serif'],
+        rounded: ['SF Pro Rounded', 'Segoe UI Variable Display', 'Segoe UI', 'system-ui', 'sans-serif'],
+        geometric: ['Futura', 'Century Gothic', 'Avenir Next', 'Trebuchet MS', 'sans-serif'],
+        typewriter: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', 'monospace'],
       },
       colors: {
         brand: {
