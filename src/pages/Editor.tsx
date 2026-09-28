@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import type { Block, BlockType, ChoiceOption } from '../types'
 import { makeBlock, uid } from '../types'
 import { useForms } from '../store'
-import { BLOCKS, Icon } from '../blockCatalog'
+import { BLOCKS, Icon, searchBlocks } from '../blockCatalog'
 import { SlashMenu } from '../components/editor/SlashMenu'
 import { SettingsPopover } from '../components/editor/SettingsPopover'
 import { ShareDrawer, ThemeDrawer } from '../components/editor/Drawers'
@@ -133,7 +133,7 @@ export default function Editor() {
   const onEnterInBlock = (block: Block, index: number) => {
     if (slash && slash.blockId === block.id) {
       const q = slash.query.trim().toLowerCase()
-      const hit = BLOCKS.find(
+      const hit = searchBlocks(q)[0] ?? BLOCKS.find(
         (b) => (b.shortcut?.toLowerCase() ?? '') === q || b.label.toLowerCase().includes(q),
       )
       convertBlock(block, hit?.type ?? 'shortText', slash.textBefore)
@@ -158,6 +158,12 @@ export default function Editor() {
 
   const onBlockKeyDown = (e: KeyboardEvent<HTMLDivElement>, block: Block, index: number) => {
     const el = e.currentTarget
+    if (slash) {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        e.preventDefault()
+        return
+      }
+    }
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       onEnterInBlock(block, index)
