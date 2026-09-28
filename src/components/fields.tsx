@@ -83,7 +83,7 @@ function NpsControl({ block, value, onChange }: { block: Block; value: number | 
             type="button"
             onClick={() => onChange(n)}
             className={`rounded-lg py-2.5 text-[13px] font-semibold transition ${
-              value === n ? 'bg-ink text-white shadow-md' : 'bg-ink/[0.05] text-ink dark:text-white/70 hover:bg-ink/10'
+              value === n ? 'bg-ink text-white shadow-md dark:bg-white dark:text-ink' : 'bg-ink/[0.05] text-ink dark:bg-white/10 dark:text-white/70 hover:bg-ink/10 dark:hover:bg-white/20'
             }`}
           >
             {n}
@@ -117,7 +117,7 @@ function LinearControl({ block, value, onChange }: { block: Block; value: number
               type="button"
               onClick={() => onChange(n)}
               className={`aspect-square rounded-lg text-[13px] font-semibold transition ${
-                value === n ? 'bg-ink text-white shadow-md' : 'bg-ink/[0.05] text-ink dark:text-white/70 hover:bg-ink/10'
+                value === n ? 'bg-ink text-white shadow-md dark:bg-white dark:text-ink' : 'bg-ink/[0.05] text-ink dark:bg-white/10 dark:text-white/70 hover:bg-ink/10 dark:hover:bg-white/20'
               }`}
             >
               {n}
@@ -173,7 +173,7 @@ function ChoiceControl({
           <label
             key={o.id}
             className={`flex w-fit cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition ${
-              isChecked(o.label) ? 'border-ink/50 bg-ink/[0.03]' : 'border-ink/15 hover:border-ink/30'
+              isChecked(o.label) ? 'border-ink/50 bg-ink/[0.03] dark:border-white/40 dark:bg-white/[0.08]' : 'border-ink/15 hover:border-ink/30 dark:border-white/20 dark:hover:border-white/40'
             }`}
             onClick={(e) => {
               if (preview) e.preventDefault()
@@ -192,7 +192,7 @@ function ChoiceControl({
           <label
             key={o.id}
             className={`flex w-fit cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition ${
-              isChecked(o.label) ? 'border-ink/50 bg-ink/[0.03]' : 'border-ink/15 hover:border-ink/30'
+              isChecked(o.label) ? 'border-ink/50 bg-ink/[0.03] dark:border-white/40 dark:bg-white/[0.08]' : 'border-ink/15 hover:border-ink/30 dark:border-white/20 dark:hover:border-white/40'
             }`}
             onClick={(e) => {
               if (preview) e.preventDefault()
@@ -293,7 +293,7 @@ function FileControl({
   return (
     <div>
       {value ? (
-        <div className="flex items-center gap-3 rounded-2xl border border-ink/15 bg-ink/[0.02] px-4 py-3">
+        <div className="flex items-center gap-3 rounded-2xl border border-ink/15 bg-ink/[0.02] dark:border-white/15 dark:bg-white/[0.04] px-4 py-3">
           <span className="text-xl">📎</span>
           <span className="flex-1 truncate text-[14px] text-ink dark:text-white/80">{value.name}</span>
           <span className="text-[12px] text-ink dark:text-white/40">{(value.size / 1024).toFixed(1)} KB</span>
@@ -312,7 +312,7 @@ function FileControl({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="flex w-fit items-center gap-2 rounded-2xl border-2 border-dashed border-ink/20 bg-ink/[0.02] px-5 py-3.5 text-[15px] font-medium text-ink dark:text-white/60 transition hover:border-ink/40 hover:text-ink dark:text-white"
+          className="flex w-fit items-center gap-2 rounded-2xl border-2 border-dashed border-ink/20 bg-ink/[0.02] dark:border-white/25 dark:bg-white/[0.04] px-5 py-3.5 text-[15px] font-medium text-ink dark:text-white/60 transition hover:border-ink/40 hover:text-ink dark:text-white"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5">
             <path d="M12 15V5m0 0L8 9m4-4 4 4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -434,7 +434,7 @@ function SignatureControl({
 
 function ScoreControl({ value, count }: { value: number; count: number }) {
   return (
-    <div className="flex w-fit items-center gap-4 rounded-2xl border border-ink/15 bg-ink/[0.02] px-5 py-3">
+    <div className="flex w-fit items-center gap-4 rounded-2xl border border-ink/15 bg-ink/[0.02] dark:border-white/15 dark:bg-white/[0.04] px-5 py-3">
       <span className="text-4xl font-bold tabular-nums text-ink dark:text-white">{value}</span>
       <span className="text-[13px] leading-tight text-ink dark:text-white/45">
         {count === 0 ? 'No questions selected' : count === 1 ? 'Based on 1 answer' : `Based on ${count} answers`}
@@ -455,7 +455,7 @@ function CsatControl({ block, value, onChange }: { block: Block; value: number |
               type="button"
               onClick={() => onChange(n)}
               className={`rounded-lg py-2.5 text-[13px] font-semibold transition ${
-                value === n ? 'bg-ink text-white shadow-md' : 'bg-ink/[0.05] text-ink dark:text-white/70 hover:bg-ink/10'
+                value === n ? 'bg-ink text-white shadow-md dark:bg-white dark:text-ink' : 'bg-ink/[0.05] text-ink dark:bg-white/10 dark:text-white/70 hover:bg-ink/10 dark:hover:bg-white/20'
               }`}
             >
               {n}
@@ -508,7 +508,7 @@ function MultiSelectControl({
             {selected.map((s) => (
               <span
                 key={s}
-                className="flex items-center gap-1 rounded-full bg-ink/[0.06] px-2.5 py-1 text-[12px] font-medium text-ink dark:text-white/80"
+                className="flex items-center gap-1 rounded-full bg-ink/[0.06] dark:bg-white/10 px-2.5 py-1 text-[12px] font-medium text-ink dark:text-white/80"
               >
                 {s}
                 <button
@@ -542,7 +542,7 @@ function MultiSelectControl({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search options…"
-              className="w-full rounded-lg bg-ink/[0.04] px-3 py-2 text-[13px] text-ink dark:text-white outline-none placeholder:text-ink dark:text-white/35"
+              className="w-full rounded-lg bg-ink/[0.04] dark:bg-white/[0.06] px-3 py-2 text-[13px] text-ink dark:text-white outline-none placeholder:text-ink dark:text-white/35"
             />
           </div>
           <div className="max-h-56 overflow-y-auto p-1.5">
@@ -550,7 +550,7 @@ function MultiSelectControl({
             {filtered.map((o) => (
               <label
                 key={o.id}
-                className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 transition hover:bg-ink/[0.04]"
+                className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 transition hover:bg-ink/[0.04] dark:hover:bg-white/[0.06]"
               >
                 <input
                   type="checkbox"
