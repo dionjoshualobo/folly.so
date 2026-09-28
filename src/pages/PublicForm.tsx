@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import type { AnswerValue, Block, Form } from '../types'
 import { useForms } from '../store'
 import { blockVisible, computeScore, formatWhen, getQuestionLabel, pipeText, splitIntoPages } from '../lib/logic'
-import { rowLayout } from '../lib/layout'
+import { rowLayout, resolveRow } from '../lib/layout'
 import { embedInfo } from '../lib/embed'
 import { FieldControl, getDefaultValue, isFilled } from '../components/fields'
 import { RichText } from '../components/richtext'
@@ -424,7 +424,7 @@ export default function PublicForm() {
           className="tally-form space-y-8"
         >
           {rowLayout(visibleHere).map((row) => {
-            const n = row.blocks.length
+            const resolved = resolveRow(row)
             const rendered = row.blocks.map((block) => (
               <div key={block.id} className="tally-block">
                 <BlockView
@@ -436,9 +436,13 @@ export default function PublicForm() {
                 />
               </div>
             ))
-            if (n === 1) return rendered[0]
+            if (!resolved.template) return rendered[0]
             return (
-              <div key={row.key} className="col-split gap-x-8 gap-y-7" style={{ ['--cols' as never]: n }}>
+              <div
+                key={row.key}
+                className="col-split"
+                style={{ gridTemplateColumns: resolved.template }}
+              >
                 {rendered}
               </div>
             )

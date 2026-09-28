@@ -88,18 +88,34 @@ input[type='range'] {
   font-weight: 400;
 }
 
-/* Tally-style column rows */
+/* Tally-style column rows.
+   Each column is a percentage-width box; the gutter comes from half-paddings on
+   each column (first/last drop their outer half) so the row always totals 100%.
+   Columns collapse to a single stacked column below 576px, like Tally. */
 .col-split {
   display: grid;
-  grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
   align-items: start;
 }
 .col-split > * {
   min-width: 0;
+  box-sizing: border-box;
+  padding-left: var(--col-gutter-half, 10px);
+  padding-right: var(--col-gutter-half, 10px);
 }
-@media (max-width: 639px) {
+.col-split > *:first-child {
+  padding-left: 0;
+}
+.col-split > *:last-child {
+  padding-right: 0;
+}
+@media (max-width: 576px) {
   .col-split {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) !important;
+    row-gap: 1.75rem;
+  }
+  .col-split > * {
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 

@@ -74,6 +74,8 @@ export interface Block {
   maxSizeMb?: number
   showIf?: LogicCondition[]
   colId?: string
+  /** Column width as a percentage, denormalised onto each column member. */
+  colWidth?: number
 }
 
 export interface FormTheme {
