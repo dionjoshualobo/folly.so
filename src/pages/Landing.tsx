@@ -13,26 +13,6 @@ function Art({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Face({
-  children,
-  className,
-  style,
-}: {
-  children: React.ReactNode
-  className?: string
-  style?: React.CSSProperties
-}) {
-  return (
-    <span
-      className={`pointer-events-none absolute select-none transition-transform duration-300 ease-out ${className ?? ''}`}
-      style={style}
-      aria-hidden
-    >
-      {children}
-    </span>
-  )
-}
-
 export interface PreviewTheme {
   label: string
   background: string
@@ -106,27 +86,40 @@ const FAQ = [
   },
 ]
 
+// Static, black-and-white Open Peeps scattered across the page as background
+// texture. Deliberately inert: no transitions, no hover handlers, no animation.
+const PEEP_FIELD: { Peep: (p: { className?: string }) => JSX.Element; spot: string; size: string; tilt: string; flip?: boolean; wide?: boolean }[] = [
+  { Peep: PeepBangsRose, spot: 'left-[3%] top-[6%]', size: 'h-20 sm:h-24', tilt: '-rotate-3' },
+  { Peep: PeepBunInk, spot: 'left-[38%] top-[4%]', size: 'h-16 sm:h-20', tilt: 'rotate-6', wide: true },
+  { Peep: PeepShortMoustache, spot: 'right-[6%] top-[9%]', size: 'h-24 sm:h-28', tilt: '-rotate-3' },
+  { Peep: PeepCurlyDress, spot: 'left-[16%] top-[18%]', size: 'h-16 sm:h-20', tilt: 'rotate-2', flip: true, wide: true },
+  { Peep: PeepBangsRose, spot: 'right-[22%] top-[22%]', size: 'h-20 sm:h-24', tilt: 'rotate-3' },
+  { Peep: PeepBunInk, spot: 'left-[46%] top-[27%]', size: 'h-24 sm:h-28', tilt: '-rotate-6' },
+  { Peep: PeepShortMoustache, spot: 'right-[40%] top-[33%]', size: 'h-16 sm:h-20', tilt: 'rotate-2', flip: true, wide: true },
+  { Peep: PeepCurlyDress, spot: 'left-[6%] top-[38%]', size: 'h-20 sm:h-24', tilt: 'rotate-2' },
+  { Peep: PeepBangsRose, spot: 'left-[34%] top-[44%]', size: 'h-16 sm:h-20', tilt: '-rotate-2', wide: true },
+  { Peep: PeepBunInk, spot: 'right-[12%] top-[48%]', size: 'h-24 sm:h-28', tilt: '-rotate-4' },
+  { Peep: PeepShortMoustache, spot: 'left-[52%] top-[55%]', size: 'h-20 sm:h-24', tilt: 'rotate-3', flip: true },
+  { Peep: PeepCurlyDress, spot: 'right-[30%] top-[61%]', size: 'h-16 sm:h-20', tilt: 'rotate-5', wide: true },
+  { Peep: PeepBangsRose, spot: 'left-[10%] top-[68%]', size: 'h-24 sm:h-28', tilt: '-rotate-2' },
+  { Peep: PeepBunInk, spot: 'right-[50%] top-[74%]', size: 'h-20 sm:h-24', tilt: 'rotate-2' },
+  { Peep: PeepShortMoustache, spot: 'left-[40%] top-[82%]', size: 'h-16 sm:h-20', tilt: '-rotate-3', flip: true, wide: true },
+  { Peep: PeepCurlyDress, spot: 'right-[8%] top-[88%]', size: 'h-20 sm:h-24', tilt: 'rotate-4' },
+]
+
 function BackgroundPeeps() {
   return (
-    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-      <Face className="left-[2%] top-[15%] hidden lg:block opacity-70">
-        <PeepBangsRose className="h-32 w-auto" />
-      </Face>
-      <Face className="right-[2%] top-[12%] hidden lg:block opacity-70">
-        <PeepBunInk className="h-32 w-auto" />
-      </Face>
-      <Face className="left-[8%] top-[45%] hidden lg:block opacity-70">
-        <PeepShortMoustache className="h-32 w-auto" />
-      </Face>
-      <Face className="right-[5%] top-[55%] hidden lg:block opacity-70">
-        <PeepCurlyDress className="h-32 w-auto" />
-      </Face>
-      <Face className="left-[4%] top-[75%] hidden lg:block opacity-70">
-        <PeepBangsRose className="h-32 w-auto scale-x-[-1]" />
-      </Face>
-      <Face className="right-[8%] top-[85%] hidden lg:block opacity-70">
-        <PeepBunInk className="h-32 w-auto scale-x-[-1]" />
-      </Face>
+    <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
+      {PEEP_FIELD.map(({ Peep, spot, size, tilt, flip, wide }, i) => (
+        <span
+          key={i}
+          className={`absolute ${spot} opacity-[0.14] ${tilt} ${flip ? 'scale-x-[-1]' : ''} ${
+            wide ? 'hidden md:block' : ''
+          }`}
+        >
+          <Peep className={`${size} w-auto`} />
+        </span>
+      ))}
     </div>
   )
 }
@@ -709,7 +702,7 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-full bg-white relative">
+    <div className="relative isolate min-h-full bg-white">
       <BackgroundPeeps />
       <header className="sticky top-0 z-40 border-b border-ink/[0.06] bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
