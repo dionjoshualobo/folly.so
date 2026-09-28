@@ -318,7 +318,7 @@ export default function PublicForm() {
 
     return (
       <div
-        className="tally-app flex min-h-screen flex-col"
+        className={`tally-app flex min-h-screen flex-col ${dark ? 'dark' : ''}`}
         style={{ background: theme.background, fontFamily: font, color: dark ? '#f5f5f5' : '#0b0f19' }}
       >
         {form.settings.coverImageUrl && (
@@ -375,7 +375,7 @@ export default function PublicForm() {
   const progress = (pageCount > 1 ? (safePage + 1) / pageCount : 1) * 100
 
   return (
-    <div ref={topRef} className="tally-app flex min-h-screen flex-col" style={{ background: theme.background, fontFamily: font, color: dark ? '#f5f5f5' : '#0b0f19' }}>
+    <div ref={topRef} className={`tally-app flex min-h-screen flex-col ${dark ? 'dark' : ''}`} style={{ background: theme.background, fontFamily: font, color: dark ? '#f5f5f5' : '#0b0f19' }}>
       <div className="h-1 w-full" style={{ background: 'transparent' }}>
         <div className="h-full transition-all duration-300" style={{ width: `${progress}%`, background: theme.button }} />
       </div>
