@@ -31,3 +31,7 @@ dist-ssr
 
 # Playwright MCP artifacts
 .playwright-mcp/
+
+# Agent tooling (local only, never commit)
+.opencode/
+opencode.json
