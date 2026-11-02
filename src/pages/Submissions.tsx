@@ -92,7 +92,10 @@ export default function Submissions() {
       })
     ])
 
-    const formatCell = (val: string) => {
+    const formatCell = (raw: string) => {
+      // Respondent input starting with = + - @ (or tab/CR) would run as a
+      // formula in Excel/Sheets; a leading apostrophe forces plain text.
+      const val = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw
       const clean = val.replace(/"/g, '""')
       if (clean.includes(',') || clean.includes('\n') || clean.includes('\r') || clean.includes('"')) {
         return `"${clean}"`
@@ -105,7 +108,8 @@ export default function Submissions() {
       ...rows.map(r => r.map(formatCell).join(','))
     ].join('\n')
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    // BOM so Excel detects UTF-8 instead of mangling accents and emoji.
+    const blob = new Blob([String.fromCharCode(0xfeff) + csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.setAttribute('href', url)
@@ -114,6 +118,7 @@ export default function Submissions() {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 
   const exportToJSON = () => {
