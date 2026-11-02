@@ -24,7 +24,7 @@ interface State {
   removeBlock: (formId: string, blockId: string) => void
   moveBlock: (formId: string, fromIndex: number, toIndex: number) => void
   duplicateBlock: (formId: string, blockId: string) => void
-  addSubmission: (formId: string, answers: Record<string, AnswerValue>) => Submission
+  addSubmission: (formId: string, answers: Record<string, AnswerValue>) => Promise<Submission>
   deleteSubmission: (id: string) => void
 }
 
@@ -223,13 +223,12 @@ export const useForms = create<State>()((set, get) => {
         return { ...f, blocks }
       }),
 
-    addSubmission: (formId, answers) => {
+    // Resolves only once the server has stored the submission, so callers
+    // can safely show a confirmation or navigate away.
+    addSubmission: async (formId, answers) => {
       const submission: Submission = { id: uid(), formId, submittedAt: Date.now(), answers }
+      await api.addSubmission(formId, submission)
       set((s) => ({ submissions: [submission, ...s.submissions] }))
-      api.addSubmission(formId, submission).catch((err) => {
-        console.error('[folly] failed to save submission', err)
-        set((s) => ({ submissions: s.submissions.filter((x) => x !== submission) }))
-      })
       return submission
     },
 

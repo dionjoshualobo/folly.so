@@ -182,6 +182,8 @@ export default function PublicForm() {
   const [currentPage, setCurrentPage] = useState(0)
   const [pageHistory, setPageHistory] = useState<number[]>([0])
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [visited, setVisited] = useState(false)
   const [formFailed, setFormFailed] = useState(false)
   const [passwordInput, setPasswordInput] = useState('')
@@ -525,8 +527,8 @@ export default function PublicForm() {
     setCurrentPage(nextVis)
   }
 
-  const submit = () => {
-    if (isClosed) return
+  const submit = async () => {
+    if (isClosed || submitting) return
     if (!validateVisible()) {
       topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       return
@@ -554,7 +556,17 @@ export default function PublicForm() {
         }
       }
     }
-    addSubmission(form.id, collected)
+    setSubmitting(true)
+    setSubmitError('')
+    try {
+      await addSubmission(form.id, collected)
+    } catch (err) {
+      console.error('[folly] failed to save submission', err)
+      setSubmitError('We couldn’t save your response. Please check your connection and try again.')
+      return
+    } finally {
+      setSubmitting(false)
+    }
     setAnswers((a) => ({ ...a, ...scorePatch }))
 
     // Redirect logic:
@@ -727,11 +739,17 @@ export default function PublicForm() {
               )}
               <button
                 type="submit"
-                className="tally-submit-button border-2 border-black bg-[#ffe600] text-black font-black uppercase text-xs sm:text-sm px-8 py-3.5 shadow-[4px_4px_0px_#000] hover:bg-[#facc15] hover:shadow-[5px_5px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                disabled={submitting}
+                className="tally-submit-button border-2 border-black bg-[#ffe600] text-black font-black uppercase text-xs sm:text-sm px-8 py-3.5 shadow-[4px_4px_0px_#000] hover:bg-[#facc15] hover:shadow-[5px_5px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all disabled:cursor-wait disabled:opacity-60"
               >
-                {!isLastPage ? 'NEXT STEP →' : 'SUBMIT FORM →'}
+                {!isLastPage ? 'NEXT STEP →' : submitting ? 'SUBMITTING…' : 'SUBMIT FORM →'}
               </button>
             </div>
+            {submitError && (
+              <p role="alert" className="border-2 border-black bg-[#ffd6d6] px-4 py-3 text-sm font-bold text-black">
+                {submitError}
+              </p>
+            )}
           </form>
         </div>
       </main>
