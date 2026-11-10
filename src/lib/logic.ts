@@ -27,6 +27,7 @@ const ANSWER_TYPES: BlockType[] = [
   'fileUpload',
   'signature',
   'score',
+  'address',
 ]
 
 export function isAnswerBlock(type: BlockType): boolean {
@@ -145,6 +146,10 @@ export function formatAnswer(value: AnswerValue): string {
   if (value && typeof value === 'object' && 'name' in value) {
     const f = value as { name: string; size: number }
     return `${f.name} (${(f.size / 1024).toFixed(1)} KB)`
+  }
+  if (value && typeof value === 'object' && 'street' in value) {
+    const a = value as { street?: string; apt?: string; city?: string; state?: string; zip?: string; country?: string }
+    return [a.street, a.apt, a.city, a.state, a.zip, a.country].filter(Boolean).join(', ')
   }
   if (value && typeof value === 'object') {
     return Object.entries(value)

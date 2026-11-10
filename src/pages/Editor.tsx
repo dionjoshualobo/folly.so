@@ -41,7 +41,7 @@ function normalizeText(t: string): string {
     .trimEnd()
 }
 
-const INPUT_TEXT_TYPES: BlockType[] = ['shortText', 'longText', 'number', 'email', 'phone', 'link', 'time', 'date', 'fileUpload']
+const INPUT_TEXT_TYPES: BlockType[] = ['shortText', 'longText', 'number', 'email', 'phone', 'link', 'time', 'date', 'fileUpload', 'address', 'payment']
 const OPTION_TYPES: BlockType[] = ['multipleChoice', 'checkbox', 'dropdown', 'multiSelect', 'ranking']
 const SCOREABLE_TYPES: BlockType[] = ['shortText', 'longText', 'number', 'rating', 'csat', 'nps', 'linear', 'multipleChoice', 'checkbox', 'dropdown', 'multiSelect', 'ranking', 'matrix']
 const TEXT_HEADINGS: BlockType[] = ['heading', 'heading2', 'heading3', 'label']
@@ -1654,6 +1654,33 @@ function BlockRow({
               ))}
             </div>
             <span className="text-[12px] text-ink/40">{block.csatMaxLabel ?? 'Very satisfied'}</span>
+          </div>
+        ) : block.type === 'address' ? (
+          <div className="flex max-w-xl flex-col gap-2 opacity-65">
+            <div className="rounded-xl border border-ink/15 bg-white px-3 py-2 text-[13px] text-ink/40">Street address</div>
+            {block.addressIncludeApt !== false && (
+              <div className="rounded-xl border border-ink/15 bg-white px-3 py-2 text-[13px] text-ink/40">Apt, suite, unit (optional)</div>
+            )}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-xl border border-ink/15 bg-white px-3 py-2 text-[13px] text-ink/40">City</div>
+              <div className="rounded-xl border border-ink/15 bg-white px-3 py-2 text-[13px] text-ink/40">State / Province</div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-xl border border-ink/15 bg-white px-3 py-2 text-[13px] text-ink/40">Zip / Postal code</div>
+              <div className="rounded-xl border border-ink/15 bg-white px-3 py-2 text-[13px] text-ink/40">Country</div>
+            </div>
+          </div>
+        ) : block.type === 'payment' ? (
+          <div className="max-w-xl rounded-2xl border border-ink/15 bg-ink/[0.02] p-4 opacity-75">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#635bff] text-white">
+                <Icon name="payment" />
+              </span>
+              <div>
+                <div className="text-[13px] font-semibold text-ink">Stripe Checkout</div>
+                <div className="text-[11px] text-ink/45">Configure amount and key in Form Settings → Integrations</div>
+              </div>
+            </div>
           </div>
         ) : (
           <PreviewBox content="Your answer" />

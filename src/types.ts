@@ -28,6 +28,8 @@ export type BlockType =
   | 'score'
   | 'image'
   | 'embed'
+  | 'address'
+  | 'payment'
   | 'pageBreak'
   | 'thankYou'
 
@@ -76,6 +78,10 @@ export interface Block {
   colId?: string
   /** Column width as a percentage, denormalised onto each column member. */
   colWidth?: number
+  /** address block: include apt/unit field */
+  addressIncludeApt?: boolean
+  /** address block: require country field */
+  addressRequireCountry?: boolean
 }
 
 export interface FormTheme {
@@ -102,6 +108,22 @@ export interface FormSettings {
   showProgress: boolean
   poweredBy: boolean
   customCss?: string
+  /** Webhook URL — POST payload sent on each new submission */
+  webhookUrl?: string
+  /** Close the form after this many responses (0 = unlimited) */
+  maxResponses?: number
+  /** Unix timestamp (ms) after which the form closes */
+  closedAt?: number
+  /** Email address to notify on new submission (requires server SMTP config) */
+  emailNotifyTo?: string
+  /** Stripe publishable key for payment block */
+  stripePublishableKey?: string
+  /** Payment amount in smallest currency unit (e.g. cents) */
+  paymentAmount?: number
+  /** Payment currency (ISO 4217, e.g. 'usd') */
+  paymentCurrency?: string
+  /** Payment description shown to payer */
+  paymentDescription?: string
 }
 
 export interface Form {
@@ -111,6 +133,7 @@ export interface Form {
   updatedAt: number
   settings: FormSettings
   blocks: Block[]
+  submissionCount?: number
 }
 
 export interface Submission {
@@ -131,7 +154,23 @@ export interface SignatureStroke {
 
 export type SignatureData = SignatureStroke[]
 
-export type AnswerValue = string | string[] | number | Record<string, string> | FilePayload | SignatureData | null
+export interface AddressValue {
+  street: string
+  apt?: string
+  city: string
+  state: string
+  zip: string
+  country: string
+}
+
+export interface PaymentValue {
+  paid: boolean
+  amount?: number
+  currency?: string
+  at?: number
+}
+
+export type AnswerValue = string | string[] | number | Record<string, string> | FilePayload | SignatureData | AddressValue | PaymentValue | null
 
 export function uid(): string {
   return Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3)
@@ -174,6 +213,8 @@ export function makeBlock(partial: Partial<Block> & { type: BlockType }): Block 
     maxSizeMb: partial.maxSizeMb ?? 10,
     showIf: partial.showIf,
     colId: partial.colId,
+    addressIncludeApt: partial.addressIncludeApt ?? true,
+    addressRequireCountry: partial.addressRequireCountry ?? false,
   }
   return block
 }

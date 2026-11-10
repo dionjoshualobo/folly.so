@@ -13,6 +13,7 @@ interface State {
   ensureForm: (id: string) => Promise<boolean>
   createForm: (name?: string) => Form
   deleteForm: (id: string) => void
+  duplicateForm: (id: string) => Form | null
   updateForm: (id: string, patch: Partial<Form>) => void
   updateSettings: (id: string, patch: Partial<FormSettings>) => void
   updateTheme: (id: string, patch: Partial<FormTheme>) => void
@@ -118,6 +119,25 @@ export const useForms = create<State>()((set, get) => {
         console.error('[folly] failed to delete form', id, err)
         set(prev)
       })
+    },
+
+    duplicateForm: (id) => {
+      const src = get().forms.find((f) => f.id === id)
+      if (!src) return null
+      const copy = makeForm({
+        ...src,
+        id: uid(),
+        name: `${src.name} (copy)`,
+        settings: { ...src.settings, title: `${src.settings.title} (copy)` },
+        blocks: src.blocks.map((b) => ({ ...b, id: uid() })),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      })
+      set((s) => ({ forms: [copy, ...s.forms] }))
+      api.createForm(copy).catch((err) => {
+        console.error('[folly] failed to create duplicated form', err)
+      })
+      return copy
     },
 
     updateForm: (id, patch) => mutateForm(id, (f) => ({ ...f, ...patch })),

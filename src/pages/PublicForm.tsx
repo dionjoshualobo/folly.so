@@ -122,6 +122,7 @@ function BlockView({
           block={block}
           value={block.type === 'score' ? computeScore(block, answers, form.blocks) : (answers[block.id] ?? getDefaultValue(block))}
           onChange={(v) => onChange(block.id, v)}
+          formSettings={form.settings}
         />
       </div>
       {errors[block.id] && <p className="mt-1.5 text-[13px] font-medium text-brand-600">{errors[block.id]}</p>}
@@ -232,6 +233,39 @@ export default function PublicForm() {
   const font = themeFont(theme.font)
   const accent = theme.button
   const dark = theme.darkMode
+
+  const isClosedByDate = Boolean(form.settings.closedAt && Date.now() > form.settings.closedAt)
+  const isClosedByLimit = Boolean(
+    form.settings.maxResponses &&
+      form.settings.maxResponses > 0 &&
+      (form.submissionCount !== undefined ? form.submissionCount >= form.settings.maxResponses : false)
+  )
+  const isClosed = isClosedByDate || isClosedByLimit
+
+  if (isClosed) {
+    return (
+      <div
+        className={`tally-app flex min-h-screen flex-col items-center justify-center px-6 py-12 text-center ${dark ? 'dark' : ''}`}
+        style={{ background: theme.background, fontFamily: font, color: dark ? '#f5f5f5' : '#0b0f19' }}
+      >
+        <div className="w-full max-w-md rounded-3xl border border-ink/10 bg-white dark:bg-white/5 p-8 shadow-sm">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-ink dark:text-white">This form is closed</h1>
+          <p className="mt-2 text-[15px] leading-relaxed text-ink/60 dark:text-white/60">
+            {isClosedByDate
+              ? 'This form has reached its closing date and is no longer accepting new responses.'
+              : 'This form has reached its maximum response limit and is no longer accepting new submissions.'}
+          </p>
+        </div>
+        {form.settings.poweredBy && <PoweredBy dark={dark} font={font} />}
+      </div>
+    )
+  }
 
   const pageCount = pages.length
 

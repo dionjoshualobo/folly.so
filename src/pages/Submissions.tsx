@@ -71,6 +71,10 @@ export default function Submissions() {
           const f = val as { name: string; size: number }
           return `${f.name} (${(f.size / 1024).toFixed(1)} KB)`
         }
+        if (typeof val === 'object' && 'street' in val) {
+          const a = val as { street?: string; apt?: string; city?: string; state?: string; zip?: string; country?: string }
+          return [a.street, a.apt, a.city, a.state, a.zip, a.country].filter(Boolean).join(', ')
+        }
         if (typeof val === 'object') {
           return Object.entries(val)
             .map(([k, v]) => `${k}: ${v}`)

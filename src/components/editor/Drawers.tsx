@@ -28,7 +28,9 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
 export function ThemeDrawer({ form, onClose }: { form: Form; onClose: () => void }) {
   const updateTheme = useForms((s) => s.updateTheme)
   const updateSettings = useForms((s) => s.updateSettings)
-  const [tab, setTab] = useState<'theme' | 'form' | 'css'>('theme')
+  const [tab, setTab] = useState<'theme' | 'form' | 'css' | 'integrations' | 'limits'>('theme')
+  const [webhookTesting, setWebhookTesting] = useState(false)
+  const [webhookResult, setWebhookResult] = useState<'ok' | 'err' | null>(null)
   const t = form.settings.theme
 
   const preview = useMemo(
@@ -60,25 +62,18 @@ export function ThemeDrawer({ form, onClose }: { form: Form; onClose: () => void
       <div className="absolute inset-0 bg-ink/20 backdrop-blur-[1px]" onClick={onClose} />
       <div className="animate-pop absolute right-0 top-0 flex h-full w-[340px] flex-col bg-white shadow-pop sm:w-[380px]">
         <div className="flex items-center justify-between border-b border-ink/[0.06] px-5 py-3.5">
-          <div className="flex gap-1">
-            <button
-              onClick={() => setTab('theme')}
-              className={`rounded-md px-2.5 py-1 text-[12px] font-semibold ${tab === 'theme' ? 'bg-ink text-white' : 'text-ink/50 hover:bg-ink/[0.05]'}`}
-            >
-              Appearance
-            </button>
-            <button
-              onClick={() => setTab('form')}
-              className={`rounded-md px-2.5 py-1 text-[12px] font-semibold ${tab === 'form' ? 'bg-ink text-white' : 'text-ink/50 hover:bg-ink/[0.05]'}`}
-            >
-              Form settings
-            </button>
-            <button
-              onClick={() => setTab('css')}
-              className={`rounded-md px-2.5 py-1 text-[12px] font-semibold ${tab === 'css' ? 'bg-ink text-white' : 'text-ink/50 hover:bg-ink/[0.05]'}`}
-            >
-              Custom CSS
-            </button>
+          <div className="flex flex-wrap gap-1">
+            {(['theme', 'form', 'css', 'integrations', 'limits'] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`rounded-md px-2.5 py-1 text-[12px] font-semibold capitalize ${
+                  tab === t ? 'bg-ink text-white' : 'text-ink/50 hover:bg-ink/[0.05]'
+                }`}
+              >
+                {t === 'integrations' ? 'Integrations' : t === 'limits' ? 'Limits' : t === 'css' ? 'Custom CSS' : t === 'form' ? 'Form settings' : 'Appearance'}
+              </button>
+            ))}
           </div>
           <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded text-ink/40 hover:bg-ink/[0.05] hover:text-ink">
             <Icon name="close" />
@@ -271,7 +266,168 @@ export function ThemeDrawer({ form, onClose }: { form: Form; onClose: () => void
                 />
               </div>
             </>
-          ) : (
+          ) : tab === 'integrations' ? (
+            <div className="space-y-6">
+              {/* Webhook */}
+              <div>
+                <div className="mb-2 text-[12px] font-bold uppercase tracking-wider text-ink/40">Webhook</div>
+                <p className="mb-3 text-[12px] leading-relaxed text-ink/45">
+                  POST the full submission payload (JSON) to this URL on every new response.
+                </p>
+                <input
+                  type="url"
+                  placeholder="https://hooks.example.com/form"
+                  value={form.settings.webhookUrl ?? ''}
+                  onChange={(e) => updateSettings(form.id, { webhookUrl: e.target.value })}
+                  className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] text-ink outline-none focus:border-ink"
+                />
+                {form.settings.webhookUrl && (
+                  <button
+                    disabled={webhookTesting}
+                    onClick={async () => {
+                      setWebhookTesting(true)
+                      setWebhookResult(null)
+                      try {
+                        const payload = { test: true, formId: form.id, formTitle: form.settings.title, timestamp: Date.now() }
+                        const res = await fetch('/api/test-webhook', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ url: form.settings.webhookUrl, payload }),
+                        }).catch(() => null)
+                        if (res && res.ok) {
+                          const json = await res.json()
+                          setWebhookResult(json.ok ? 'ok' : 'err')
+                          return
+                        }
+                        const direct = await fetch(form.settings.webhookUrl!, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(payload),
+                        })
+                        setWebhookResult(direct.ok ? 'ok' : 'err')
+                      } catch {
+                        setWebhookResult('err')
+                      } finally {
+                        setWebhookTesting(false)
+                      }
+                    }}
+                    className="mt-2 flex items-center gap-1.5 rounded-lg border border-ink/15 px-3 py-1.5 text-[12px] font-semibold text-ink/60 transition hover:border-ink/30 hover:text-ink disabled:opacity-50"
+                  >
+                    {webhookTesting ? 'Sending…' : 'Send test'}
+                    {webhookResult === 'ok' && <span className="text-emerald-600">✓ OK</span>}
+                    {webhookResult === 'err' && <span className="text-brand-600">✗ Failed</span>}
+                  </button>
+                )}
+              </div>
+
+              {/* Email notification */}
+              <div className="border-t border-ink/[0.06] pt-5">
+                <div className="mb-2 text-[12px] font-bold uppercase tracking-wider text-ink/40">Email Notifications</div>
+                <p className="mb-2 text-[12px] leading-relaxed text-ink/45">
+                  Send an email to this address when a new response is submitted (requires SMTP configuration on the server).
+                </p>
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={form.settings.emailNotifyTo ?? ''}
+                  onChange={(e) => updateSettings(form.id, { emailNotifyTo: e.target.value })}
+                  className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] text-ink outline-none focus:border-ink"
+                />
+              </div>
+
+              {/* Stripe payment */}
+              <div className="border-t border-ink/[0.06] pt-5">
+                <div className="mb-2 text-[12px] font-bold uppercase tracking-wider text-ink/40">Stripe Payments</div>
+                <div className="space-y-2">
+                  <div>
+                    <div className="mb-1 text-[11px] font-medium text-ink/50">Publishable Key</div>
+                    <input
+                      type="text"
+                      placeholder="pk_live_…"
+                      value={form.settings.stripePublishableKey ?? ''}
+                      onChange={(e) => updateSettings(form.id, { stripePublishableKey: e.target.value })}
+                      className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] text-ink outline-none focus:border-ink"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <div className="mb-1 text-[11px] font-medium text-ink/50">Amount (cents)</div>
+                      <input
+                        type="number"
+                        min={0}
+                        placeholder="500"
+                        value={form.settings.paymentAmount ?? ''}
+                        onChange={(e) => updateSettings(form.id, { paymentAmount: Number(e.target.value) || undefined })}
+                        className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] text-ink outline-none focus:border-ink"
+                      />
+                    </div>
+                    <div>
+                      <div className="mb-1 text-[11px] font-medium text-ink/50">Currency</div>
+                      <input
+                        type="text"
+                        maxLength={3}
+                        placeholder="usd"
+                        value={form.settings.paymentCurrency ?? ''}
+                        onChange={(e) => updateSettings(form.id, { paymentCurrency: e.target.value.toLowerCase() })}
+                        className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] text-ink outline-none focus:border-ink"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-1 text-[11px] font-medium text-ink/50">Description</div>
+                    <input
+                      type="text"
+                      placeholder="Payment for order #123"
+                      value={form.settings.paymentDescription ?? ''}
+                      onChange={(e) => updateSettings(form.id, { paymentDescription: e.target.value })}
+                      className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] text-ink outline-none focus:border-ink"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          ) : tab === 'limits' ? (
+            <div className="space-y-6">
+              <div>
+                <div className="mb-2 text-[12px] font-bold uppercase tracking-wider text-ink/40">Response Limit</div>
+                <p className="mb-2 text-[12px] leading-relaxed text-ink/45">
+                  Automatically close the form after this many responses. Leave blank for unlimited.
+                </p>
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="Unlimited"
+                  value={form.settings.maxResponses || ''}
+                  onChange={(e) => updateSettings(form.id, { maxResponses: e.target.value ? Number(e.target.value) : undefined })}
+                  className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] text-ink outline-none focus:border-ink"
+                />
+              </div>
+              <div className="border-t border-ink/[0.06] pt-5">
+                <div className="mb-2 text-[12px] font-bold uppercase tracking-wider text-ink/40">Closing Date & Time</div>
+                <p className="mb-2 text-[12px] leading-relaxed text-ink/45">
+                  After this date the form will be closed automatically.
+                </p>
+                <input
+                  type="datetime-local"
+                  value={form.settings.closedAt ? new Date(form.settings.closedAt).toISOString().slice(0, 16) : ''}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    updateSettings(form.id, { closedAt: val ? new Date(val).getTime() : undefined })
+                  }}
+                  className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] text-ink outline-none focus:border-ink"
+                />
+              </div>
+              {(form.settings.maxResponses || form.settings.closedAt) && (
+                <button
+                  onClick={() => updateSettings(form.id, { maxResponses: undefined, closedAt: undefined })}
+                  className="text-[12px] font-medium text-ink/40 hover:text-ink"
+                >
+                  Remove limits
+                </button>
+              )}
+            </div>
+          ) : tab === 'css' ? (
             <div>
               <div className="mb-2 text-[12px] font-bold uppercase tracking-wider text-ink/40">Custom CSS</div>
               <p className="mb-3 text-[12px] leading-relaxed text-ink/45">
@@ -298,7 +454,7 @@ export function ThemeDrawer({ form, onClose }: { form: Form; onClose: () => void
                 Clear CSS
               </button>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

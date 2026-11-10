@@ -1,23 +1,53 @@
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Logo } from '../components/ui'
 import { useForms } from '../store'
 import { formatWhen } from '../lib/logic'
 import { Icon } from '../blockCatalog'
 
+type SortKey = 'updatedAt' | 'createdAt' | 'responses' | 'name'
+
 export default function Dashboard() {
   const forms = useForms((s) => s.forms)
   const submissions = useForms((s) => s.submissions)
   const createForm = useForms((s) => s.createForm)
   const deleteForm = useForms((s) => s.deleteForm)
+  const duplicateForm = useForms((s) => s.duplicateForm)
   const ready = useForms((s) => s.ready)
   const error = useForms((s) => s.error)
   const hydrate = useForms((s) => s.hydrate)
   const navigate = useNavigate()
 
+  const [search, setSearch] = useState('')
+  const [sort, setSort] = useState<SortKey>('updatedAt')
+
   const createNew = () => {
     const f = createForm()
     navigate(`/editor/${f.id}`)
   }
+
+  const responseCount = (formId: string) => submissions.filter((s) => s.formId === formId).length
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    let list = q
+      ? forms.filter((f) => f.settings.title.toLowerCase().includes(q) || f.name.toLowerCase().includes(q))
+      : [...forms]
+    switch (sort) {
+      case 'name':
+        list = list.sort((a, b) => a.settings.title.localeCompare(b.settings.title))
+        break
+      case 'createdAt':
+        list = list.sort((a, b) => b.createdAt - a.createdAt)
+        break
+      case 'responses':
+        list = list.sort((a, b) => responseCount(b.id) - responseCount(a.id))
+        break
+      default: // updatedAt
+        list = list.sort((a, b) => b.updatedAt - a.updatedAt)
+    }
+    return list
+  }, [forms, submissions, search, sort])
 
   return (
     <div className="flex min-h-screen flex-col bg-[#fafafb]">
@@ -40,7 +70,7 @@ export default function Dashboard() {
             </div>
             {error && (
               <p className="mt-4 max-w-sm text-[14px] text-ink/45">
-                Couldn’t reach the server.
+                Couldn't reach the server.
                 <button
                   onClick={() => hydrate()}
                   className="ml-1.5 font-semibold text-brand-600 hover:underline"
@@ -68,7 +98,36 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {forms.length === 0 ? (
+        {forms.length > 0 && (
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/35" aria-hidden>
+                <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
+              </svg>
+              <input
+                type="search"
+                placeholder="Search forms…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-xl border border-ink/15 bg-white py-2.5 pl-9 pr-3 text-[14px] text-ink outline-none transition placeholder:text-ink/35 focus:border-ink/40"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] font-medium text-ink/40">Sort:</span>
+              {(['updatedAt', 'createdAt', 'responses', 'name'] as SortKey[]).map((k) => (
+                <button
+                  key={k}
+                  onClick={() => setSort(k)}
+                  className={`rounded-lg px-3 py-1.5 text-[12px] font-semibold transition ${sort === k ? 'bg-ink text-white' : 'bg-white border border-ink/15 text-ink/55 hover:border-ink/30 hover:text-ink'}`}
+                >
+                  {{ updatedAt: 'Modified', createdAt: 'Created', responses: 'Responses', name: 'Name' }[k]}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {filtered.length === 0 && forms.length === 0 ? (
           <div className="mt-20 flex flex-col items-center text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-ink/[0.05]">
               <Icon name="plus" className="flex h-7 w-7 items-center text-ink/40" />
@@ -84,10 +143,24 @@ export default function Dashboard() {
               Create a form
             </button>
           </div>
+        ) : filtered.length === 0 && search ? (
+          <div className="mt-16 flex flex-col items-center text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ink/[0.05]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-ink/40" aria-hidden>
+                <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
+              </svg>
+            </div>
+            <h2 className="mt-4 text-lg font-bold text-ink">No results for "{search}"</h2>
+            <button onClick={() => setSearch('')} className="mt-3 text-[14px] font-semibold text-brand-600 hover:underline">Clear search</button>
+          </div>
         ) : (
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {forms.map((f) => {
-              const count = submissions.filter((s) => s.formId === f.id).length
+            {filtered.map((f) => {
+              const count = responseCount(f.id)
+              const isClosed = !!(
+                (f.settings.maxResponses && count >= f.settings.maxResponses) ||
+                (f.settings.closedAt && Date.now() > f.settings.closedAt)
+              )
               return (
                 <div
                   key={f.id}
@@ -98,12 +171,17 @@ export default function Dashboard() {
                     className="flex h-28 flex-col justify-between p-4"
                     style={{ background: f.settings.theme.darkMode ? '#0b0f19' : f.settings.theme.background === '#ffffff' ? '#f4f4f6' : f.settings.theme.background }}
                   >
-                    <span
-                      className="block w-12 rounded-full py-1 text-center text-[10px] font-bold"
-                      style={{ background: f.settings.theme.button, color: f.settings.theme.buttonText }}
-                    >
-                      OPEN
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span
+                        className="block w-12 rounded-full py-1 text-center text-[10px] font-bold"
+                        style={{ background: f.settings.theme.button, color: f.settings.theme.buttonText }}
+                      >
+                        {isClosed ? 'CLOSED' : 'OPEN'}
+                      </span>
+                      {isClosed && (
+                        <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-bold text-orange-600">closed</span>
+                      )}
+                    </div>
                     <span
                       className="truncate text-[14px] font-semibold"
                       style={{ color: f.settings.theme.darkMode ? '#fff' : '#1c1c1e' }}
@@ -129,7 +207,18 @@ export default function Dashboard() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          deleteForm(f.id)
+                          const copy = duplicateForm(f.id)
+                          if (copy) navigate(`/editor/${copy.id}`)
+                        }}
+                        className="flex h-7 w-7 items-center justify-center rounded-md text-ink/45 transition hover:bg-ink/[0.05] hover:text-ink"
+                        title="Duplicate form"
+                      >
+                        <span className="flex items-center justify-center"><Icon name="duplicate" /></span>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (window.confirm('Delete this form and all its responses?')) deleteForm(f.id)
                         }}
                         className="flex h-7 w-7 items-center justify-center rounded-md text-ink/45 transition hover:bg-brand-50 hover:text-brand-600"
                         title="Delete form"

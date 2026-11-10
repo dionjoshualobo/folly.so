@@ -35,3 +35,24 @@ dist-ssr
 # Agent tooling (local only, never commit)
 .opencode/
 opencode.json
+
+# Craft Anything / investigation artifacts
+investigation.cany/
+capture/
+inbox/
+craft.json
+feed.json
+usage.json
+build-activity.log
+
+# Illustration / doodle exploration assets (kept locally, not committed)
+/public/character-options.html
+/public/doodles/
+/public/blush/
+/public/drawkit/
+/public/dicebear/
+/public/lukasz/
+/public/peeps-preview/
+/public/stubborn/
+/public/h.txt
+

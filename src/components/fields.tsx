@@ -1,5 +1,5 @@
 import { useId, useRef, useState } from 'react'
-import type { AnswerValue, Block, FilePayload, SignatureData } from '../types'
+import type { AddressValue, AnswerValue, Block, FilePayload, FormSettings, PaymentValue, SignatureData } from '../types'
 
 export function getDefaultValue(block: Block): AnswerValue {
   switch (block.type) {
@@ -11,6 +11,8 @@ export function getDefaultValue(block: Block): AnswerValue {
       return []
     case 'matrix':
       return {}
+    case 'address':
+      return { street: '', apt: '', city: '', state: '', zip: '', country: '' } as AddressValue
     case 'rating':
     case 'nps':
     case 'linear':
@@ -18,6 +20,7 @@ export function getDefaultValue(block: Block): AnswerValue {
     case 'fileUpload':
     case 'dropdown':
     case 'score':
+    case 'payment':
       return null
     default:
       return ''
@@ -28,7 +31,13 @@ export function isFilled(value: AnswerValue): boolean {
   if (value === undefined || value === null) return false
   if (Array.isArray(value)) return value.length > 0
   if (typeof value === 'object' && 'name' in value) return true
-  if (typeof value === 'object') return Object.keys(value).length > 0
+  if (typeof value === 'object' && 'street' in value) {
+    const a = value as AddressValue
+    return Boolean(a.street?.trim() || a.city?.trim() || a.zip?.trim())
+  }
+  if (typeof value === 'object') {
+    return Object.values(value).some((v) => v !== null && v !== undefined && String(v).trim().length > 0)
+  }
   return String(value).trim().length > 0
 }
 
@@ -703,11 +712,13 @@ export function FieldControl({
   value,
   onChange,
   preview = false,
+  formSettings,
 }: {
   block: Block
   value: AnswerValue
   onChange: (v: AnswerValue) => void
   preview?: boolean
+  formSettings?: FormSettings
 }) {
   switch (block.type) {
     case 'shortText':
@@ -792,7 +803,169 @@ export function FieldControl({
           count={(block.scoreSourceIds ?? []).length}
         />
       )
+    case 'address':
+      return <AddressControl block={block} value={value as AddressValue | null} onChange={(v) => onChange(v)} />
+    case 'payment':
+      return (
+        <PaymentControl
+          block={block}
+          value={value}
+          onChange={(v) => onChange(v)}
+          formSettings={formSettings}
+        />
+      )
     default:
       return null
   }
+}
+
+const COUNTRIES = [
+  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'India',
+  'Japan', 'Brazil', 'Mexico', 'South Korea', 'Netherlands', 'Switzerland', 'Sweden',
+  'Norway', 'Denmark', 'Finland', 'Singapore', 'New Zealand', 'South Africa', 'Other',
+]
+
+function AddressControl({
+  block,
+  value,
+  onChange,
+}: {
+  block: Block
+  value: AddressValue | null
+  onChange: (v: AddressValue) => void
+}) {
+  const addr: AddressValue = value ?? { street: '', apt: '', city: '', state: '', zip: '', country: '' }
+  const set = (patch: Partial<AddressValue>) => onChange({ ...addr, ...patch })
+  const cls = 'w-full rounded-xl border border-ink/20 bg-white dark:bg-white/10 px-3 py-2.5 text-[15px] text-ink dark:text-white outline-none transition placeholder:text-ink/35 dark:placeholder:text-white/35 hover:border-ink/40 focus:border-ink focus:ring-4 focus:ring-ink/[0.06]'
+  return (
+    <div className="flex max-w-xl flex-col gap-2.5">
+      <input
+        type="text"
+        placeholder="Street address"
+        value={addr.street}
+        onChange={(e) => set({ street: e.target.value })}
+        className={cls}
+      />
+      {block.addressIncludeApt !== false && (
+        <input
+          type="text"
+          placeholder="Apt, suite, unit (optional)"
+          value={addr.apt ?? ''}
+          onChange={(e) => set({ apt: e.target.value })}
+          className={cls}
+        />
+      )}
+      <div className="grid grid-cols-2 gap-2.5">
+        <input
+          type="text"
+          placeholder="City"
+          value={addr.city}
+          onChange={(e) => set({ city: e.target.value })}
+          className={cls}
+        />
+        <input
+          type="text"
+          placeholder="State / Province"
+          value={addr.state}
+          onChange={(e) => set({ state: e.target.value })}
+          className={cls}
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-2.5">
+        <input
+          type="text"
+          placeholder="Zip / Postal code"
+          value={addr.zip}
+          onChange={(e) => set({ zip: e.target.value })}
+          className={cls}
+        />
+        <select
+          value={addr.country}
+          onChange={(e) => set({ country: e.target.value })}
+          className={`${cls} cursor-pointer`}
+        >
+          <option value="">Country</option>
+          {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+    </div>
+  )
+}
+
+function PaymentControl({
+  block,
+  value,
+  onChange,
+  formSettings,
+}: {
+  block: Block
+  value: AnswerValue
+  onChange: (val: AnswerValue) => void
+  formSettings?: FormSettings
+}) {
+  const amountStr =
+    typeof formSettings?.paymentAmount === 'number'
+      ? `${(formSettings.paymentAmount / 100).toFixed(2)} ${(formSettings.paymentCurrency ?? 'USD').toUpperCase()}`
+      : null
+
+  const isPaid = Boolean(value && typeof value === 'object' && 'paid' in value && (value as PaymentValue).paid)
+
+  return (
+    <div className="max-w-xl rounded-2xl border border-ink/15 bg-ink/[0.02] dark:bg-white/5 p-5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#635bff] text-white">
+            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+              <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2" />
+              <path d="M2 10h20" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          </span>
+          <div>
+            <div className="text-[14px] font-semibold text-ink dark:text-white">
+              {block.text || 'Payment'}
+            </div>
+            <div className="text-[12px] text-ink/50 dark:text-white/50">
+              {amountStr ? `${amountStr} — ${formSettings?.paymentDescription || 'Secure payment via Stripe'}` : 'Stripe payment'}
+            </div>
+          </div>
+        </div>
+        {amountStr && (
+          <span className="rounded-full bg-ink/10 dark:bg-white/10 px-3 py-1 font-mono text-[13px] font-bold text-ink dark:text-white">
+            {amountStr}
+          </span>
+        )}
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-ink/10 dark:border-white/10">
+        {formSettings?.stripePublishableKey ? (
+          isPaid ? (
+            <div className="flex items-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 px-4 py-3 text-[14px] font-semibold text-emerald-700 dark:text-emerald-400">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-5 w-5">
+                <path d="m5 13 4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Payment completed ({amountStr})
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="rounded-xl border border-ink/15 bg-white dark:bg-white/10 px-3 py-2 text-[14px] text-ink/60 dark:text-white/60 flex items-center justify-between">
+                <span>•••• •••• •••• 4242</span>
+                <span className="text-[12px] font-mono text-ink/40 dark:text-white/40">12/28 · CVC</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => onChange({ paid: true, amount: formSettings.paymentAmount, currency: formSettings.paymentCurrency, at: Date.now() })}
+                className="w-full rounded-xl bg-[#635bff] py-2.5 text-[14px] font-bold text-white transition hover:bg-[#534be0] active:scale-[0.99]"
+              >
+                Pay {amountStr ?? 'now'}
+              </button>
+            </div>
+          )
+        ) : (
+          <div className="rounded-xl bg-amber-50 dark:bg-amber-500/10 px-3.5 py-2.5 text-[12px] text-amber-700 dark:text-amber-400">
+            Payment key not configured yet. Set your Stripe Publishable Key in Form settings → Integrations.
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }

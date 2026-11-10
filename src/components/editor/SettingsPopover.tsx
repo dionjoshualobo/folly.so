@@ -262,6 +262,30 @@ export function SettingsPopover({
 
 
 
+            {block.type === 'address' && (
+              <div className="space-y-1 py-1">
+                <Row label="Include Apt / Unit field">
+                  <Toggle
+                    on={block.addressIncludeApt !== false}
+                    onChange={() => updateBlock(formId, block.id, { addressIncludeApt: block.addressIncludeApt === false })}
+                  />
+                </Row>
+                <Row label="Require country">
+                  <Toggle
+                    on={!!block.addressRequireCountry}
+                    onChange={() => updateBlock(formId, block.id, { addressRequireCountry: !block.addressRequireCountry })}
+                  />
+                </Row>
+              </div>
+            )}
+
+            {block.type === 'payment' && (
+              <div className="rounded-xl bg-ink/[0.03] p-3 text-[12px] text-ink/70">
+                <div className="mb-1 font-semibold text-ink">Stripe Payments</div>
+                Configure currency, amount, and Stripe API keys in <span className="font-semibold">Form Settings → Integrations</span>.
+              </div>
+            )}
+
             {block.type === 'embed' && (
               <div className="space-y-2 px-2 py-2">
                 <LabeledInput

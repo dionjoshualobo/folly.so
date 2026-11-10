@@ -28,8 +28,14 @@ app.get('/api/health', async (_req, res) => {
 
 app.get('/api/forms', async (_req, res) => {
   try {
-    const { rows } = await pool.query('SELECT data FROM forms ORDER BY (data->>\'updatedAt\')::bigint DESC NULLS LAST')
-    res.json({ forms: rows.map((r) => r.data) })
+    const { rows } = await pool.query(`
+      SELECT f.data, COUNT(s.id)::int AS count
+      FROM forms f
+      LEFT JOIN submissions s ON s.form_id = f.id
+      GROUP BY f.id, f.data
+      ORDER BY (f.data->>'updatedAt')::bigint DESC NULLS LAST
+    `)
+    res.json({ forms: rows.map((r) => ({ ...r.data, submissionCount: r.count })) })
   } catch (err) {
     res.status(500).json({ error: String(err.message || err) })
   }
@@ -53,6 +59,8 @@ app.get('/api/forms/:id', async (req, res) => {
   try {
     const form = await rowToForm(req.params.id)
     if (!form) return res.status(404).json({ error: 'Not found' })
+    const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM submissions WHERE form_id = $1', [req.params.id])
+    form.submissionCount = rows[0]?.count ?? 0
     res.json({ form })
   } catch (err) {
     res.status(500).json({ error: String(err.message || err) })
@@ -97,14 +105,62 @@ app.post('/api/forms/:id/submissions', async (req, res) => {
     if (!submission?.id || submission.formId !== req.params.id) {
       return res.status(400).json({ error: 'submission.id and matching formId are required' })
     }
+
+    const form = await rowToForm(req.params.id)
+    if (!form) return res.status(404).json({ error: 'Form not found' })
+
+    if (form.settings?.closedAt && Date.now() > form.settings.closedAt) {
+      return res.status(403).json({ error: 'This form has reached its closing date and is closed.' })
+    }
+
+    if (form.settings?.maxResponses && form.settings.maxResponses > 0) {
+      const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM submissions WHERE form_id = $1', [req.params.id])
+      const count = rows[0]?.count ?? 0
+      if (count >= form.settings.maxResponses) {
+        return res.status(403).json({ error: 'This form has reached its maximum response limit and is now closed.' })
+      }
+    }
+
     await pool.query('INSERT INTO submissions (id, form_id, data) VALUES ($1, $2, $3::jsonb)', [
       submission.id,
       submission.formId,
       JSON.stringify(submission),
     ])
+
+    if (form.settings?.webhookUrl) {
+      fetch(form.settings.webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'response.created',
+          formId: form.id,
+          formTitle: form.settings.title,
+          submittedAt: submission.submittedAt,
+          answers: submission.answers,
+        }),
+      }).catch((err) => {
+        console.error('[folly] Webhook error:', err.message || err)
+      })
+    }
+
     res.status(201).json({ submission })
   } catch (err) {
     res.status(500).json({ error: String(err.message || err) })
+  }
+})
+
+app.post('/api/test-webhook', async (req, res) => {
+  const { url, payload } = req.body || {}
+  if (!url) return res.status(400).json({ ok: false, error: 'url is required' })
+  try {
+    const upstream = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload || { test: true }),
+    })
+    res.json({ ok: upstream.ok, status: upstream.status })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: String(err.message || err) })
   }
 })
 

@@ -189,6 +189,19 @@ export const icons: Record<string, ReactNode> = {
       <path d="M6.5 14.5h4" />
     </Svg>
   ),
+  payment: (
+    <Svg>
+      <rect x="3" y="6" width="18" height="12" rx="3" />
+      <path d="M3 10h18" />
+      <path d="M6.5 14.5h4" />
+    </Svg>
+  ),
+  address: (
+    <Svg>
+      <path d="M12 2C8.1 2 5 5.1 5 9c0 5.3 7 13 7 13s7-7.7 7-13c0-3.9-3.1-7-7-7Z" />
+      <circle cx="12" cy="9" r="2.5" />
+    </Svg>
+  ),
   signature: (
     <Svg>
       <path d="M3 17c4-8 10-10 14-6 1.4 1.4 1.4 3.4 0 4.8-1.4 1.4-3.4 1.4-4.8 0-1.3-1.4-.8-3.4 1.2-4.4 2.6-1.3 5.5.4 6.6 2.6 1 2 0 4.5-2 6" />
@@ -370,6 +383,8 @@ export const BLOCKS: BlockDef[] = [
   { type: 'linear', label: 'Linear scale', hint: 'Rate on a numeric scale', group: 'Rating & Scale', shortcut: 'linear' },
   { type: 'nps', label: 'NPS score', hint: 'Net promoter score (0–10)', group: 'Rating & Scale', shortcut: 'nps' },
   { type: 'score', label: 'Score / Calculation', hint: 'Compute a value from earlier answers', group: 'Rating & Scale', shortcut: 'calc' },
+  { type: 'address', label: 'Address', hint: 'Collect a full mailing address', group: 'Inputs', shortcut: 'address' },
+  { type: 'payment', label: 'Payment', hint: 'Accept a payment via Stripe', group: 'Inputs', shortcut: 'payment' },
   { type: 'pageBreak', label: 'Page break', hint: 'Split the form into pages', group: 'Page', shortcut: 'page' },
   { type: 'thankYou', label: 'Thank you page', hint: 'Custom completion message', group: 'Page', shortcut: 'thank' },
 ]
