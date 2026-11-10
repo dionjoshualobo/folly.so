@@ -1,10 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useForms } from '../store'
 import { formatAnswer, formatWhen, getQuestionLabel } from '../lib/logic'
 import { Icon } from '../blockCatalog'
 import { LogoMark } from '../components/ui'
-import type { AnswerValue } from '../types'
+import type { AnswerValue, Block, Submission } from '../types'
 
 function average(nums: number[]): string | null {
   if (nums.length === 0) return null
@@ -17,7 +17,10 @@ export default function Submissions() {
   const ready = useForms((s) => s.ready)
   const form = useForms((s) => s.forms.find((f) => f.id === formId))
   const allSubmissions = useForms((s) => s.submissions)
+  const deleteSubmission = useForms((s) => s.deleteSubmission)
   const submissions = useMemo(() => allSubmissions.filter((x) => x.formId === formId), [allSubmissions, formId])
+
+  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
 
   if (!ready) {
     return <div className="flex min-h-screen items-center justify-center text-sm text-ink/40">Loading…</div>
@@ -113,6 +116,18 @@ export default function Submissions() {
     document.body.removeChild(link)
   }
 
+  const exportToJSON = () => {
+    if (submissions.length === 0) return
+    const blob = new Blob([JSON.stringify(submissions, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `folly_submissions_${form.id}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   const stats = [
     { label: 'Total responses', value: String(submissions.length) },
     ...(ratingAvg ? [{ label: 'Avg rating', value: `★ ${ratingAvg}` }] : []),
@@ -137,13 +152,24 @@ export default function Submissions() {
           </div>
           <div className="flex items-center gap-2">
             {submissions.length > 0 && (
-              <button
-                onClick={exportToCSV}
-                className="flex items-center gap-1.5 rounded-full border border-ink/12 px-3.5 py-1.5 text-[13px] font-semibold text-ink/60 transition hover:border-ink/30 hover:text-ink"
-              >
-                <Icon name="download" className="h-4 w-4" />
-                Export to CSV
-              </button>
+              <>
+                <button
+                  onClick={exportToCSV}
+                  className="flex items-center gap-1.5 rounded-full border border-ink/12 px-3.5 py-1.5 text-[13px] font-semibold text-ink/60 transition hover:border-ink/30 hover:text-ink"
+                  title="Download as CSV spreadsheet"
+                >
+                  <Icon name="download" className="h-4 w-4" />
+                  CSV
+                </button>
+                <button
+                  onClick={exportToJSON}
+                  className="flex items-center gap-1.5 rounded-full border border-ink/12 px-3.5 py-1.5 text-[13px] font-semibold text-ink/60 transition hover:border-ink/30 hover:text-ink"
+                  title="Download raw responses JSON"
+                >
+                  <Icon name="download" className="h-4 w-4" />
+                  JSON
+                </button>
+              </>
             )}
             <Link
               to={`/r/${form.id}`}
@@ -200,11 +226,16 @@ export default function Submissions() {
                         {field} <span className="ml-1 text-[9px] font-bold uppercase tracking-wider text-brand-500 bg-brand-50 px-1 py-0.5 rounded">Hidden</span>
                       </th>
                     ))}
+                    <th className="px-4 py-3 text-right font-semibold text-ink/50 whitespace-nowrap" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-ink/[0.04]">
                   {submissions.map((s) => (
-                    <tr key={s.id} className="hover:bg-ink/[0.02] transition">
+                    <tr
+                      key={s.id}
+                      onClick={() => setSelectedSubmission(s)}
+                      className="cursor-pointer hover:bg-ink/[0.03] transition"
+                    >
                       <td className="px-4 py-3 text-ink/60 whitespace-nowrap">{formatWhen(s.submittedAt)}</td>
                       <td className="px-4 py-3 font-mono text-[11px] text-ink/40 whitespace-nowrap">{s.id.slice(0, 8)}</td>
                       {questions.map((q) => {
@@ -229,6 +260,9 @@ export default function Submissions() {
                           </td>
                         )
                       })}
+                      <td className="px-4 py-3 text-right text-ink/30 text-[12px]">
+                        Inspect →
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -237,6 +271,112 @@ export default function Submissions() {
           </div>
         )}
       </main>
+
+      {selectedSubmission && (
+        <SubmissionDetailModal
+          submission={selectedSubmission}
+          formTitle={form.settings.title}
+          questions={questions}
+          hiddenFields={form.settings.hiddenFields ?? []}
+          onClose={() => setSelectedSubmission(null)}
+          onDelete={() => {
+            if (window.confirm('Delete this submission permanently?')) {
+              deleteSubmission(selectedSubmission.id)
+              setSelectedSubmission(null)
+            }
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+function SubmissionDetailModal({
+  submission,
+  formTitle,
+  questions,
+  hiddenFields,
+  onClose,
+  onDelete,
+}: {
+  submission: Submission
+  formTitle: string
+  questions: Block[]
+  hiddenFields: string[]
+  onClose: () => void
+  onDelete: () => void
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="animate-pop relative flex max-h-[88vh] w-full max-w-2xl flex-col rounded-3xl bg-white shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between border-b border-ink/[0.08] px-6 py-4">
+          <div>
+            <h2 className="text-lg font-bold text-ink">Response Details</h2>
+            <p className="text-[12px] text-ink/45">
+              Submitted {new Date(submission.submittedAt).toLocaleString()} · ID: <span className="font-mono">{submission.id}</span>
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-ink/40 transition hover:bg-ink/[0.05] hover:text-ink"
+          >
+            <Icon name="close" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="rounded-2xl border border-ink/10 bg-[#fafafb] p-4 text-[13px] text-ink/60">
+            Form: <span className="font-semibold text-ink">{formTitle}</span>
+          </div>
+
+          <div className="space-y-3">
+            {questions.map((q) => {
+              const val = submission.answers[q.id]
+              const hasVal = val !== undefined && val !== null && val !== ''
+              return (
+                <div key={q.id} className="rounded-2xl border border-ink/10 bg-white p-4 shadow-sm">
+                  <div className="text-[12px] font-bold text-ink/50 uppercase tracking-wider mb-1.5">
+                    {getQuestionLabel(q)}
+                  </div>
+                  <div className={`text-[15px] leading-relaxed ${hasVal ? 'text-ink font-medium' : 'italic text-ink/35'}`}>
+                    {hasVal ? formatAnswer(val) : 'No response provided'}
+                  </div>
+                </div>
+              )
+            })}
+
+            {hiddenFields.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-ink/[0.08]">
+                <div className="text-[12px] font-bold uppercase tracking-wider text-brand-600 mb-2">Hidden URL Fields</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {hiddenFields.map((h) => (
+                    <div key={h} className="rounded-xl border border-brand-200 bg-brand-50/40 p-3">
+                      <div className="text-[11px] font-bold text-brand-700">{h}</div>
+                      <div className="text-[14px] text-ink">{String(submission.answers[h] ?? '—')}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-ink/[0.08] px-6 py-3.5 bg-ink/[0.01]">
+          <button
+            onClick={onDelete}
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold text-brand-600 transition hover:bg-brand-50"
+          >
+            <Icon name="trash" /> Delete response
+          </button>
+          <button
+            onClick={onClose}
+            className="rounded-full bg-ink px-5 py-2 text-[13px] font-bold text-white transition hover:bg-black"
+          >
+            Done
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

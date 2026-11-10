@@ -4,6 +4,7 @@ import { Logo } from '../components/ui'
 import { useForms } from '../store'
 import { formatWhen } from '../lib/logic'
 import { Icon } from '../blockCatalog'
+import { TEMPLATES, type FormTemplate } from '../lib/templates'
 
 type SortKey = 'updatedAt' | 'createdAt' | 'responses' | 'name'
 
@@ -11,6 +12,7 @@ export default function Dashboard() {
   const forms = useForms((s) => s.forms)
   const submissions = useForms((s) => s.submissions)
   const createForm = useForms((s) => s.createForm)
+  const createFormFromTemplate = useForms((s) => s.createFormFromTemplate)
   const deleteForm = useForms((s) => s.deleteForm)
   const duplicateForm = useForms((s) => s.duplicateForm)
   const ready = useForms((s) => s.ready)
@@ -20,9 +22,16 @@ export default function Dashboard() {
 
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<SortKey>('updatedAt')
+  const [templateModalOpen, setTemplateModalOpen] = useState(false)
 
   const createNew = () => {
     const f = createForm()
+    navigate(`/editor/${f.id}`)
+  }
+
+  const applyTemplate = (t: FormTemplate) => {
+    const f = createFormFromTemplate(t)
+    setTemplateModalOpen(false)
     navigate(`/editor/${f.id}`)
   }
 
@@ -89,13 +98,25 @@ export default function Dashboard() {
               {forms.length} form{forms.length === 1 ? '' : 's'} · {submissions.length} total response{submissions.length === 1 ? '' : 's'}
             </p>
           </div>
-          <button
-            onClick={createNew}
-            className="flex shrink-0 items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[14px] font-semibold text-white shadow-lg shadow-ink/15 transition hover:-translate-y-0.5 hover:bg-black"
-          >
-            <Icon name="plus" className="flex h-4 w-4 items-center" />
-            New form
-          </button>
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setTemplateModalOpen(true)}
+              className="flex shrink-0 items-center gap-1.5 rounded-full border border-ink/15 bg-white px-4 py-2.5 text-[14px] font-semibold text-ink/75 transition hover:border-ink/30 hover:text-ink"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4 w-4 text-ink/50">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M3 9h18M9 21V9" />
+              </svg>
+              Templates
+            </button>
+            <button
+              onClick={createNew}
+              className="flex shrink-0 items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[14px] font-semibold text-white shadow-lg shadow-ink/15 transition hover:-translate-y-0.5 hover:bg-black"
+            >
+              <Icon name="plus" className="flex h-4 w-4 items-center" />
+              New form
+            </button>
+          </div>
         </div>
 
         {forms.length > 0 && (
@@ -128,20 +149,59 @@ export default function Dashboard() {
         )}
 
         {filtered.length === 0 && forms.length === 0 ? (
-          <div className="mt-20 flex flex-col items-center text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-ink/[0.05]">
-              <Icon name="plus" className="flex h-7 w-7 items-center text-ink/40" />
+          <div className="mt-12 flex flex-col items-center">
+            <div className="text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-ink/[0.05]">
+                <Icon name="plus" className="flex h-6 w-6 items-center text-ink/40" />
+              </div>
+              <h2 className="mt-4 text-xl font-bold text-ink">No forms yet</h2>
+              <p className="mt-1 max-w-sm text-[14px] text-ink/45">
+                Start from a blank canvas or jumpstart with a pre-built template.
+              </p>
+              <div className="mt-5 flex items-center justify-center gap-3">
+                <button
+                  onClick={createNew}
+                  className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-bold text-white transition hover:bg-black"
+                >
+                  Blank form
+                </button>
+                <button
+                  onClick={() => setTemplateModalOpen(true)}
+                  className="rounded-full border border-ink/20 bg-white px-6 py-2.5 text-[14px] font-bold text-ink transition hover:border-ink/40"
+                >
+                  Browse templates
+                </button>
+              </div>
             </div>
-            <h2 className="mt-5 text-xl font-bold text-ink">No forms yet</h2>
-            <p className="mt-1 max-w-sm text-[14px] text-ink/45">
-              Create your first form and start typing — it's as easy as a text document.
-            </p>
-            <button
-              onClick={createNew}
-              className="mt-6 rounded-full bg-brand-500 px-6 py-3 text-[14px] font-bold text-white transition hover:bg-brand-600"
-            >
-              Create a form
-            </button>
+
+            <div className="mt-12 w-full">
+              <div className="mb-4 text-[12px] font-bold uppercase tracking-wider text-ink/40">Popular Templates</div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {TEMPLATES.slice(0, 3).map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => applyTemplate(t)}
+                    className="group flex flex-col justify-between rounded-2xl border border-ink/10 bg-white p-5 text-left transition hover:-translate-y-0.5 hover:border-ink/30 hover:shadow-md"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="rounded-full bg-ink/[0.05] px-2.5 py-0.5 text-[10px] font-bold uppercase text-ink/50">
+                          {t.category}
+                        </span>
+                        <span className="text-[12px] font-semibold text-brand-600 opacity-0 transition group-hover:opacity-100">
+                          Use →
+                        </span>
+                      </div>
+                      <h3 className="mt-3 text-[15px] font-bold text-ink">{t.title}</h3>
+                      <p className="mt-1 text-[13px] leading-relaxed text-ink/50">{t.description}</p>
+                    </div>
+                    <div className="mt-4 text-[11px] font-medium text-ink/35">
+                      {t.blocks.length} blocks included
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         ) : filtered.length === 0 && search ? (
           <div className="mt-16 flex flex-col items-center text-center">
@@ -258,6 +318,97 @@ export default function Dashboard() {
         </>
         )}
       </main>
+
+      {templateModalOpen && (
+        <TemplateModal
+          onClose={() => setTemplateModalOpen(false)}
+          onSelect={applyTemplate}
+        />
+      )}
+    </div>
+  )
+}
+
+function TemplateModal({
+  onClose,
+  onSelect,
+}: {
+  onClose: () => void
+  onSelect: (t: FormTemplate) => void
+}) {
+  const [selectedCategory, setSelectedCategory] = useState<string>('All')
+  const categories = ['All', 'Business', 'Feedback', 'Events', 'HR', 'Sales']
+
+  const filtered = selectedCategory === 'All'
+    ? TEMPLATES
+    : TEMPLATES.filter((t) => t.category === selectedCategory)
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="animate-pop relative flex max-h-[85vh] w-full max-w-3xl flex-col rounded-3xl bg-white shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between border-b border-ink/[0.08] px-6 py-4">
+          <div>
+            <h2 className="text-xl font-bold text-ink">Form Templates</h2>
+            <p className="text-[13px] text-ink/50">Choose a ready-to-use template or customize it as you like.</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-ink/40 transition hover:bg-ink/[0.05] hover:text-ink"
+          >
+            <Icon name="close" />
+          </button>
+        </div>
+
+        <div className="flex gap-1.5 border-b border-ink/[0.06] px-6 py-3 overflow-x-auto">
+          {categories.map((c) => (
+            <button
+              key={c}
+              onClick={() => setSelectedCategory(c)}
+              className={`rounded-full px-3.5 py-1 text-[12px] font-semibold transition ${
+                selectedCategory === c
+                  ? 'bg-ink text-white'
+                  : 'bg-ink/[0.04] text-ink/60 hover:bg-ink/[0.08] hover:text-ink'
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {filtered.map((t) => (
+              <div
+                key={t.id}
+                className="flex flex-col justify-between rounded-2xl border border-ink/10 bg-[#fafafb] p-5 transition hover:border-ink/30 hover:bg-white hover:shadow-md"
+              >
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="rounded-full bg-ink/[0.06] px-2.5 py-0.5 text-[10px] font-bold uppercase text-ink/50">
+                      {t.category}
+                    </span>
+                    <span className="text-[11px] font-medium text-ink/40">
+                      {t.blocks.length} blocks
+                    </span>
+                  </div>
+                  <h3 className="mt-3 text-[16px] font-bold text-ink">{t.title}</h3>
+                  <p className="mt-1 text-[13px] leading-relaxed text-ink/55">{t.description}</p>
+                </div>
+                <div className="mt-5 pt-4 border-t border-ink/[0.06] flex items-center justify-between">
+                  <span className="text-[11px] text-ink/40 font-mono">1-click install</span>
+                  <button
+                    onClick={() => onSelect(t)}
+                    className="rounded-full bg-ink px-4 py-1.5 text-[12px] font-bold text-white transition hover:bg-black"
+                  >
+                    Use template
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

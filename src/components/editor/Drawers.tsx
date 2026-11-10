@@ -236,6 +236,19 @@ export function ThemeDrawer({ form, onClose }: { form: Form; onClose: () => void
                   </div>
                 </div>
                 <div className="border-t border-ink/[0.06] pt-3">
+                  <div className="mb-1.5 text-[13px] font-bold text-ink/75">Password Protection</div>
+                  <input
+                    type="text"
+                    placeholder="Leave blank for public form"
+                    value={form.settings.password ?? ''}
+                    onChange={(e) => updateSettings(form.id, { password: e.target.value.trim() || undefined })}
+                    className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[14px] text-ink outline-none focus:border-ink"
+                  />
+                  <p className="mt-1.5 text-[11px] text-ink/40">
+                    If set, respondents must enter this access code to view and submit the form.
+                  </p>
+                </div>
+                <div className="border-t border-ink/[0.06] pt-3">
                   <div className="mb-1.5 text-[13px] font-bold text-ink/75">URL Hidden Fields</div>
                   <input
                     type="text"

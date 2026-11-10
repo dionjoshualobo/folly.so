@@ -164,6 +164,9 @@ export default function PublicForm() {
   const [submitted, setSubmitted] = useState(false)
   const [visited, setVisited] = useState(false)
   const [formFailed, setFormFailed] = useState(false)
+  const [passwordInput, setPasswordInput] = useState('')
+  const [passwordError, setPasswordError] = useState(false)
+  const [unlocked, setUnlocked] = useState(false)
   const topRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -191,7 +194,19 @@ export default function PublicForm() {
 
   useEffect(() => {
     const qParams = getUrlQueryParams()
-    const initialAnswers: Record<string, AnswerValue> = {}
+    let initialAnswers: Record<string, AnswerValue> = {}
+
+    // Restore draft from localStorage if available
+    try {
+      const draft = localStorage.getItem(`folly_draft_${formId}`)
+      if (draft) {
+        const parsed = JSON.parse(draft)
+        if (parsed && typeof parsed === 'object') {
+          initialAnswers = { ...parsed }
+        }
+      }
+    } catch {}
+
     if (form?.settings.hiddenFields) {
       for (const field of form.settings.hiddenFields) {
         if (qParams[field] !== undefined) {
@@ -204,6 +219,14 @@ export default function PublicForm() {
     setCurrentPage(0)
     setSubmitted(false)
   }, [formId, form?.settings.hiddenFields])
+
+  // Persist response draft to localStorage
+  useEffect(() => {
+    if (submitted || !formId || Object.keys(answers).length === 0) return
+    try {
+      localStorage.setItem(`folly_draft_${formId}`, JSON.stringify(answers))
+    } catch {}
+  }, [answers, submitted, formId])
 
   useEffect(() => {
     let injectedCss = ''
@@ -261,6 +284,63 @@ export default function PublicForm() {
               ? 'This form has reached its closing date and is no longer accepting new responses.'
               : 'This form has reached its maximum response limit and is no longer accepting new submissions.'}
           </p>
+        </div>
+        {form.settings.poweredBy && <PoweredBy dark={dark} font={font} />}
+      </div>
+    )
+  }
+
+  const isPasswordProtected = Boolean(form.settings.password && form.settings.password.trim().length > 0)
+  const isLocked = isPasswordProtected && !unlocked
+
+  if (isLocked) {
+    return (
+      <div
+        className={`tally-app flex min-h-screen flex-col items-center justify-center px-6 py-12 text-center ${dark ? 'dark' : ''}`}
+        style={{ background: theme.background, fontFamily: font, color: dark ? '#f5f5f5' : '#0b0f19' }}
+      >
+        <div className="w-full max-w-sm rounded-3xl border border-ink/10 bg-white dark:bg-white/5 p-8 shadow-sm">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-ink/[0.05] text-ink dark:bg-white/10 dark:text-white">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <h1 className="text-xl font-bold tracking-tight text-ink dark:text-white">{form.settings.title}</h1>
+          <p className="mt-2 text-[14px] leading-relaxed text-ink/60 dark:text-white/60">
+            This form is password protected. Enter the access code to continue.
+          </p>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (passwordInput === form.settings.password) {
+                setUnlocked(true)
+                setPasswordError(false)
+              } else {
+                setPasswordError(true)
+              }
+            }}
+            className="mt-6 space-y-3"
+          >
+            <input
+              type="password"
+              placeholder="Enter access code"
+              value={passwordInput}
+              onChange={(e) => {
+                setPasswordInput(e.target.value)
+                setPasswordError(false)
+              }}
+              className="w-full rounded-xl border border-ink/20 bg-white dark:bg-white/10 px-4 py-2.5 text-[15px] text-ink dark:text-white outline-none focus:border-ink"
+            />
+            {passwordError && <p className="text-[12px] font-semibold text-brand-600">Incorrect password. Please try again.</p>}
+            <button
+              type="submit"
+              className="w-full rounded-xl py-2.5 text-[14px] font-bold shadow-sm transition hover:opacity-90 active:scale-[0.99]"
+              style={{ background: theme.button, color: theme.buttonText }}
+            >
+              Unlock form
+            </button>
+          </form>
         </div>
         {form.settings.poweredBy && <PoweredBy dark={dark} font={font} />}
       </div>
@@ -341,7 +421,10 @@ export default function PublicForm() {
       }
     }
 
-    // keep file names off the persisted summary to keep localStorage tidy
+    try {
+      localStorage.removeItem(`folly_draft_${form.id}`)
+    } catch {}
+
     setSubmitted(true)
     topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }

@@ -41,3 +41,7 @@ export function addSubmission(formId: string, submission: Submission): Promise<{
     body: JSON.stringify({ submission }),
   })
 }
+
+export function deleteSubmission(id: string): Promise<{ ok: boolean }> {
+  return request(`/api/submissions/${encodeURIComponent(id)}`, { method: 'DELETE' })
+}

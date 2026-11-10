@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { AnswerValue, Block, Form, FormSettings, FormTheme, Submission } from './types'
-import { makeForm, uid } from './types'
+import { makeBlock, makeForm, uid } from './types'
+import type { FormTemplate } from './lib/templates'
 import * as api from './lib/api'
 
 interface State {
@@ -12,6 +13,7 @@ interface State {
   hydrate: () => Promise<void>
   ensureForm: (id: string) => Promise<boolean>
   createForm: (name?: string) => Form
+  createFormFromTemplate: (template: FormTemplate) => Form
   deleteForm: (id: string) => void
   duplicateForm: (id: string) => Form | null
   updateForm: (id: string, patch: Partial<Form>) => void
@@ -23,6 +25,7 @@ interface State {
   moveBlock: (formId: string, fromIndex: number, toIndex: number) => void
   duplicateBlock: (formId: string, blockId: string) => void
   addSubmission: (formId: string, answers: Record<string, AnswerValue>) => Submission
+  deleteSubmission: (id: string) => void
 }
 
 // Debounced full-form persistence. Form JSON is stored as a single document in
@@ -105,6 +108,28 @@ export const useForms = create<State>()((set, get) => {
       set((s) => ({ forms: [form, ...s.forms] }))
       api.createForm(form).catch((err) => {
         console.error('[folly] failed to create form', err)
+      })
+      return form
+    },
+
+    createFormFromTemplate: (template) => {
+      const form = makeForm({
+        name: template.title,
+        blocks: template.blocks.map((b) =>
+          makeBlock({
+            ...b,
+            id: uid(),
+            options: b.options?.map((o) => ({ ...o, id: uid() })),
+          }),
+        ),
+      })
+      form.settings.title = template.title
+      if (template.settings) {
+        form.settings = { ...form.settings, ...template.settings }
+      }
+      set((s) => ({ forms: [form, ...s.forms] }))
+      api.createForm(form).catch((err) => {
+        console.error('[folly] failed to create template form', err)
       })
       return form
     },
@@ -206,6 +231,15 @@ export const useForms = create<State>()((set, get) => {
         set((s) => ({ submissions: s.submissions.filter((x) => x !== submission) }))
       })
       return submission
+    },
+
+    deleteSubmission: (id) => {
+      const prev = get().submissions
+      set((s) => ({ submissions: s.submissions.filter((x) => x.id !== id) }))
+      api.deleteSubmission(id).catch((err) => {
+        console.error('[folly] failed to delete submission', id, err)
+        set({ submissions: prev })
+      })
     },
   }
 })

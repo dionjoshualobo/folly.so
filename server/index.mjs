@@ -99,6 +99,15 @@ app.get('/api/forms/:id/submissions', async (req, res) => {
   }
 })
 
+app.delete('/api/submissions/:id', async (req, res) => {
+  try {
+    const { rowCount } = await pool.query('DELETE FROM submissions WHERE id = $1', [req.params.id])
+    res.json({ ok: rowCount > 0 })
+  } catch (err) {
+    res.status(500).json({ error: String(err.message || err) })
+  }
+})
+
 app.post('/api/forms/:id/submissions', async (req, res) => {
   try {
     const submission = req.body?.submission

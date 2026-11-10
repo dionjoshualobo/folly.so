@@ -60,6 +60,7 @@ export default function Editor() {
   const addBlock = useForms((s) => s.addBlock)
   const removeBlock = useForms((s) => s.removeBlock)
   const moveBlock = useForms((s) => s.moveBlock)
+  const duplicateBlock = useForms((s) => s.duplicateBlock)
   const updateForm = useForms((s) => s.updateForm)
   const updateSettings = useForms((s) => s.updateSettings)
   const submissions = useForms((s) => s.submissions)
@@ -76,6 +77,53 @@ export default function Editor() {
   const [dragId, setDragId] = useState<string | null>(null)
   const [overIndex, setOverIndex] = useState<number | null>(null)
   const [colZone, setColZone] = useState<{ blockId: string; side: 'left' | 'right' } | null>(null)
+
+  const historyRef = useRef<Block[][]>([])
+  const redoRef = useRef<Block[][]>([])
+  const isUndoRedoAction = useRef(false)
+  const lastBlocksRef = useRef<Block[] | null>(null)
+
+  useEffect(() => {
+    if (!form) return
+    if (isUndoRedoAction.current) {
+      isUndoRedoAction.current = false
+      lastBlocksRef.current = form.blocks
+      return
+    }
+    if (lastBlocksRef.current && JSON.stringify(lastBlocksRef.current) !== JSON.stringify(form.blocks)) {
+      historyRef.current.push(lastBlocksRef.current)
+      if (historyRef.current.length > 50) historyRef.current.shift()
+      redoRef.current = []
+    }
+    lastBlocksRef.current = form.blocks
+  }, [form?.blocks])
+
+  useEffect(() => {
+    const handleUndoRedo = (e: globalThis.KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+        if (!form) return
+        if (e.shiftKey) {
+          if (redoRef.current.length > 0) {
+            e.preventDefault()
+            const next = redoRef.current.pop()!
+            historyRef.current.push(form.blocks)
+            isUndoRedoAction.current = true
+            updateForm(form.id, { blocks: next })
+          }
+        } else {
+          if (historyRef.current.length > 0) {
+            e.preventDefault()
+            const prev = historyRef.current.pop()!
+            redoRef.current.push(form.blocks)
+            isUndoRedoAction.current = true
+            updateForm(form.id, { blocks: prev })
+          }
+        }
+      }
+    }
+    window.addEventListener('keydown', handleUndoRedo)
+    return () => window.removeEventListener('keydown', handleUndoRedo)
+  }, [form, updateForm])
 
   useEffect(() => {
     if (!ready && formId === 'new') {
@@ -160,6 +208,11 @@ export default function Editor() {
 
   const onBlockKeyDown = (e: KeyboardEvent<HTMLDivElement>, block: Block, index: number) => {
     const el = e.currentTarget
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'd') {
+      e.preventDefault()
+      duplicateBlock(form!.id, block.id)
+      return
+    }
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       onEnterInBlock(block, index)
@@ -536,8 +589,11 @@ function TopBar({
             f
           </span>
           <span className="truncate text-[14px] font-semibold text-ink/90">{form.settings.title || 'Untitled form'}</span>
-          <span className="hidden rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 sm:inline">
-            Draft
+          <span className="hidden items-center gap-1 text-[11px] font-medium text-ink/40 sm:flex">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-3 w-3 text-emerald-600">
+              <path d="m5 13 4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Saved
           </span>
         </div>
       </div>

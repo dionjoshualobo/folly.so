@@ -108,6 +108,8 @@ export interface FormSettings {
   showProgress: boolean
   poweredBy: boolean
   customCss?: string
+  /** Optional access code/password required to view the form */
+  password?: string
   /** Webhook URL — POST payload sent on each new submission */
   webhookUrl?: string
   /** Close the form after this many responses (0 = unlimited) */
