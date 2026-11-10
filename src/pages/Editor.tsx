@@ -6,6 +6,7 @@ import { useForms } from '../store'
 import { BLOCKS, Icon } from '../blockCatalog'
 import { SlashMenu } from '../components/editor/SlashMenu'
 import { SettingsPopover } from '../components/editor/SettingsPopover'
+import { SelectionToolbar } from '../components/editor/SelectionToolbar'
 import { ShareDrawer, ThemeDrawer } from '../components/editor/Drawers'
 import { LogicDrawer } from '../components/editor/LogicDrawer'
 import { rowLayout, resolveRow, canJoinColumn } from '../lib/layout'
@@ -77,6 +78,7 @@ export default function Editor() {
   const [dragId, setDragId] = useState<string | null>(null)
   const [overIndex, setOverIndex] = useState<number | null>(null)
   const [colZone, setColZone] = useState<{ blockId: string; side: 'left' | 'right' } | null>(null)
+  const editorCanvasRef = useRef<HTMLElement>(null)
 
   const historyRef = useRef<Block[][]>([])
   const redoRef = useRef<Block[][]>([])
@@ -374,9 +376,11 @@ export default function Editor() {
       />
 
       <main
+        ref={editorCanvasRef}
         className={`editor-canvas flex-1 overflow-y-auto ${form.settings.theme.darkMode ? 'dark' : ''}`}
         style={{ background: form.settings.theme.background, fontFamily: themeFont(form.settings.theme.font), color: form.settings.theme.darkMode ? '#f5f5f5' : '#0b0f19' }}
       >
+        <SelectionToolbar containerRef={editorCanvasRef} />
         {form.settings.coverImageUrl ? (
           <div className="group w-full h-[180px] sm:h-[220px] overflow-hidden relative">
             <img src={form.settings.coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
@@ -1196,6 +1200,11 @@ function BlockRow({
             <Icon name="pageBreak" />
           </span>
           <div className="flex-1 text-[14px] font-semibold text-ink/45">New page starts here</div>
+          {block.jumpRules && block.jumpRules.length > 0 && (
+            <span className="flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-[11px] font-semibold text-brand-600">
+              ↳ {block.jumpRules.length} {block.jumpRules.length === 1 ? 'jump rule' : 'jump rules'}
+            </span>
+          )}
           <span className="rounded-full bg-ink/[0.05] px-2 py-0.5 text-[11px] font-semibold text-ink/40">Page break</span>
         </div>
       </div>

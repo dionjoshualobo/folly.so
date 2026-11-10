@@ -44,6 +44,14 @@ export interface LogicCondition {
   value: string
 }
 
+export interface JumpRule {
+  id: string
+  fieldId: string
+  op: 'equals' | 'notEquals' | 'contains' | 'notContains' | 'greaterThan' | 'lessThan'
+  value: string
+  targetPage: number | 'submit'
+}
+
 export interface Block {
   id: string
   type: BlockType
@@ -75,6 +83,7 @@ export interface Block {
   fileTypes?: string[]
   maxSizeMb?: number
   showIf?: LogicCondition[]
+  jumpRules?: JumpRule[]
   colId?: string
   /** Column width as a percentage, denormalised onto each column member. */
   colWidth?: number
@@ -90,6 +99,7 @@ export interface FormTheme {
   buttonText: string
   font: 'system' | 'serif' | 'playful' | 'classic' | 'rounded' | 'geometric' | 'typewriter' | 'custom'
   customFontBase64?: string
+  customFontName?: string
   darkMode: boolean
 }
 
@@ -108,6 +118,8 @@ export interface FormSettings {
   showProgress: boolean
   poweredBy: boolean
   customCss?: string
+  /** Custom URL slug / path (e.g. 'contact-us' -> folly.so/f/contact-us) */
+  slug?: string
   /** Optional access code/password required to view the form */
   password?: string
   /** Webhook URL — POST payload sent on each new submission */
@@ -214,6 +226,7 @@ export function makeBlock(partial: Partial<Block> & { type: BlockType }): Block 
     fileTypes: partial.fileTypes ?? ['.pdf', '.png', '.jpg', '.jpeg', '.gif', '.doc', '.docx', '.zip', '.mp4'],
     maxSizeMb: partial.maxSizeMb ?? 10,
     showIf: partial.showIf,
+    jumpRules: partial.jumpRules,
     colId: partial.colId,
     addressIncludeApt: partial.addressIncludeApt ?? true,
     addressRequireCountry: partial.addressRequireCountry ?? false,

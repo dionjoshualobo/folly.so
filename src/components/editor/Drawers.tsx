@@ -143,8 +143,11 @@ export function ThemeDrawer({ form, onClose }: { form: Form; onClose: () => void
                   ))}
                 </div>
                 {t.font === 'custom' && (
-                  <div className="mt-3 p-3 rounded-xl border border-ink/10 bg-ink/[0.02]">
-                    <div className="mb-1.5 text-[11px] font-medium text-ink/50">Upload Font File (TTF, OTF, WOFF)</div>
+                  <div className="mt-3 p-3.5 rounded-2xl border border-ink/10 bg-ink/[0.02]">
+                    <div className="mb-1 text-[12px] font-bold text-ink">Upload Font for Questions</div>
+                    <p className="mb-2 text-[11px] text-ink/45">
+                      Upload your brand's TTF, OTF, or WOFF font file. It will be applied to all questions and text.
+                    </p>
                     <input
                       type="file"
                       accept=".ttf,.otf,.woff,.woff2"
@@ -153,12 +156,37 @@ export function ThemeDrawer({ form, onClose }: { form: Form; onClose: () => void
                         if (!file) return
                         const reader = new FileReader()
                         reader.onload = () => {
-                          updateTheme(form.id, { customFontBase64: reader.result as string })
+                          updateTheme(form.id, {
+                            font: 'custom',
+                            customFontBase64: reader.result as string,
+                            customFontName: file.name,
+                          })
                         }
                         reader.readAsDataURL(file)
                       }}
-                      className="w-full text-[12px] file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-ink/[0.05] file:px-2 file:py-1 file:text-[11px] file:font-semibold hover:file:bg-ink/10"
+                      className="w-full text-[12px] file:mr-2 file:cursor-pointer file:rounded-lg file:border-0 file:bg-ink file:px-3 file:py-1.5 file:text-[11px] file:font-semibold file:text-white hover:file:bg-black"
                     />
+                    {t.customFontBase64 && (
+                      <div className="mt-3 pt-3 border-t border-ink/10">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
+                            ✓ Font active: {t.customFontName || 'custom font'}
+                          </span>
+                          <button
+                            onClick={() => updateTheme(form.id, { customFontBase64: undefined, customFontName: undefined, font: 'system' })}
+                            className="text-[11px] text-brand-600 font-semibold hover:underline"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <div
+                          className="mt-2 rounded-xl bg-white p-2.5 text-[14px] text-ink border border-ink/10"
+                          style={{ fontFamily: '"CustomFont", sans-serif' }}
+                        >
+                          Preview: How questions will look with this font
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -475,8 +503,10 @@ export function ThemeDrawer({ form, onClose }: { form: Form; onClose: () => void
 }
 
 export function ShareDrawer({ form, onClose }: { form: Form; onClose: () => void }) {
+  const updateSettings = useForms((s) => s.updateSettings)
   const [copied, setCopied] = useState(false)
-  const publicUrl = `${window.location.origin}${window.location.pathname}#/r/${form.id}`
+  const formSlug = form.settings.slug ? form.settings.slug : form.id
+  const publicUrl = `${window.location.origin}${window.location.pathname}#/f/${formSlug}`
   const embed = `<iframe src="${publicUrl}" width="100%" height="640" frameborder="0" marginheight="0" marginwidth="0" title="${form.settings.title}"></iframe>`
   const [embedCopied, setEmbedCopied] = useState(false)
 
@@ -510,6 +540,26 @@ export function ShareDrawer({ form, onClose }: { form: Form; onClose: () => void
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-5 py-4">
+          <div className="mb-4 rounded-xl border border-ink/10 bg-ink/[0.02] p-3.5">
+            <div className="mb-1 text-[12px] font-bold text-ink">Custom URL Path</div>
+            <p className="mb-2 text-[11px] leading-relaxed text-ink/50">
+              Customize the form link so you don't have to share a random ID.
+            </p>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[12px] font-mono text-ink/40">/f/</span>
+              <input
+                type="text"
+                placeholder={form.id.slice(0, 8)}
+                value={form.settings.slug ?? ''}
+                onChange={(e) => {
+                  const cleaned = e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '')
+                  updateSettings(form.id, { slug: cleaned || undefined })
+                }}
+                className="flex-1 rounded-lg border border-ink/15 bg-white px-2.5 py-1.5 font-mono text-[12px] text-ink outline-none focus:border-ink"
+              />
+            </div>
+          </div>
+
           <div className="mb-2 text-[12px] font-bold uppercase tracking-wider text-ink/40">Folly link</div>
           <div className="flex items-center gap-2 rounded-xl border border-ink/15 px-3 py-2">
             <span className="min-w-0 flex-1 truncate font-mono text-[12px] text-ink/80">{publicUrl}</span>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { BLOCKS, GROUPS, Icon } from '../../blockCatalog'
 import type { Block, BlockType, Form } from '../../types'
 import { useForms } from '../../store'
-import { answerOptionsFor, canHaveLogic, getQuestionLabel, questionOptions, isAnswerBlock } from '../../lib/logic'
+import { answerOptionsFor, canHaveLogic, getFormPageLabels, getQuestionLabel, questionOptions, isAnswerBlock } from '../../lib/logic'
 
 export function SettingsPopover({
   form,
@@ -124,9 +124,11 @@ export function SettingsPopover({
 
         {tab === 'settings' && (
           <div className="space-y-1">
-            <Row label="Required" hint={block.required ? 'Required field' : ''}>
-              <Toggle on={!!block.required} onChange={toggleRequired} />
-            </Row>
+            {isAnswerBlock(block.type) && (
+              <Row label="Required" hint={block.required ? 'Required field' : ''}>
+                <Toggle on={!!block.required} onChange={toggleRequired} />
+              </Row>
+            )}
 
             {isAnswerBlock(block.type) && (
               <div className="px-2 py-2">
@@ -475,6 +477,151 @@ export function SettingsPopover({
                   </div>
                 ) : (
                   <p className="text-[11px] text-ink/40">No logic yet — add a condition to show this block based on an earlier answer.</p>
+                )}
+              </div>
+            )}
+
+            {(block.type === 'pageBreak' || isAnswerBlock(block.type)) && (
+              <div className="mt-1 border-t border-ink/[0.06] px-2 pb-2 pt-2">
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="text-[12px] font-bold text-ink/70">
+                    Page Jumps {block.jumpRules && block.jumpRules.length > 0 && (
+                      <span className="ml-1 rounded bg-brand-100 px-1.5 py-0.5 text-[10px] font-bold text-brand-600">
+                        {block.jumpRules.length}
+                      </span>
+                    )}
+                  </span>
+                  <button
+                    onClick={() => {
+                      const rules = [...(block.jumpRules ?? [])]
+                      const first = questions[0]
+                      if (!first) return
+                      const tb = form.blocks.find((b) => b.id === first.id)
+                      const firstVal = tb ? (answerOptionsFor(tb)[0] ?? '') : ''
+                      rules.push({
+                        id: Math.random().toString(36).slice(2),
+                        fieldId: first.id,
+                        op: 'equals',
+                        value: firstVal,
+                        targetPage: 'submit',
+                      })
+                      updateBlock(formId, block.id, { jumpRules: rules })
+                    }}
+                    className="rounded-md bg-ink px-2 py-1 text-[11px] font-semibold text-white hover:bg-black"
+                  >
+                    + Add Jump Rule
+                  </button>
+                </div>
+                {block.jumpRules && block.jumpRules.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="text-[11px] text-ink/40">If condition matches, jump to selected page:</p>
+                    {block.jumpRules.map((rule, i) => {
+                      const targetBlock = form.blocks.find((b) => b.id === rule.fieldId)
+                      const labels = targetBlock ? answerOptionsFor(targetBlock) : []
+                      return (
+                        <div key={rule.id || i} className="rounded-lg border border-ink/10 bg-ink/[0.02] p-2 space-y-1.5">
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] font-bold text-ink/40 uppercase">If</span>
+                            <select
+                              value={rule.fieldId}
+                              onChange={(e) => {
+                                const rules = [...(block.jumpRules ?? [])]
+                                const tb = form.blocks.find((b) => b.id === e.target.value)
+                                rules[i] = {
+                                  ...rules[i],
+                                  fieldId: e.target.value,
+                                  value: tb ? answerOptionsFor(tb)[0] ?? '' : '',
+                                }
+                                updateBlock(formId, block.id, { jumpRules: rules })
+                              }}
+                              className="min-w-0 flex-1 truncate rounded border border-ink/15 px-1.5 py-1 text-[11px] outline-none"
+                            >
+                              {questions.map((q) => (
+                                <option key={q.id} value={q.id}>{q.label}</option>
+                              ))}
+                            </select>
+                            <select
+                              value={rule.op}
+                              onChange={(e) => {
+                                const rules = [...(block.jumpRules ?? [])]
+                                rules[i] = { ...rules[i], op: e.target.value as any }
+                                updateBlock(formId, block.id, { jumpRules: rules })
+                              }}
+                              className="rounded border border-ink/15 px-1 py-1 text-[11px] outline-none"
+                            >
+                              <option value="equals">is</option>
+                              <option value="notEquals">is not</option>
+                              <option value="contains">contains</option>
+                              <option value="notContains">does not contain</option>
+                              <option value="greaterThan">&gt;</option>
+                              <option value="lessThan">&lt;</option>
+                            </select>
+                            <button
+                              onClick={() => {
+                                const rules = (block.jumpRules ?? []).filter((_, j) => j !== i)
+                                updateBlock(formId, block.id, { jumpRules: rules })
+                              }}
+                              className="text-ink/40 hover:text-brand-600 px-1 text-[12px]"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {labels.length > 0 ? (
+                              <select
+                                value={rule.value}
+                                onChange={(e) => {
+                                  const rules = [...(block.jumpRules ?? [])]
+                                  rules[i] = { ...rules[i], value: e.target.value }
+                                  updateBlock(formId, block.id, { jumpRules: rules })
+                                }}
+                                className="min-w-0 flex-1 truncate rounded border border-ink/15 px-1.5 py-1 text-[11px] outline-none"
+                              >
+                                {labels.map((o) => (
+                                  <option key={o} value={o}>{o}</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <input
+                                value={rule.value}
+                                onChange={(e) => {
+                                  const rules = [...(block.jumpRules ?? [])]
+                                  rules[i] = { ...rules[i], value: e.target.value }
+                                  updateBlock(formId, block.id, { jumpRules: rules })
+                                }}
+                                placeholder="value…"
+                                className="min-w-0 flex-1 rounded border border-ink/15 px-1.5 py-1 text-[11px] outline-none"
+                              />
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 pt-1 border-t border-ink/5">
+                            <span className="text-[10px] font-bold text-ink/40 uppercase">Jump to:</span>
+                            <select
+                              value={rule.targetPage === 'submit' ? 'submit' : String(rule.targetPage)}
+                              onChange={(e) => {
+                                const rules = [...(block.jumpRules ?? [])]
+                                const val = e.target.value === 'submit' ? 'submit' : Number(e.target.value)
+                                rules[i] = { ...rules[i], targetPage: val }
+                                updateBlock(formId, block.id, { jumpRules: rules })
+                              }}
+                              className="flex-1 rounded border border-ink/15 px-1.5 py-1 text-[11px] font-semibold text-brand-600 outline-none"
+                            >
+                              {getFormPageLabels(form).map((p) => (
+                                <option key={p.pageIndex} value={p.pageIndex}>{p.label}</option>
+                              ))}
+                              <option value="submit">Submit form</option>
+                            </select>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-ink/40">
+                    {block.type === 'pageBreak'
+                      ? 'No page jump rules. The form advances linearly to the next page by default.'
+                      : 'No page jump rules. Jump to another page or submit conditionally based on this block.'}
+                  </p>
                 )}
               </div>
             )}

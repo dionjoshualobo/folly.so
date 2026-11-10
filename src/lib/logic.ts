@@ -1,4 +1,4 @@
-import type { AnswerValue, Block, BlockType, Form } from '../types'
+import type { AnswerValue, Block, BlockType, Form, JumpRule } from '../types'
 
 export function getQuestionLabel(block: Block): string {
   const t = block.text.trim()
@@ -284,4 +284,74 @@ export function pipeText(
     }
     return match
   })
+}
+
+export function evaluateJumpRules(
+  rules: JumpRule[] | undefined,
+  answers: Record<string, AnswerValue>,
+): number | 'submit' | null {
+  if (!rules || rules.length === 0) return null
+  for (const rule of rules) {
+    if (!rule.fieldId) continue
+    const answer = answers[rule.fieldId]
+    if (rule.op === 'equals' && (answer === undefined || answer === null || answer === '')) continue
+    if (answerMatches(answer, rule.value, rule.op)) {
+      return rule.targetPage
+    }
+  }
+  return null
+}
+
+export function getPageJumpTarget(
+  form: Form,
+  pageIndex: number,
+  answers: Record<string, AnswerValue>,
+): number | 'submit' | null {
+  let curPage = 0
+  const pageBlocks: Block[] = []
+  let pageBreakBlock: Block | null = null
+
+  for (const block of form.blocks) {
+    if (block.type === 'pageBreak') {
+      if (curPage === pageIndex) {
+        pageBreakBlock = block
+        break
+      }
+      curPage++
+    } else {
+      if (curPage === pageIndex && blockVisible(block, answers)) {
+        pageBlocks.push(block)
+      }
+    }
+  }
+
+  // 1. Check if any question block on this page has a matching jump rule
+  for (const b of pageBlocks) {
+    const target = evaluateJumpRules(b.jumpRules, answers)
+    if (target !== null) return target
+  }
+
+  // 2. Check if the pageBreak ending this page has a matching jump rule
+  if (pageBreakBlock) {
+    const target = evaluateJumpRules(pageBreakBlock.jumpRules, answers)
+    if (target !== null) return target
+  }
+
+  return null
+}
+
+export function getFormPageCount(form: Form): number {
+  return form.blocks.filter((b) => b.type === 'pageBreak').length + 1
+}
+
+export function getFormPageLabels(form: Form): Array<{ pageIndex: number; label: string }> {
+  let pageIndex = 0
+  const pages: Array<{ pageIndex: number; label: string }> = [{ pageIndex: 0, label: 'Page 1' }]
+  for (const b of form.blocks) {
+    if (b.type === 'pageBreak') {
+      pageIndex++
+      pages.push({ pageIndex, label: `Page ${pageIndex + 1}` })
+    }
+  }
+  return pages
 }

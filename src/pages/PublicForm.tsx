@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import type { AnswerValue, Block, Form } from '../types'
 import { useForms } from '../store'
-import { blockVisible, computeScore, formatWhen, getQuestionLabel, pipeText, splitIntoPages } from '../lib/logic'
+import { blockVisible, computeScore, formatWhen, getPageJumpTarget, getQuestionLabel, pipeText, splitIntoPages } from '../lib/logic'
 import { rowLayout, resolveRow } from '../lib/layout'
 import { embedInfo } from '../lib/embed'
 import { FieldControl, getDefaultValue, isFilled } from '../components/fields'
@@ -161,6 +161,7 @@ export default function PublicForm() {
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [currentPage, setCurrentPage] = useState(0)
+  const [pageHistory, setPageHistory] = useState<number[]>([0])
   const [submitted, setSubmitted] = useState(false)
   const [visited, setVisited] = useState(false)
   const [formFailed, setFormFailed] = useState(false)
@@ -376,7 +377,22 @@ export default function PublicForm() {
   const goNext = () => {
     if (!validateVisible(currentPage)) return
     topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    setCurrentPage((p) => Math.min(p + 1, pageCount - 1))
+
+    const jumpTarget = getPageJumpTarget(form, currentPage, answers)
+    if (jumpTarget === 'submit') {
+      submit()
+      return
+    }
+    if (typeof jumpTarget === 'number') {
+      const target = Math.max(0, Math.min(jumpTarget, pageCount - 1))
+      setPageHistory((prev) => [...prev, target])
+      setCurrentPage(target)
+      return
+    }
+
+    const next = Math.min(currentPage + 1, pageCount - 1)
+    setPageHistory((prev) => [...prev, next])
+    setCurrentPage(next)
   }
 
   const submit = () => {
@@ -569,7 +585,17 @@ export default function PublicForm() {
             {safePage > 0 ? (
               <button
                 type="button"
-                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                onClick={() => {
+                  if (pageHistory.length > 1) {
+                    const nextHistory = [...pageHistory]
+                    nextHistory.pop()
+                    const prev = nextHistory[nextHistory.length - 1] ?? 0
+                    setPageHistory(nextHistory)
+                    setCurrentPage(prev)
+                  } else {
+                    setCurrentPage((p) => Math.max(0, p - 1))
+                  }
+                }}
                 className="rounded-full px-5 py-3 text-[15px] font-medium transition"
                 style={{ color: dark ? '#f5f5f5' : '#3a3a3c' }}
               >

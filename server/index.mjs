@@ -10,8 +10,11 @@ const app = express()
 
 app.use(express.json({ limit: '15mb' }))
 
-async function rowToForm(id) {
-  const { rows } = await pool.query('SELECT data FROM forms WHERE id = $1', [id])
+async function rowToForm(idOrSlug) {
+  const { rows } = await pool.query(
+    "SELECT data FROM forms WHERE id = $1 OR lower(data->'settings'->>'slug') = lower($1)",
+    [idOrSlug],
+  )
   return rows[0]?.data ?? null
 }
 
@@ -59,7 +62,7 @@ app.get('/api/forms/:id', async (req, res) => {
   try {
     const form = await rowToForm(req.params.id)
     if (!form) return res.status(404).json({ error: 'Not found' })
-    const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM submissions WHERE form_id = $1', [req.params.id])
+    const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM submissions WHERE form_id = $1', [form.id])
     form.submissionCount = rows[0]?.count ?? 0
     res.json({ form })
   } catch (err) {
@@ -92,7 +95,9 @@ app.delete('/api/forms/:id', async (req, res) => {
 
 app.get('/api/forms/:id/submissions', async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT data FROM submissions WHERE form_id = $1 ORDER BY (data->>\'submittedAt\')::bigint DESC', [req.params.id])
+    const form = await rowToForm(req.params.id)
+    if (!form) return res.status(404).json({ error: 'Form not found' })
+    const { rows } = await pool.query('SELECT data FROM submissions WHERE form_id = $1 ORDER BY (data->>\'submittedAt\')::bigint DESC', [form.id])
     res.json({ submissions: rows.map((r) => r.data) })
   } catch (err) {
     res.status(500).json({ error: String(err.message || err) })
@@ -111,19 +116,20 @@ app.delete('/api/submissions/:id', async (req, res) => {
 app.post('/api/forms/:id/submissions', async (req, res) => {
   try {
     const submission = req.body?.submission
-    if (!submission?.id || submission.formId !== req.params.id) {
-      return res.status(400).json({ error: 'submission.id and matching formId are required' })
+    if (!submission?.id) {
+      return res.status(400).json({ error: 'submission.id is required' })
     }
 
     const form = await rowToForm(req.params.id)
     if (!form) return res.status(404).json({ error: 'Form not found' })
+    submission.formId = form.id
 
     if (form.settings?.closedAt && Date.now() > form.settings.closedAt) {
       return res.status(403).json({ error: 'This form has reached its closing date and is closed.' })
     }
 
     if (form.settings?.maxResponses && form.settings.maxResponses > 0) {
-      const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM submissions WHERE form_id = $1', [req.params.id])
+      const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM submissions WHERE form_id = $1', [form.id])
       const count = rows[0]?.count ?? 0
       if (count >= form.settings.maxResponses) {
         return res.status(403).json({ error: 'This form has reached its maximum response limit and is now closed.' })

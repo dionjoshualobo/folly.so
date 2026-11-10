@@ -12,6 +12,7 @@ export default function App() {
       <Route path="/forms" element={<Dashboard />} />
       <Route path="/editor/:formId" element={<Editor />} />
       <Route path="/r/:formId" element={<PublicForm />} />
+      <Route path="/f/:formId" element={<PublicForm />} />
       <Route path="/forms/:formId/submissions" element={<Submissions />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
