@@ -178,8 +178,9 @@ function ChoiceControl({
 
   return (
     <div className="space-y-2.5">
-      {list.map((o) =>
-        multiple ? (
+      {list.map((o, idx) => {
+        const letter = String.fromCharCode(65 + idx)
+        return multiple ? (
           <label
             key={o.id}
             className={`flex w-fit cursor-pointer items-center gap-3 border-2 border-black px-4 py-3 transition font-bold ${
@@ -189,6 +190,9 @@ function ChoiceControl({
               if (preview) e.preventDefault()
             }}
           >
+            <span className="flex h-5 w-5 items-center justify-center border border-black bg-white font-mono text-[10px] font-black text-black shadow-[1px_1px_0px_#000]">
+              {letter}
+            </span>
             <input
               type="checkbox"
               className="h-[18px] w-[18px] border-2 border-black accent-black"
@@ -208,6 +212,9 @@ function ChoiceControl({
               if (preview) e.preventDefault()
             }}
           >
+            <span className="flex h-5 w-5 items-center justify-center border border-black bg-white font-mono text-[10px] font-black text-black shadow-[1px_1px_0px_#000]">
+              {letter}
+            </span>
             <input
               type="radio"
               name={block.id}
@@ -218,8 +225,8 @@ function ChoiceControl({
             />
             <span className="text-[15px]"><RichText text={o.label} /></span>
           </label>
-        ),
-      )}
+        )
+      })}
       {block.allowOther && (
         <div className="flex items-center gap-3">
           {multiple ? (

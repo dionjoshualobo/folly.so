@@ -229,6 +229,75 @@ export default function PublicForm() {
     } catch {}
   }, [answers, submitted, formId])
 
+  // Emit auto-resize height messages to embedding parent windows
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const sendHeight = () => {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage(
+          {
+            type: 'folly-resize',
+            height: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight, 400),
+            formId: form?.id,
+          },
+          '*',
+        )
+      }
+    }
+
+    sendHeight()
+    window.addEventListener('resize', sendHeight)
+    const observer = new MutationObserver(sendHeight)
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true })
+
+    return () => {
+      window.removeEventListener('resize', sendHeight)
+      observer.disconnect()
+    }
+  }, [form?.id, currentPage, answers, submitted])
+
+  // Keyboard shortcuts: Ctrl/Cmd+Enter to advance or submit, A-Z hotkeys for choice options
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault()
+        if (currentPage < pages.length - 1) goNext()
+        else submit()
+        return
+      }
+
+      const activeTag = (document.activeElement?.tagName || '').toLowerCase()
+      const isInput =
+        activeTag === 'input' ||
+        activeTag === 'textarea' ||
+        activeTag === 'select' ||
+        document.activeElement?.getAttribute('contenteditable') === 'true'
+      if (isInput) return
+
+      if (e.key.length === 1 && /^[a-zA-Z]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const charCode = e.key.toUpperCase().charCodeAt(0) - 65
+        const curBlocks = (pages[currentPage] ?? []).filter((b) => b.type === 'multipleChoice' || b.type === 'checkbox')
+        if (curBlocks.length > 0) {
+          const firstChoiceBlock = curBlocks[0]
+          const opts = firstChoiceBlock.options ?? []
+          if (charCode >= 0 && charCode < opts.length) {
+            e.preventDefault()
+            const opt = opts[charCode]
+            if (firstChoiceBlock.type === 'checkbox' || firstChoiceBlock.allowMultiple) {
+              const curAns = (Array.isArray(answers[firstChoiceBlock.id]) ? answers[firstChoiceBlock.id] : []) as string[]
+              const next = curAns.includes(opt.label) ? curAns.filter((x) => x !== opt.label) : [...curAns, opt.label]
+              changeAnswer(firstChoiceBlock.id, next)
+            } else {
+              changeAnswer(firstChoiceBlock.id, opt.label)
+            }
+          }
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [currentPage, pages, answers])
+
   useEffect(() => {
     let injectedCss = ''
     if (form?.settings.theme.customFontBase64 && form?.settings.theme.font === 'custom') {
@@ -411,11 +480,9 @@ export default function PublicForm() {
     for (const b of form.blocks) {
       if (NON_ANSWER_TYPES.includes(b.type)) continue
       if (b.type === 'score') continue
-      if (b.type !== 'fileUpload') {
-        const v = answers[b.id]
-        if (Array.isArray(v) && v.length === 0) collected[b.id] = null
-        else collected[b.id] = v ?? null
-      }
+      const v = answers[b.id]
+      if (Array.isArray(v) && v.length === 0) collected[b.id] = null
+      else collected[b.id] = v ?? null
     }
     if (form.settings.hiddenFields) {
       for (const field of form.settings.hiddenFields) {
