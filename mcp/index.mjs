@@ -511,16 +511,35 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       }
 
       const newBlocks = args.blocks.map((b) => {
-        const blockId = uid()
-        const opts = (b.options || []).map((label) => ({ id: uid(), label }))
+        const blockId = b.id || uid()
+        const opts = (b.options || []).map((opt) =>
+          typeof opt === 'string' ? { id: uid(), label: opt } : { id: opt.id || uid(), label: opt.label || '' }
+        )
         return {
           id: blockId,
           type: b.type,
-          text: b.text,
+          text: b.text || '',
           required: Boolean(b.required),
           placeholder: b.placeholder || undefined,
           helpText: b.helpText || undefined,
           options: opts.length > 0 ? opts : undefined,
+          showIf: b.showIf || undefined,
+          jumpRules: b.jumpRules || undefined,
+          ratingMax: b.ratingMax,
+          ratingIcon: b.ratingIcon,
+          linearMax: b.linearMax,
+          linearMinLabel: b.linearMinLabel,
+          linearMaxLabel: b.linearMaxLabel,
+          npsMinLabel: b.npsMinLabel,
+          npsMaxLabel: b.npsMaxLabel,
+          matrixRows: b.matrixRows,
+          matrixColumns: b.matrixColumns,
+          scoreSourceIds: b.scoreSourceIds,
+          imageUrl: b.imageUrl,
+          imageCaption: b.imageCaption,
+          embedUrl: b.embedUrl,
+          colId: b.colId,
+          colWidth: b.colWidth,
         }
       })
 
@@ -542,14 +561,34 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       const id = uid()
       const now = Date.now()
       const blocks = (args.questions || []).map((q) => {
-        const opts = (q.options || []).map((label) => ({ id: uid(), label }))
+        const opts = (q.options || []).map((opt) =>
+          typeof opt === 'string' ? { id: uid(), label: opt } : { id: opt.id || uid(), label: opt.label || '' }
+        )
         return {
-          id: uid(),
+          id: q.id || uid(),
           type: q.type || 'shortText',
-          text: q.text,
+          text: q.text || '',
           required: Boolean(q.required),
           placeholder: q.placeholder || undefined,
+          helpText: q.helpText || undefined,
           options: opts.length > 0 ? opts : undefined,
+          showIf: q.showIf || undefined,
+          jumpRules: q.jumpRules || undefined,
+          ratingMax: q.ratingMax,
+          ratingIcon: q.ratingIcon,
+          linearMax: q.linearMax,
+          linearMinLabel: q.linearMinLabel,
+          linearMaxLabel: q.linearMaxLabel,
+          npsMinLabel: q.npsMinLabel,
+          npsMaxLabel: q.npsMaxLabel,
+          matrixRows: q.matrixRows,
+          matrixColumns: q.matrixColumns,
+          scoreSourceIds: q.scoreSourceIds,
+          imageUrl: q.imageUrl,
+          imageCaption: q.imageCaption,
+          embedUrl: q.embedUrl,
+          colId: q.colId,
+          colWidth: q.colWidth,
         }
       })
 
@@ -560,6 +599,11 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         createdAt: now,
         updatedAt: now,
       }
+
+      if (args.customCss) form.settings.customCss = args.customCss
+      if (args.hiddenFields) form.settings.hiddenFields = args.hiddenFields
+      if (args.password) form.settings.password = args.password
+      if (args.maxResponses) form.settings.maxResponses = args.maxResponses
 
       const saved = await apiSaveForm(form)
       const publicUrl = saved.settings.slug ? `/f/${saved.settings.slug}` : `/r/${saved.id}`
