@@ -94,16 +94,19 @@ export default function Landing() {
           </div>
 
           <nav className="hidden md:flex items-center gap-6 font-bold text-sm uppercase tracking-wide">
-            <Link to="/docs" className="bg-[#ffe600] px-2.5 py-1 transition border-2 border-black shadow-[2px_2px_0px_#000] hover:bg-[#facc15]">
-              How to Use 📖
+            <Link to="/docs/how-to-use" className="bg-[#ffe600] px-2.5 py-1 transition border-2 border-black shadow-[2px_2px_0px_#000] hover:bg-[#facc15]">
+              How to Use ⚡
+            </Link>
+            <Link to="/docs" className="hover:bg-[#5ce1e6] px-2 py-1 transition border-2 border-transparent hover:border-black">
+              Docs
             </Link>
             <a href="#features" className="hover:bg-[#ffe600] px-2 py-1 transition border-2 border-transparent hover:border-black">
               Features
             </a>
-            <a href="#comparison" className="hover:bg-[#5ce1e6] px-2 py-1 transition border-2 border-transparent hover:border-black">
+            <a href="#comparison" className="hover:bg-[#ff90e8] px-2 py-1 transition border-2 border-transparent hover:border-black">
               Vs Monopoly
             </a>
-            <a href="#faq" className="hover:bg-[#ff90e8] px-2 py-1 transition border-2 border-transparent hover:border-black">
+            <a href="#faq" className="hover:bg-[#00ef84] px-2 py-1 transition border-2 border-transparent hover:border-black">
               FAQ
             </a>
           </nav>
@@ -442,17 +445,17 @@ export default function Landing() {
           </div>
 
           <div className="flex gap-6 uppercase text-neutral-600">
-            <Link to="/docs" className="text-black font-black hover:underline">
+            <Link to="/docs/how-to-use" className="text-black font-black hover:underline">
               How to Use
+            </Link>
+            <Link to="/docs" className="hover:text-black hover:underline">
+              Docs
             </Link>
             <Link to="/forms" className="hover:text-black hover:underline">
               Dashboard
             </Link>
             <a href="#features" className="hover:text-black hover:underline">
               Features
-            </a>
-            <a href="#comparison" className="hover:text-black hover:underline">
-              Vs Monopolies
             </a>
           </div>
 

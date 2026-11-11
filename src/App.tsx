@@ -16,8 +16,9 @@ export default function App() {
       <Route path="/f/:formId" element={<PublicForm />} />
       <Route path="/forms/:formId/submissions" element={<Submissions />} />
       <Route path="/docs" element={<Docs />} />
-      <Route path="/how-to-use" element={<Docs />} />
-      <Route path="/guide" element={<Docs />} />
+      <Route path="/docs/:pageId" element={<Docs />} />
+      <Route path="/how-to-use" element={<Navigate to="/docs/how-to-use" replace />} />
+      <Route path="/guide" element={<Navigate to="/docs/how-to-use" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

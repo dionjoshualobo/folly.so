@@ -831,14 +831,14 @@ function TopBar({
       </div>
       <div className="flex shrink-0 items-center gap-2 font-mono text-xs">
         <Link
-          to="/docs"
+          to="/docs/how-to-use"
           target="_blank"
           rel="noreferrer"
           className="hidden items-center gap-1.5 border-2 border-black bg-white px-3 py-1.5 font-bold uppercase shadow-[2px_2px_0px_#000] hover:bg-[#ffe600] transition md:flex"
-          title="Open Folly documentation and guide"
+          title="Open How to Use guide"
         >
           <span className="font-mono text-xs">📖</span>
-          <span>GUIDE</span>
+          <span>HOW TO USE</span>
         </Link>
         <Link
           to={`/forms/${form.id}/submissions`}
