@@ -94,6 +94,9 @@ export default function Landing() {
           </div>
 
           <nav className="hidden md:flex items-center gap-6 font-bold text-sm uppercase tracking-wide">
+            <Link to="/docs" className="bg-[#ffe600] px-2.5 py-1 transition border-2 border-black shadow-[2px_2px_0px_#000] hover:bg-[#facc15]">
+              How to Use 📖
+            </Link>
             <a href="#features" className="hover:bg-[#ffe600] px-2 py-1 transition border-2 border-transparent hover:border-black">
               Features
             </a>
@@ -439,6 +442,9 @@ export default function Landing() {
           </div>
 
           <div className="flex gap-6 uppercase text-neutral-600">
+            <Link to="/docs" className="text-black font-black hover:underline">
+              How to Use
+            </Link>
             <Link to="/forms" className="hover:text-black hover:underline">
               Dashboard
             </Link>

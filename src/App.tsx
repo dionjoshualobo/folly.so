@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard'
 import Editor from './pages/Editor'
 import PublicForm from './pages/PublicForm'
 import Submissions from './pages/Submissions'
+import Docs from './pages/Docs'
 
 export default function App() {
   return (
@@ -14,6 +15,9 @@ export default function App() {
       <Route path="/r/:formId" element={<PublicForm />} />
       <Route path="/f/:formId" element={<PublicForm />} />
       <Route path="/forms/:formId/submissions" element={<Submissions />} />
+      <Route path="/docs" element={<Docs />} />
+      <Route path="/how-to-use" element={<Docs />} />
+      <Route path="/guide" element={<Docs />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
