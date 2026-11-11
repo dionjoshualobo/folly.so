@@ -401,12 +401,20 @@ function SubmissionDetailModal({
           >
             Delete response 🗑
           </button>
-          <button
-            onClick={onClose}
-            className="border-2 border-black bg-black text-white font-black uppercase px-5 py-1.5 shadow-[2px_2px_0px_#ffe600] hover:bg-[#ffe600] hover:text-black transition"
-          >
-            Close window
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.print()}
+              className="border-2 border-black bg-[#5ce1e6] text-black font-black uppercase px-3.5 py-1.5 shadow-[2px_2px_0px_#000] hover:bg-[#ffe600] active:translate-x-0.5 active:translate-y-0.5 transition"
+            >
+              Print / PDF 🖨
+            </button>
+            <button
+              onClick={onClose}
+              className="border-2 border-black bg-black text-white font-black uppercase px-5 py-1.5 shadow-[2px_2px_0px_#ffe600] hover:bg-[#ffe600] hover:text-black transition"
+            >
+              Close window
+            </button>
+          </div>
         </div>
       </div>
     </div>

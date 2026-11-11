@@ -107,21 +107,23 @@ export function SettingsPopover({
 
       <div className="max-h-[420px] overflow-y-auto p-2">
         {tab === 'type' && (
-          <div className="space-y-0.5">
+          <div className="space-y-1.5 p-1">
             {GROUPS.map((group) => (
               <div key={group}>
-                <div className="px-2 pb-1 pt-2 text-[11px] font-bold uppercase tracking-wider text-ink/35">{group}</div>
-                <div className="grid grid-cols-2 gap-0.5">
+                <div className="px-1.5 pb-1 pt-1.5 font-mono text-[10px] font-black uppercase text-neutral-500 tracking-wider">{group}</div>
+                <div className="grid grid-cols-2 gap-1.5">
                   {BLOCKS.filter((b) => b.group === group).map((b) => (
                     <button
                       key={b.type}
                       onClick={() => tryType(b.type)}
-                      className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-left transition hover:bg-ink/[0.05] ${b.type === block.type ? 'bg-brand-50 ring-1 ring-brand-200' : ''}`}
+                      className={`flex items-center gap-2 border-2 border-black p-1.5 text-left transition hover:bg-[#ffe600] active:translate-x-0.5 active:translate-y-0.5 ${
+                        b.type === block.type ? 'bg-[#ffe600] shadow-[2px_2px_0px_#000]' : 'bg-white shadow-[1px_1px_0px_#000]'
+                      }`}
                     >
-                      <span className="flex h-6 w-6 items-center justify-center rounded bg-ink/[0.05] text-ink/70">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center border border-black bg-white text-black shadow-[1px_1px_0px_#000]">
                         <Icon name={b.type} />
                       </span>
-                      <span className="text-[12px] font-semibold leading-tight text-ink/80">{b.label}</span>
+                      <span className="text-[11px] font-black uppercase tracking-tight text-black truncate">{b.label}</span>
                     </button>
                   ))}
                 </div>
@@ -440,12 +442,12 @@ export function SettingsPopover({
             )}
 
             {block.type === 'score' && (
-              <div className="space-y-2 px-2 py-2 bg-ink/[0.02] border-t border-ink/[0.06]">
-                 <div className="text-[12px] font-bold text-ink/70">Score Sources</div>
-                 <div className="text-[11px] text-ink/40 mb-2">Select which questions contribute points to this calculation.</div>
-                 <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
+              <div className="space-y-2 border-t-2 border-black bg-neutral-50 p-2.5">
+                 <div className="font-mono text-xs font-black uppercase text-black">Score Sources</div>
+                 <div className="text-[11px] font-bold text-neutral-600 mb-2">Select questions that contribute points to this calculation.</div>
+                 <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
                    {questions.filter(q => q.id !== block.id).map(q => (
-                      <label key={q.id} className="flex items-start gap-2 p-1.5 hover:bg-ink/[0.04] rounded cursor-pointer">
+                      <label key={q.id} className="flex items-start gap-2 border-2 border-black bg-white p-2 shadow-[2px_2px_0px_#000] cursor-pointer hover:bg-[#ffe600]/30 transition">
                          <input 
                            type="checkbox" 
                            checked={(block.scoreSourceIds ?? []).includes(q.id)}
@@ -455,23 +457,23 @@ export function SettingsPopover({
                               else ids.delete(q.id)
                               updateBlock(formId, block.id, { scoreSourceIds: Array.from(ids) })
                            }}
-                           className="mt-0.5 rounded text-brand-500 focus:ring-brand-500 border-ink/20"
+                           className="mt-0.5 h-4 w-4 border-2 border-black accent-[#ffe600]"
                          />
-                         <span className="text-[12px] text-ink/80 leading-tight">{q.label}</span>
+                         <span className="font-mono text-[11px] font-bold text-black leading-tight">{q.label}</span>
                       </label>
                    ))}
                    {questions.length === 0 && (
-                      <div className="text-[11px] text-ink/40 italic">No questions available.</div>
+                      <div className="font-mono text-[11px] text-neutral-400 italic">No questions available.</div>
                    )}
                  </div>
               </div>
             )}
 
             {canHaveLogic(block) && (
-              <div className="mt-1 border-t border-ink/[0.06] px-2 pb-2 pt-2">
-                <div className="mb-1.5 flex items-center justify-between">
-                  <span className="text-[12px] font-bold text-ink/70">
-                    Logic {block.showIf && block.showIf.length > 0 && <span className="ml-1 rounded bg-brand-100 px-1.5 py-0.5 text-[10px] font-bold text-brand-600">{block.showIf.length}</span>}
+              <div className="mt-2 border-t-2 border-black bg-[#fffdfa] p-2.5">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="font-mono text-xs font-black uppercase text-black">
+                    Logic {block.showIf && block.showIf.length > 0 && <span className="ml-1 border border-black bg-[#ffe600] px-1.5 py-0.5 text-[10px] font-black">{block.showIf.length}</span>}
                   </span>
                   <button
                     onClick={() => {
@@ -483,19 +485,19 @@ export function SettingsPopover({
                       rules.push({ fieldId: first.id, op: 'equals', value: firstVal })
                       updateBlock(formId, block.id, { showIf: rules })
                     }}
-                    className="rounded-md bg-ink px-2 py-1 text-[11px] font-semibold text-white hover:bg-black"
+                    className="border-2 border-black bg-[#ffe600] px-2 py-0.5 font-mono text-[10px] font-black uppercase shadow-[2px_2px_0px_#000] hover:bg-yellow-400 active:translate-x-0.5 active:translate-y-0.5"
                   >
-                    + Add condition
+                    + Condition
                   </button>
                 </div>
                 {block.showIf && block.showIf.length > 0 ? (
-                      <div className="space-y-1.5">
-                        <p className="text-[11px] text-ink/40">Show this block when all of the following match:</p>
+                      <div className="space-y-2">
+                        <p className="text-[11px] font-bold text-neutral-600 font-mono">Show block when ALL match:</p>
                         {block.showIf.map((cond, i) => {
                           const target = form.blocks.find((b) => b.id === cond.fieldId)
                           const labels = target ? answerOptionsFor(target) : []
                           return (
-                            <div key={i} className="flex items-center gap-1">
+                            <div key={i} className="flex items-center gap-1.5 border-2 border-black bg-white p-1.5 shadow-[2px_2px_0px_#000]">
                               <select
                                 value={cond.fieldId}
                                 onChange={(e) => {
@@ -504,10 +506,10 @@ export function SettingsPopover({
                                   rules[i] = { ...rules[i], fieldId: e.target.value, value: target ? answerOptionsFor(target)[0] ?? '' : '' }
                                   updateBlock(formId, block.id, { showIf: rules })
                                 }}
-                                className="min-w-0 flex-1 truncate rounded-md border border-ink/15 px-1.5 py-1 text-[11px] outline-none focus:border-ink"
+                                className="min-w-0 flex-1 truncate border border-black bg-white px-1.5 py-1 font-mono text-[11px] font-bold text-black outline-none"
                                 title={getQuestionLabel(target ?? block)}
                               >
-                                <option value="">select question…</option>
+                                <option value="">question…</option>
                                 {questions.map((q) => (
                                   <option key={q.id} value={q.id}>
                                     {q.label}
@@ -521,14 +523,14 @@ export function SettingsPopover({
                                   rules[i] = { ...rules[i], op: e.target.value as 'equals' | 'notEquals' | 'contains' | 'notContains' | 'greaterThan' | 'lessThan' }
                                   updateBlock(formId, block.id, { showIf: rules })
                                 }}
-                                className="rounded-md border border-ink/15 px-1.5 py-1 text-[11px] outline-none focus:border-ink"
+                                className="border border-black bg-white px-1 py-1 font-mono text-[11px] font-bold text-black outline-none"
                               >
                                 <option value="equals">is</option>
                                 <option value="notEquals">is not</option>
                                 <option value="contains">contains</option>
-                                <option value="notContains">does not contain</option>
-                                <option value="greaterThan">greater than</option>
-                                <option value="lessThan">less than</option>
+                                <option value="notContains">not contains</option>
+                                <option value="greaterThan">&gt;</option>
+                                <option value="lessThan">&lt;</option>
                               </select>
                               {labels.length > 0 ? (
                                 <select
@@ -538,7 +540,7 @@ export function SettingsPopover({
                                     rules[i] = { ...rules[i], value: e.target.value }
                                     updateBlock(formId, block.id, { showIf: rules })
                                   }}
-                                  className="min-w-0 flex-1 truncate rounded-md border border-ink/15 px-1.5 py-1 text-[11px] outline-none focus:border-ink"
+                                  className="min-w-0 flex-1 truncate border border-black bg-white px-1.5 py-1 font-mono text-[11px] font-bold text-black outline-none"
                                 >
                                   {labels.map((o) => (
                                     <option key={o} value={o}>
@@ -555,7 +557,7 @@ export function SettingsPopover({
                                     updateBlock(formId, block.id, { showIf: rules })
                                   }}
                                   placeholder="value…"
-                                  className="min-w-0 flex-1 rounded-md border border-ink/15 px-1.5 py-1 text-[11px] outline-none focus:border-ink"
+                                  className="min-w-0 flex-1 border border-black bg-white px-1.5 py-1 font-mono text-[11px] font-bold text-black outline-none"
                                 />
                               )}
                               <button
@@ -563,7 +565,7 @@ export function SettingsPopover({
                                   const rules = (block.showIf ?? []).filter((_, j) => j !== i)
                                   updateBlock(formId, block.id, { showIf: rules })
                                 }}
-                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-ink/40 hover:bg-ink/[0.05] hover:text-brand-600"
+                                className="border border-black bg-neutral-100 px-1 py-0.5 font-mono text-[11px] font-black hover:bg-red-500 hover:text-white"
                               >
                                 ✕
                               </button>
@@ -573,24 +575,24 @@ export function SettingsPopover({
                         {block.showIf.length > 0 && (
                       <button
                         onClick={() => updateBlock(formId, block.id, { showIf: [] })}
-                        className="text-[11px] font-medium text-ink/40 hover:text-ink"
+                        className="font-mono text-[10px] font-black uppercase text-red-600 hover:underline"
                       >
-                        Clear all rules
+                        [ CLEAR ALL LOGIC ]
                       </button>
                     )}
                   </div>
                 ) : (
-                  <p className="text-[11px] text-ink/40">No logic yet — add a condition to show this block based on an earlier answer.</p>
+                  <p className="font-mono text-[11px] font-bold text-neutral-500">No logic — block always visible.</p>
                 )}
               </div>
             )}
 
             {(block.type === 'pageBreak' || isAnswerBlock(block.type)) && (
-              <div className="mt-1 border-t border-ink/[0.06] px-2 pb-2 pt-2">
-                <div className="mb-1.5 flex items-center justify-between">
-                  <span className="text-[12px] font-bold text-ink/70">
+              <div className="mt-2 border-t-2 border-black bg-[#fffdfa] p-2.5">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="font-mono text-xs font-black uppercase text-black">
                     Page Jumps {block.jumpRules && block.jumpRules.length > 0 && (
-                      <span className="ml-1 rounded bg-brand-100 px-1.5 py-0.5 text-[10px] font-bold text-brand-600">
+                      <span className="ml-1 border border-black bg-[#ffe600] px-1.5 py-0.5 text-[10px] font-black">
                         {block.jumpRules.length}
                       </span>
                     )}
@@ -611,21 +613,21 @@ export function SettingsPopover({
                       })
                       updateBlock(formId, block.id, { jumpRules: rules })
                     }}
-                    className="rounded-md bg-ink px-2 py-1 text-[11px] font-semibold text-white hover:bg-black"
+                    className="border-2 border-black bg-[#ffe600] px-2 py-0.5 font-mono text-[10px] font-black uppercase shadow-[2px_2px_0px_#000] hover:bg-yellow-400 active:translate-x-0.5 active:translate-y-0.5"
                   >
-                    + Add Jump Rule
+                    + Jump Rule
                   </button>
                 </div>
                 {block.jumpRules && block.jumpRules.length > 0 ? (
                   <div className="space-y-2">
-                    <p className="text-[11px] text-ink/40">If condition matches, jump to selected page:</p>
+                    <p className="font-mono text-[11px] font-bold text-neutral-600">If condition matches, jump to:</p>
                     {block.jumpRules.map((rule, i) => {
                       const targetBlock = form.blocks.find((b) => b.id === rule.fieldId)
                       const labels = targetBlock ? answerOptionsFor(targetBlock) : []
                       return (
-                        <div key={rule.id || i} className="rounded-lg border border-ink/10 bg-ink/[0.02] p-2 space-y-1.5">
-                          <div className="flex items-center gap-1">
-                            <span className="text-[10px] font-bold text-ink/40 uppercase">If</span>
+                        <div key={rule.id || i} className="border-2 border-black bg-white p-2 shadow-[2px_2px_0px_#000] space-y-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono text-[10px] font-black uppercase text-black">IF</span>
                             <select
                               value={rule.fieldId}
                               onChange={(e) => {
@@ -638,7 +640,7 @@ export function SettingsPopover({
                                 }
                                 updateBlock(formId, block.id, { jumpRules: rules })
                               }}
-                              className="min-w-0 flex-1 truncate rounded border border-ink/15 px-1.5 py-1 text-[11px] outline-none"
+                              className="min-w-0 flex-1 truncate border border-black bg-white px-1.5 py-1 font-mono text-[11px] font-bold text-black outline-none"
                             >
                               {questions.map((q) => (
                                 <option key={q.id} value={q.id}>{q.label}</option>
@@ -651,12 +653,12 @@ export function SettingsPopover({
                                 rules[i] = { ...rules[i], op: e.target.value as any }
                                 updateBlock(formId, block.id, { jumpRules: rules })
                               }}
-                              className="rounded border border-ink/15 px-1 py-1 text-[11px] outline-none"
+                              className="border border-black bg-white px-1 py-1 font-mono text-[11px] font-bold text-black outline-none"
                             >
                               <option value="equals">is</option>
                               <option value="notEquals">is not</option>
                               <option value="contains">contains</option>
-                              <option value="notContains">does not contain</option>
+                              <option value="notContains">not contains</option>
                               <option value="greaterThan">&gt;</option>
                               <option value="lessThan">&lt;</option>
                             </select>
@@ -665,7 +667,7 @@ export function SettingsPopover({
                                 const rules = (block.jumpRules ?? []).filter((_, j) => j !== i)
                                 updateBlock(formId, block.id, { jumpRules: rules })
                               }}
-                              className="text-ink/40 hover:text-brand-600 px-1 text-[12px]"
+                              className="border border-black bg-neutral-100 px-1 py-0.5 font-mono text-[11px] font-black hover:bg-red-500 hover:text-white"
                             >
                               ✕
                             </button>
@@ -679,7 +681,7 @@ export function SettingsPopover({
                                   rules[i] = { ...rules[i], value: e.target.value }
                                   updateBlock(formId, block.id, { jumpRules: rules })
                                 }}
-                                className="min-w-0 flex-1 truncate rounded border border-ink/15 px-1.5 py-1 text-[11px] outline-none"
+                                className="min-w-0 flex-1 truncate border border-black bg-white px-1.5 py-1 font-mono text-[11px] font-bold text-black outline-none"
                               >
                                 {labels.map((o) => (
                                   <option key={o} value={o}>{o}</option>
@@ -694,12 +696,12 @@ export function SettingsPopover({
                                   updateBlock(formId, block.id, { jumpRules: rules })
                                 }}
                                 placeholder="value…"
-                                className="min-w-0 flex-1 rounded border border-ink/15 px-1.5 py-1 text-[11px] outline-none"
+                                className="min-w-0 flex-1 border border-black bg-white px-1.5 py-1 font-mono text-[11px] font-bold text-black outline-none"
                               />
                             )}
                           </div>
-                          <div className="flex items-center gap-1.5 pt-1 border-t border-ink/5">
-                            <span className="text-[10px] font-bold text-ink/40 uppercase">Jump to:</span>
+                          <div className="flex items-center gap-2 pt-1.5 border-t border-black/10">
+                            <span className="font-mono text-[10px] font-black uppercase text-black">JUMP TO:</span>
                             <select
                               value={rule.targetPage === 'submit' ? 'submit' : String(rule.targetPage)}
                               onChange={(e) => {
@@ -708,7 +710,7 @@ export function SettingsPopover({
                                 rules[i] = { ...rules[i], targetPage: val }
                                 updateBlock(formId, block.id, { jumpRules: rules })
                               }}
-                              className="flex-1 rounded border border-ink/15 px-1.5 py-1 text-[11px] font-semibold text-brand-600 outline-none"
+                              className="flex-1 border-2 border-black bg-[#ffe600] px-2 py-1 font-mono text-[11px] font-black text-black outline-none shadow-[1px_1px_0px_#000]"
                             >
                               {getFormPageLabels(form).map((p) => (
                                 <option key={p.pageIndex} value={p.pageIndex}>{p.label}</option>
@@ -721,16 +723,16 @@ export function SettingsPopover({
                     })}
                   </div>
                 ) : (
-                  <p className="text-[11px] text-ink/40">
+                  <p className="font-mono text-[11px] font-bold text-neutral-500">
                     {block.type === 'pageBreak'
-                      ? 'No page jump rules. The form advances linearly to the next page by default.'
-                      : 'No page jump rules. Jump to another page or submit conditionally based on this block.'}
+                      ? 'No page jumps. Form advances linearly.'
+                      : 'No page jumps configured.'}
                   </p>
                 )}
               </div>
             )}
 
-            <div className="mt-1 grid grid-cols-2 gap-1 border-t border-ink/[0.06] pt-2">
+            <div className="mt-3 grid grid-cols-2 gap-1.5 border-t-2 border-black pt-3">
               <ActionBtn disabled={index === 0} onClick={() => moveBlock(form.id, index, index - 1)}>
                 ↑ Move up
               </ActionBtn>
@@ -758,10 +760,10 @@ export function SettingsPopover({
 
 function Row({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-3 px-2 py-2">
+    <div className="flex items-center justify-between gap-3 px-2 py-2 border-b border-black/10">
       <div>
-        <div className="text-[13px] font-semibold text-ink/80">{label}</div>
-        {hint && <div className="text-[11px] text-ink/40">{hint}</div>}
+        <div className="font-mono text-xs font-black uppercase text-black">{label}</div>
+        {hint && <div className="text-[11px] font-bold text-neutral-500">{hint}</div>}
       </div>
       <div className="flex shrink-0 items-center">{children}</div>
     </div>
@@ -771,11 +773,11 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
 function LabeledInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <div className="mb-1 text-[11px] font-semibold text-ink/45">{label}</div>
+      <div className="mb-1 font-mono text-[11px] font-black uppercase text-black">{label}</div>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-ink/15 px-2 py-1.5 text-[13px] outline-none focus:border-ink"
+        className="w-full rounded border-2 border-black bg-white px-2.5 py-1.5 font-mono text-xs font-bold text-black outline-none shadow-[2px_2px_0px_#000]"
       />
     </div>
   )
@@ -785,12 +787,12 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
   return (
     <button
       onClick={onChange}
-      className={`relative h-6 w-11 rounded-full transition ${on ? 'bg-ink' : 'bg-ink/15'}`}
+      className={`relative h-6 w-11 rounded-full border-2 border-black transition ${on ? 'bg-[#ffe600]' : 'bg-neutral-200'}`}
       role="switch"
       aria-checked={on}
     >
       <span
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${on ? 'left-[22px]' : 'left-0.5'}`}
+        className={`absolute top-0.5 h-4 w-4 rounded-full border border-black bg-white shadow-[1px_1px_0px_#000] transition-all ${on ? 'left-[22px]' : 'left-0.5'}`}
       />
     </button>
   )
@@ -811,8 +813,12 @@ function ActionBtn({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-lg px-2 py-1.5 text-[12px] font-semibold transition ${
-        disabled ? 'cursor-not-allowed text-ink/20' : danger ? 'text-brand-600 hover:bg-brand-50' : 'text-ink/60 hover:bg-ink/[0.05]'
+      className={`border-2 border-black px-2 py-1.5 font-mono text-[11px] font-black uppercase transition shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 ${
+        disabled
+          ? 'cursor-not-allowed bg-neutral-100 text-neutral-400 opacity-60 shadow-none'
+          : danger
+          ? 'bg-red-400 text-black hover:bg-red-500'
+          : 'bg-white text-black hover:bg-[#ffe600]'
       }`}
     >
       {children}

@@ -237,6 +237,22 @@ export default function Editor() {
 
   const onBlockKeyDown = (e: KeyboardEvent<HTMLDivElement>, block: Block, index: number) => {
     const el = e.currentTarget
+    if (e.altKey && e.key === 'ArrowUp') {
+      e.preventDefault()
+      if (index > 0) {
+        moveBlock(form!.id, index, index - 1)
+        requestAnimationFrame(() => doFocus(block.id, 'end'))
+      }
+      return
+    }
+    if (e.altKey && e.key === 'ArrowDown') {
+      e.preventDefault()
+      if (index < form!.blocks.length - 1) {
+        moveBlock(form!.id, index, index + 1)
+        requestAnimationFrame(() => doFocus(block.id, 'end'))
+      }
+      return
+    }
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'd') {
       e.preventDefault()
       duplicateBlock(form!.id, block.id)
