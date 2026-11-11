@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import type { AnswerValue, Block, Form } from '../types'
 import { useForms } from '../store'
-import { blockVisible, computeScore, formatWhen, getPageJumpTarget, getQuestionLabel, pipeText, splitIntoPages } from '../lib/logic'
+import { blockVisible, computeScore, formatWhen, getPageJumpTarget, getQuestionLabel, pipeText, splitBlocksByPage, splitIntoPages } from '../lib/logic'
 import { rowLayout, resolveRow } from '../lib/layout'
 import { embedInfo } from '../lib/embed'
 import { FieldControl, getDefaultValue, isFilled } from '../components/fields'
@@ -108,11 +108,30 @@ function BlockView({
     }
     return n
   })()
+  const qNum = visibleIndex >= 0 ? visibleIndex + 1 : null
+  const questionCls = [
+    'tally-question',
+    'q',
+    qNum ? `q${qNum} q-${qNum}` : '',
+    `q-${block.type}`,
+    block.type === 'multipleChoice' ? 'q-multi' : '',
+    block.type === 'checkbox' ? 'q-check' : '',
+    block.type === 'shortText' ? 'q-short' : '',
+    block.type === 'longText' ? 'q-long' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
-    <div className="tally-question py-1">
+    <div
+      className={`${questionCls} py-1`}
+      data-q={qNum ?? undefined}
+      data-block-id={block.id}
+      data-block-type={block.type}
+    >
       <label className={`mb-2.5 block font-medium leading-snug ${questionStyle}`}>
         <span className="mr-1.5 inline-block text-[14px] font-normal text-ink/35 align-1">
-          {form.settings.showProgress ? `${visibleIndex + 1}.` : ''}
+          {form.settings.showProgress && qNum ? `${qNum}.` : ''}
         </span>
         <RichText text={pipeText(block.text || getQuestionLabel(block), answers, form.blocks, form.settings.hiddenFields)} />
         {block.required && <span className="ml-1 text-brand-500">*</span>}
@@ -185,9 +204,9 @@ export default function PublicForm() {
     }
   }, [formId, form, ensureForm])
 
-  const pages = useMemo(() => (form ? splitIntoPages(form.blocks, answers) : []), [form, answers])
+  const pages = useMemo(() => (form ? splitBlocksByPage(form.blocks) : []), [form])
   const safePage = Math.min(currentPage, Math.max(0, pages.length - 1))
-  const visibleHere = pages[safePage] ?? []
+  const visibleHere = (pages[safePage] ?? []).filter((b) => b.type === 'pageBreak' || b.type === 'thankYou' || blockVisible(b, answers))
 
   useEffect(() => {
     setVisited(true)
@@ -218,6 +237,7 @@ export default function PublicForm() {
     setAnswers(initialAnswers)
     setErrors({})
     setCurrentPage(0)
+    setPageHistory([0])
     setSubmitted(false)
   }, [formId, form?.settings.hiddenFields])
 
@@ -419,6 +439,28 @@ export default function PublicForm() {
 
   const pageCount = pages.length
 
+  const isPageVisible = (pageIdx: number): boolean => {
+    const pageBlocks = pages[pageIdx] ?? []
+    return pageBlocks.some((b) => b.type !== 'pageBreak' && b.type !== 'thankYou' && blockVisible(b, answers))
+  }
+
+  const findNextVisiblePage = (fromPage: number): number | 'submit' => {
+    for (let p = fromPage + 1; p < pageCount; p++) {
+      if (isPageVisible(p)) return p
+    }
+    return 'submit'
+  }
+
+  const findPrevVisiblePage = (fromPage: number): number => {
+    for (let p = fromPage - 1; p >= 0; p--) {
+      if (isPageVisible(p)) return p
+    }
+    return 0
+  }
+
+  const nextVisibleAfterCurrent = findNextVisiblePage(safePage)
+  const isLastPage = nextVisibleAfterCurrent === 'submit'
+
   const changeAnswer = (blockId: string, v: AnswerValue) => {
     const next = { ...answers, [blockId]: v }
     setAnswers(next)
@@ -444,27 +486,47 @@ export default function PublicForm() {
   }
 
   const goNext = () => {
-    if (!validateVisible(currentPage)) return
+    if (!validateVisible(safePage)) return
     topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
-    const jumpTarget = getPageJumpTarget(form, currentPage, answers)
+    const jumpTarget = getPageJumpTarget(form, safePage, answers)
     if (jumpTarget === 'submit') {
       submit()
       return
     }
     if (typeof jumpTarget === 'number') {
       const target = Math.max(0, Math.min(jumpTarget, pageCount - 1))
-      setPageHistory((prev) => [...prev, target])
-      setCurrentPage(target)
-      return
+      if (isPageVisible(target)) {
+        if (target !== safePage) {
+          setPageHistory((prev) => [...prev, target])
+          setCurrentPage(target)
+          return
+        }
+      } else {
+        const nextVis = findNextVisiblePage(target)
+        if (nextVis === 'submit') {
+          submit()
+          return
+        }
+        if (nextVis !== safePage) {
+          setPageHistory((prev) => [...prev, nextVis])
+          setCurrentPage(nextVis)
+          return
+        }
+      }
     }
 
-    const next = Math.min(currentPage + 1, pageCount - 1)
-    setPageHistory((prev) => [...prev, next])
-    setCurrentPage(next)
+    const nextVis = findNextVisiblePage(safePage)
+    if (nextVis === 'submit') {
+      submit()
+      return
+    }
+    setPageHistory((prev) => [...prev, nextVis])
+    setCurrentPage(nextVis)
   }
 
   const submit = () => {
+    if (isClosed) return
     if (!validateVisible()) {
       topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       return
@@ -611,7 +673,7 @@ export default function PublicForm() {
           <form
             onSubmit={(e) => {
               e.preventDefault()
-              if (safePage < pageCount - 1) goNext()
+              if (!isLastPage) goNext()
               else submit()
             }}
             className="tally-form space-y-7"
@@ -653,7 +715,7 @@ export default function PublicForm() {
                       setPageHistory(nextHistory)
                       setCurrentPage(prev)
                     } else {
-                      setCurrentPage((p) => Math.max(0, p - 1))
+                      setCurrentPage(findPrevVisiblePage(safePage))
                     }
                   }}
                   className="border-2 border-black bg-white text-black font-black uppercase text-xs px-5 py-3 shadow-[2px_2px_0px_#000] hover:bg-neutral-100 transition"
@@ -667,7 +729,7 @@ export default function PublicForm() {
                 type="submit"
                 className="tally-submit-button border-2 border-black bg-[#ffe600] text-black font-black uppercase text-xs sm:text-sm px-8 py-3.5 shadow-[4px_4px_0px_#000] hover:bg-[#facc15] hover:shadow-[5px_5px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
               >
-                {safePage < pageCount - 1 ? 'NEXT STEP →' : 'SUBMIT FORM →'}
+                {!isLastPage ? 'NEXT STEP →' : 'SUBMIT FORM →'}
               </button>
             </div>
           </form>

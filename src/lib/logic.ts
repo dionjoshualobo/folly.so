@@ -107,11 +107,10 @@ export function visibleBlocks(form: Form, answers: Record<string, AnswerValue>):
   return form.blocks.filter((b) => blockVisible(b, answers))
 }
 
-export function splitIntoPages(blocks: Block[], answers: Record<string, AnswerValue>): Block[][] {
+export function splitBlocksByPage(blocks: Block[]): Block[][] {
   const pages: Block[][] = []
   let current: Block[] = []
   for (const block of blocks) {
-    if (!blockVisible(block, answers)) continue
     if (block.type === 'pageBreak') {
       pages.push(current)
       current = []
@@ -120,7 +119,11 @@ export function splitIntoPages(blocks: Block[], answers: Record<string, AnswerVa
     }
   }
   pages.push(current)
-  return pages.filter((p) => p.length > 0)
+  return pages
+}
+
+export function splitIntoPages(blocks: Block[], _answers?: Record<string, AnswerValue>): Block[][] {
+  return splitBlocksByPage(blocks)
 }
 
 export function questionOptions(form: Form): Array<{ id: string; label: string }> {

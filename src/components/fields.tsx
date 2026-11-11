@@ -177,20 +177,20 @@ function ChoiceControl({
   const otherActive = Array.isArray(value) ? false : value === '__other__'
 
   return (
-    <div className="space-y-2.5">
+    <div className="q-options space-y-2.5">
       {list.map((o, idx) => {
         const letter = String.fromCharCode(65 + idx)
         return multiple ? (
           <label
             key={o.id}
-            className={`flex w-fit cursor-pointer items-center gap-3 border-2 border-black px-4 py-3 transition font-bold ${
+            className={`q-option q-check-option flex w-fit cursor-pointer items-center gap-3 border-2 border-black px-4 py-3 transition font-bold ${
               isChecked(o.label) ? 'bg-[#ffe600] text-black shadow-[4px_4px_0px_#000]' : 'bg-white text-black hover:bg-neutral-50 shadow-[2px_2px_0px_#000]'
             }`}
             onClick={(e) => {
               if (preview) e.preventDefault()
             }}
           >
-            <span className="flex h-5 w-5 items-center justify-center border border-black bg-white font-mono text-[10px] font-black text-black shadow-[1px_1px_0px_#000]">
+            <span className="q-badge flex h-5 w-5 items-center justify-center border border-black bg-white font-mono text-[10px] font-black text-black shadow-[1px_1px_0px_#000]">
               {letter}
             </span>
             <input
@@ -200,19 +200,19 @@ function ChoiceControl({
               onChange={() => toggle(o.label)}
               disabled={preview}
             />
-            <span className="text-[15px]"><RichText text={o.label} /></span>
+            <span className="q-label text-[15px]"><RichText text={o.label} /></span>
           </label>
         ) : (
           <label
             key={o.id}
-            className={`flex w-fit cursor-pointer items-center gap-3 border-2 border-black px-4 py-3 transition font-bold ${
+            className={`q-option q-multi-option flex w-fit cursor-pointer items-center gap-3 border-2 border-black px-4 py-3 transition font-bold ${
               isChecked(o.label) ? 'bg-[#ffe600] text-black shadow-[4px_4px_0px_#000]' : 'bg-white text-black hover:bg-neutral-50 shadow-[2px_2px_0px_#000]'
             }`}
             onClick={(e) => {
               if (preview) e.preventDefault()
             }}
           >
-            <span className="flex h-5 w-5 items-center justify-center border border-black bg-white font-mono text-[10px] font-black text-black shadow-[1px_1px_0px_#000]">
+            <span className="q-badge flex h-5 w-5 items-center justify-center border border-black bg-white font-mono text-[10px] font-black text-black shadow-[1px_1px_0px_#000]">
               {letter}
             </span>
             <input
@@ -223,7 +223,7 @@ function ChoiceControl({
               onChange={() => onChange(o.label)}
               disabled={preview}
             />
-            <span className="text-[15px]"><RichText text={o.label} /></span>
+            <span className="q-label text-[15px]"><RichText text={o.label} /></span>
           </label>
         )
       })}

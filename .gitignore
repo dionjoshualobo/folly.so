@@ -62,3 +62,8 @@ build-activity.log
 /public/stubborn/
 /public/h.txt
 
+# Roadmap & planning notes (local only, not committed)
+FEATURES_ROADMAP.md
+ROADMAP.md
+
+
