@@ -48,6 +48,12 @@ build-activity.log
 # Illustration / doodle exploration assets (kept locally, not committed)
 /public/character-options.html
 /public/doodles/
+
+# Design theme preview / playground (local exploration, not committed)
+/src/components/landing/
+
+
+
 /public/blush/
 /public/drawkit/
 /public/dicebear/

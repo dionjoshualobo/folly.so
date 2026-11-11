@@ -59,24 +59,28 @@ export function ThemeDrawer({ form, onClose }: { form: Form; onClose: () => void
 
   return (
     <div className="animate-fade fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-ink/20 backdrop-blur-[1px]" onClick={onClose} />
-      <div className="animate-pop absolute right-0 top-0 flex h-full w-[340px] flex-col bg-white shadow-pop sm:w-[380px]">
-        <div className="flex items-center justify-between border-b border-ink/[0.06] px-5 py-3.5">
-          <div className="flex flex-wrap gap-1">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-xs" onClick={onClose} />
+      <div className="animate-pop absolute right-0 top-0 flex h-full w-[340px] flex-col border-l-3 border-black bg-white shadow-[-8px_0px_0px_#000] sm:w-[400px]">
+        {/* Retro Window Header */}
+        <div className="border-b-2 border-black bg-[#ffe600] px-4 py-3 flex items-center justify-between font-mono text-xs font-black uppercase text-black">
+          <div className="flex items-center gap-1.5 overflow-x-auto">
             {(['theme', 'form', 'css', 'integrations', 'limits'] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`rounded-md px-2.5 py-1 text-[12px] font-semibold capitalize ${
-                  tab === t ? 'bg-ink text-white' : 'text-ink/50 hover:bg-ink/[0.05]'
+                className={`border-2 border-black px-2 py-0.5 text-[10px] font-black uppercase transition ${
+                  tab === t ? 'bg-black text-white shadow-[1px_1px_0px_#ffe600]' : 'bg-white text-black hover:bg-neutral-100 shadow-[1px_1px_0px_#000]'
                 }`}
               >
-                {t === 'integrations' ? 'Integrations' : t === 'limits' ? 'Limits' : t === 'css' ? 'Custom CSS' : t === 'form' ? 'Form settings' : 'Appearance'}
+                {t === 'integrations' ? 'Integrations' : t === 'limits' ? 'Limits' : t === 'css' ? 'CSS' : t === 'form' ? 'Settings' : 'Theme'}
               </button>
             ))}
           </div>
-          <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded text-ink/40 hover:bg-ink/[0.05] hover:text-ink">
-            <Icon name="close" />
+          <button
+            onClick={onClose}
+            className="border-2 border-black bg-black text-white px-2 py-0.5 text-xs font-black hover:bg-red-500"
+          >
+            [ X ]
           </button>
         </div>
 
@@ -531,12 +535,21 @@ export function ShareDrawer({ form, onClose }: { form: Form; onClose: () => void
 
   return (
     <div className="animate-fade fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-ink/20 backdrop-blur-[1px]" onClick={onClose} />
-      <div className="animate-pop absolute right-0 top-0 flex h-full w-[340px] flex-col bg-white shadow-pop sm:w-[400px]">
-        <div className="flex items-center justify-between border-b border-ink/[0.06] px-5 py-3.5">
-          <div className="text-[15px] font-bold text-ink">Share form</div>
-          <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded text-ink/40 hover:bg-ink/[0.05] hover:text-ink">
-            <Icon name="close" />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-xs" onClick={onClose} />
+      <div className="animate-pop absolute right-0 top-0 flex h-full w-[340px] flex-col border-l-3 border-black bg-white shadow-[-8px_0px_0px_#000] sm:w-[420px]">
+        {/* Retro Window Header */}
+        <div className="border-b-2 border-black bg-[#ffe600] px-4 py-3 flex items-center justify-between font-mono text-xs font-black uppercase text-black">
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-red-400 border border-black" />
+            <span className="h-3 w-3 rounded-full bg-yellow-400 border border-black" />
+            <span className="h-3 w-3 rounded-full bg-green-400 border border-black" />
+            <span className="ml-1">SHARE_FORM.EXE</span>
+          </div>
+          <button
+            onClick={onClose}
+            className="border-2 border-black bg-black text-white px-2 py-0.5 text-xs font-black hover:bg-red-500"
+          >
+            [ X ]
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-5 py-4">

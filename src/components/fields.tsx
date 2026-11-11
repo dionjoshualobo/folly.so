@@ -91,20 +91,20 @@ function NpsControl({ block, value, onChange }: { block: Block; value: number | 
             key={n}
             type="button"
             onClick={() => onChange(n)}
-            className={`rounded-lg py-2.5 text-[13px] font-semibold transition ${
-              value === n ? 'bg-ink text-white shadow-md dark:bg-white dark:text-ink' : 'bg-ink/[0.05] text-ink dark:bg-white/10 dark:text-white/70 hover:bg-ink/10 dark:hover:bg-white/20'
+            className={`border-2 border-black py-2.5 text-[13px] font-black transition ${
+              value === n ? 'bg-[#ffe600] text-black shadow-[3px_3px_0px_#000]' : 'bg-white text-black hover:bg-neutral-100 shadow-[2px_2px_0px_#000]'
             }`}
           >
             {n}
           </button>
         ))}
       </div>
-      <div className="mt-2 flex justify-between text-[12px] text-ink dark:text-white/45">
+      <div className="mt-2 flex justify-between text-[12px] font-mono font-bold uppercase text-black">
         <span>{block.npsMinLabel || 'Not at all likely'}</span>
         <span>{block.npsMaxLabel || 'Extremely likely'}</span>
       </div>
       {(block.npsMinLabel || block.npsMaxLabel) && (
-        <div className="flex justify-between text-[12px] font-semibold text-ink dark:text-white/65 sm:hidden">
+        <div className="flex justify-between text-[12px] font-mono font-bold uppercase text-black sm:hidden">
           <span>{block.npsMinLabel}</span>
           <span>{block.npsMaxLabel}</span>
         </div>
@@ -119,14 +119,14 @@ function LinearControl({ block, value, onChange }: { block: Block; value: number
   return (
     <div>
       <div className="flex flex-wrap gap-1.5">
-        <div className="grid flex-1 grid-cols-[repeat(auto-fit,minmax(28px,1fr))] gap-1.5">
+        <div className="grid flex-1 grid-cols-[repeat(auto-fit,minmax(32px,1fr))] gap-2">
           {nums.map((n) => (
             <button
               key={n}
               type="button"
               onClick={() => onChange(n)}
-              className={`aspect-square rounded-lg text-[13px] font-semibold transition ${
-                value === n ? 'bg-ink text-white shadow-md dark:bg-white dark:text-ink' : 'bg-ink/[0.05] text-ink dark:bg-white/10 dark:text-white/70 hover:bg-ink/10 dark:hover:bg-white/20'
+              className={`aspect-square border-2 border-black text-[14px] font-black transition ${
+                value === n ? 'bg-[#ffe600] text-black shadow-[3px_3px_0px_#000]' : 'bg-white text-black hover:bg-neutral-100 shadow-[2px_2px_0px_#000]'
               }`}
             >
               {n}
@@ -135,7 +135,7 @@ function LinearControl({ block, value, onChange }: { block: Block; value: number
         </div>
       </div>
       {(block.linearMinLabel || block.linearMaxLabel) && (
-        <div className="mt-2 flex justify-between text-[12px] text-ink dark:text-white/45">
+        <div className="mt-2 flex justify-between text-[12px] font-mono font-bold uppercase text-black">
           <span>{block.linearMinLabel}</span>
           <span>{block.linearMaxLabel}</span>
         </div>
@@ -176,13 +176,13 @@ function ChoiceControl({
   const otherActive = Array.isArray(value) ? false : value === '__other__'
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       {list.map((o) =>
         multiple ? (
           <label
             key={o.id}
-            className={`flex w-fit cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition ${
-              isChecked(o.label) ? 'border-ink/50 bg-ink/[0.03] dark:border-white/40 dark:bg-white/[0.08]' : 'border-ink/15 hover:border-ink/30 dark:border-white/20 dark:hover:border-white/40'
+            className={`flex w-fit cursor-pointer items-center gap-3 border-2 border-black px-4 py-3 transition font-bold ${
+              isChecked(o.label) ? 'bg-[#ffe600] text-black shadow-[4px_4px_0px_#000]' : 'bg-white text-black hover:bg-neutral-50 shadow-[2px_2px_0px_#000]'
             }`}
             onClick={(e) => {
               if (preview) e.preventDefault()
@@ -190,18 +190,18 @@ function ChoiceControl({
           >
             <input
               type="checkbox"
-              className="h-[18px] w-[18px] rounded accent-ink"
+              className="h-[18px] w-[18px] border-2 border-black accent-black"
               checked={isChecked(o.label)}
               onChange={() => toggle(o.label)}
               disabled={preview}
             />
-            <span className="text-[15px] text-ink dark:text-white/85">{o.label}</span>
+            <span className="text-[15px]">{o.label}</span>
           </label>
         ) : (
           <label
             key={o.id}
-            className={`flex w-fit cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition ${
-              isChecked(o.label) ? 'border-ink/50 bg-ink/[0.03] dark:border-white/40 dark:bg-white/[0.08]' : 'border-ink/15 hover:border-ink/30 dark:border-white/20 dark:hover:border-white/40'
+            className={`flex w-fit cursor-pointer items-center gap-3 border-2 border-black px-4 py-3 transition font-bold ${
+              isChecked(o.label) ? 'bg-[#ffe600] text-black shadow-[4px_4px_0px_#000]' : 'bg-white text-black hover:bg-neutral-50 shadow-[2px_2px_0px_#000]'
             }`}
             onClick={(e) => {
               if (preview) e.preventDefault()
@@ -210,22 +210,22 @@ function ChoiceControl({
             <input
               type="radio"
               name={block.id}
-              className="h-[18px] w-[18px] accent-ink"
+              className="h-[18px] w-[18px] border-2 border-black accent-black"
               checked={isChecked(o.label)}
               onChange={() => onChange(o.label)}
               disabled={preview}
             />
-            <span className="text-[15px] text-ink dark:text-white/85">{o.label}</span>
+            <span className="text-[15px]">{o.label}</span>
           </label>
         ),
       )}
       {block.allowOther && (
         <div className="flex items-center gap-3">
           {multiple ? (
-            <div className="flex w-fit items-center gap-3 rounded-2xl border border-ink/15 px-4 py-2 transition hover:border-ink/30">
-              <input type="checkbox" className="h-[18px] w-[18px] accent-ink" disabled={preview} onChange={() => {}} />
+            <div className="flex w-fit items-center gap-3 border-2 border-black bg-white px-4 py-2.5 shadow-[2px_2px_0px_#000]">
+              <input type="checkbox" className="h-[18px] w-[18px] accent-black" disabled={preview} onChange={() => {}} />
               <input
-                className="bg-transparent text-[15px] text-ink dark:text-white outline-none placeholder:text-ink dark:text-white/35"
+                className="bg-transparent text-[15px] text-black font-bold outline-none placeholder:text-neutral-400"
                 placeholder="Other…"
                 onChange={(e) => {
                   if (multiple) onChange([...(Array.isArray(value) ? value : []), e.target.value].filter(Boolean))
@@ -234,10 +234,10 @@ function ChoiceControl({
               />
             </div>
           ) : (
-            <div className="flex w-fit items-center gap-3 rounded-2xl border border-ink/15 px-4 py-2 transition hover:border-ink/30">
-              <input type="radio" className="h-[18px] w-[18px] accent-ink" checked={otherActive} disabled={preview} onChange={() => {}} />
+            <div className="flex w-fit items-center gap-3 border-2 border-black bg-white px-4 py-2.5 shadow-[2px_2px_0px_#000]">
+              <input type="radio" className="h-[18px] w-[18px] accent-black" checked={otherActive} disabled={preview} onChange={() => {}} />
               <input
-                className="bg-transparent text-[15px] text-ink dark:text-white outline-none placeholder:text-ink dark:text-white/35"
+                className="bg-transparent text-[15px] text-black font-bold outline-none placeholder:text-neutral-400"
                 placeholder="Other…"
                 onChange={(e) => onChange(e.target.value)}
                 disabled={preview}
@@ -732,7 +732,7 @@ export function FieldControl({
           onChange={(e) => onChange(e.target.value)}
           placeholder={block.placeholder ?? (block.type === 'email' ? 'you@example.com' : block.type === 'link' ? 'https://…' : 'Type your answer')}
           disabled={preview}
-          className="w-full max-w-xl rounded-2xl border border-ink/20 bg-white dark:bg-white/10 px-4 py-3 text-[15px] text-ink dark:text-white outline-none transition placeholder:text-ink dark:text-white/35 hover:border-ink/40 focus:border-ink focus:ring-4 focus:ring-ink/[0.06]"
+          className="w-full max-w-xl border-2 border-black bg-white px-4 py-3 text-[15px] font-bold text-black outline-none transition placeholder:text-neutral-400 shadow-[3px_3px_0px_#000] focus:shadow-[5px_5px_0px_#000]"
         />
       )
     case 'number':
@@ -742,7 +742,7 @@ export function FieldControl({
           value={value === null || value === undefined ? '' : String(value)}
           onChange={(e) => onChange(e.target.value === '' ? null : Number(e.target.value))}
           placeholder={block.placeholder ?? '0'}
-          className="w-full max-w-xl rounded-2xl border border-ink/20 bg-white dark:bg-white/10 px-4 py-3 text-[15px] text-ink dark:text-white outline-none transition placeholder:text-ink dark:text-white/35 hover:border-ink/40 focus:border-ink focus:ring-4 focus:ring-ink/[0.06]"
+          className="w-full max-w-xl border-2 border-black bg-white px-4 py-3 text-[15px] font-bold text-black outline-none transition placeholder:text-neutral-400 shadow-[3px_3px_0px_#000] focus:shadow-[5px_5px_0px_#000]"
         />
       )
     case 'date':
@@ -752,7 +752,7 @@ export function FieldControl({
           type={block.type}
           value={(value as string) ?? ''}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full max-w-xl rounded-2xl border border-ink/20 bg-white dark:bg-white/10 px-4 py-3 text-[15px] text-ink dark:text-white outline-none transition hover:border-ink/40 focus:border-ink focus:ring-4 focus:ring-ink/[0.06]"
+          className="w-full max-w-xl border-2 border-black bg-white px-4 py-3 text-[15px] font-bold text-black outline-none transition shadow-[3px_3px_0px_#000] focus:shadow-[5px_5px_0px_#000]"
         />
       )
     case 'longText':
@@ -763,7 +763,7 @@ export function FieldControl({
           onChange={(e) => onChange(e.target.value)}
           placeholder={block.placeholder ?? 'Write a longer answer…'}
           disabled={preview}
-          className="w-full max-w-xl rounded-2xl border border-ink/20 bg-white dark:bg-white/10 px-4 py-3 text-[15px] leading-relaxed text-ink dark:text-white outline-none transition placeholder:text-ink dark:text-white/35 hover:border-ink/40 focus:border-ink focus:ring-4 focus:ring-ink/[0.06]"
+          className="w-full max-w-xl border-2 border-black bg-white px-4 py-3 text-[15px] font-bold leading-relaxed text-black outline-none transition placeholder:text-neutral-400 shadow-[3px_3px_0px_#000] focus:shadow-[5px_5px_0px_#000]"
         />
       )
     case 'rating':

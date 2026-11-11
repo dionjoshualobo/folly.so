@@ -399,13 +399,12 @@ export default function Editor() {
         ) : (
           <div className="w-full h-0 sm:h-8" />
         )}
-        <div className="mx-auto w-full max-w-2xl px-5 pt-8 sm:px-8 relative">
+        <div className="mx-auto w-full max-w-2xl px-6 py-10 my-6 border-2 sm:border-3 border-black bg-white shadow-[8px_8px_0px_#000] relative">
           {form.settings.logoUrl && (
             <div
-              className={`group w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-4 shadow-sm ${
-                form.settings.coverImageUrl ? '-mt-20 sm:-mt-22 mb-6 z-10 relative bg-white' : 'mb-6'
+              className={`group w-20 h-20 sm:w-24 sm:h-24 border-2 border-black shadow-[4px_4px_0px_#000] overflow-hidden ${
+                form.settings.coverImageUrl ? '-mt-16 sm:-mt-18 mb-6 z-10 relative bg-white' : 'mb-6'
               }`}
-              style={{ borderColor: '#ffffff' }}
             >
               <img src={form.settings.logoUrl} alt="Logo" className="w-full h-full object-cover" />
               <div 
@@ -420,7 +419,7 @@ export default function Editor() {
             </div>
           )}
 
-          <div className={`flex items-center gap-3 text-ink/40 transition opacity-0 hover:opacity-100 focus-within:opacity-100 ${
+          <div className={`flex items-center gap-3 text-black transition opacity-0 hover:opacity-100 focus-within:opacity-100 ${
             (!form.settings.coverImageUrl || !form.settings.logoUrl) ? 'mb-4 opacity-100' : 'h-0 overflow-hidden'
           }`}>
             {!form.settings.coverImageUrl && (
@@ -429,7 +428,7 @@ export default function Editor() {
                    const url = prompt('Enter cover image URL:')
                    if (url) updateSettings(form.id, { coverImageUrl: url })
                  }}
-                 className="flex items-center gap-1.5 text-[13px] font-semibold hover:bg-ink/[0.05] hover:text-ink px-2 py-1.5 rounded transition"
+                 className="flex items-center gap-1.5 font-mono text-xs font-black uppercase border border-black px-2 py-1 shadow-[1px_1px_0px_#000] hover:bg-[#ffe600] transition"
               >
                 <Icon name="image" /> Add cover
               </button>
@@ -440,7 +439,7 @@ export default function Editor() {
                    const url = prompt('Enter logo image URL:')
                    if (url) updateSettings(form.id, { logoUrl: url })
                  }}
-                 className="flex items-center gap-1.5 text-[13px] font-semibold hover:bg-ink/[0.05] hover:text-ink px-2 py-1.5 rounded transition"
+                 className="flex items-center gap-1.5 font-mono text-xs font-black uppercase border border-black px-2 py-1 shadow-[1px_1px_0px_#000] hover:bg-[#ffe600] transition"
               >
                 <Icon name="image" /> Add logo
               </button>
@@ -576,60 +575,54 @@ function TopBar({
   onOpenShare: () => void
 }) {
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-ink/[0.06] bg-white/90 px-4 backdrop-blur-md sm:px-6">
+    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b-2 border-black bg-white px-4 sm:px-6">
       <div className="flex min-w-0 items-center gap-3">
         <Link
           to="/forms"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink/50 transition hover:bg-ink/[0.05] hover:text-ink"
-          title="Back to forms"
+          className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-black bg-white shadow-[2px_2px_0px_#000] hover:bg-[#ffe600] transition"
+          title="Back to dashboard"
         >
-          <Icon name="back" />
+          <Icon name="back" className="h-4 w-4" />
         </Link>
         <div className="flex min-w-0 items-center gap-2">
-          <span
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-500 font-black text-white"
-            style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
-          >
-            f
+          <span className="border-2 border-black bg-[#ffe600] text-black px-1.5 py-0.5 font-mono text-[11px] font-black shadow-[1px_1px_0px_#000]">
+            f/
           </span>
-          <span className="truncate text-[14px] font-semibold text-ink/90">{form.settings.title || 'Untitled form'}</span>
-          <span className="hidden items-center gap-1 text-[11px] font-medium text-ink/40 sm:flex">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-3 w-3 text-emerald-600">
-              <path d="m5 13 4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Saved
+          <span className="truncate text-sm font-black uppercase text-black">{form.settings.title || 'Untitled form'}</span>
+          <span className="hidden items-center gap-1 font-mono text-[10px] font-bold uppercase bg-[#00ef84] text-black border border-black px-2 py-0.5 shadow-[1px_1px_0px_#000] sm:flex">
+            SAVED ✓
           </span>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2 font-mono text-xs">
         <Link
           to={`/forms/${form.id}/submissions`}
-          className="hidden items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-semibold text-ink/60 transition hover:bg-ink/[0.05] hover:text-ink sm:flex"
+          className="hidden items-center gap-1.5 border-2 border-black bg-white px-3 py-1.5 font-bold uppercase shadow-[2px_2px_0px_#000] hover:bg-neutral-100 transition sm:flex"
         >
-          Responses
+          RESPONSES
           {responseCount > 0 && (
-            <span className="rounded-full bg-ink/[0.07] px-1.5 py-0.5 text-[11px] font-bold text-ink/60">{responseCount}</span>
+            <span className="bg-[#ffe600] border border-black px-1.5 py-0.2 text-[10px] font-black text-black">{responseCount}</span>
           )}
         </Link>
         <button
           onClick={onOpenLogic}
-          className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-semibold text-ink/60 transition hover:bg-ink/[0.05] hover:text-ink"
+          className="flex items-center gap-1.5 border-2 border-black bg-white px-3 py-1.5 font-bold uppercase shadow-[2px_2px_0px_#000] hover:bg-[#5ce1e6] transition"
         >
-          <Icon name="link" />
-          <span className="hidden sm:inline">Logic</span>
+          <Icon name="link" className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">LOGIC</span>
         </button>
         <button
           onClick={onOpenTheme}
-          className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-semibold text-ink/60 transition hover:bg-ink/[0.05] hover:text-ink"
+          className="flex items-center gap-1.5 border-2 border-black bg-white px-3 py-1.5 font-bold uppercase shadow-[2px_2px_0px_#000] hover:bg-[#ff90e8] transition"
         >
-          <Icon name="theme" />
-          <span className="hidden sm:inline">Design</span>
+          <Icon name="theme" className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">THEME</span>
         </button>
         <button
           onClick={onOpenShare}
-          className="rounded-full bg-brand-500 px-4 py-2 text-[13px] font-bold text-white shadow-sm transition hover:bg-brand-600"
+          className="border-2 border-black bg-[#ffe600] text-black px-4 py-1.5 font-black uppercase shadow-[3px_3px_0px_#000] hover:bg-[#facc15] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
         >
-          Share
+          SHARE ⚡
         </button>
       </div>
     </header>
@@ -1757,7 +1750,7 @@ function BlockRow({
 
 function PreviewBox({ content }: { content: string }) {
   return (
-    <div className="w-full max-w-xl rounded-2xl border border-ink/15 bg-white px-4 py-3 text-[15px] text-ink/35">
+    <div className="w-full max-w-xl border-2 border-black bg-white px-4 py-3 font-mono text-xs font-bold text-neutral-400 shadow-[2px_2px_0px_#000]">
       {content}
     </div>
   )

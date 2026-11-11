@@ -451,49 +451,43 @@ export default function PublicForm() {
 
     return (
       <div
-        className={`tally-app flex min-h-screen flex-col ${dark ? 'dark' : ''}`}
-        style={{ background: theme.background, fontFamily: font, color: dark ? '#f5f5f5' : '#0b0f19' }}
+        className="tally-app flex min-h-screen flex-col bg-[#fffdfa] text-black"
+        style={{ fontFamily: font }}
       >
         {form.settings.coverImageUrl && (
-          <div className="w-full h-[180px] sm:h-[260px] overflow-hidden relative">
+          <div className="w-full h-[180px] sm:h-[240px] overflow-hidden relative border-b-2 border-black">
             <img src={form.settings.coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
           </div>
         )}
         <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col px-6 pb-16 pt-12 text-center">
           <div className="my-auto flex w-full flex-col items-center">
           {form.settings.logoUrl && (
-            <div
-              className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-4 shadow-sm ${
-                form.settings.coverImageUrl ? '-mt-22 sm:-mt-24 mb-8 z-10 relative' : 'mb-8'
-              }`}
-              style={{ borderColor: theme.background }}
-            >
+            <div className="w-20 h-20 sm:w-24 sm:h-24 border-2 border-black overflow-hidden shadow-[4px_4px_0px_#000] mb-6 bg-white">
               <img src={form.settings.logoUrl} alt="Logo" className="w-full h-full object-cover" />
             </div>
           )}
-          <div className="w-full max-w-xl animate-pop flex flex-col items-center">
-            <span
-              className="flex h-16 w-16 items-center justify-center rounded-full"
-              style={{ background: theme.button, color: theme.buttonText }}
-            >
+          <div className="w-full max-w-xl animate-pop border-3 border-black bg-white p-8 sm:p-12 shadow-[8px_8px_0px_#000] flex flex-col items-center">
+            <span className="flex h-16 w-16 items-center justify-center border-2 border-black bg-[#ffe600] text-black shadow-[3px_3px_0px_#000]">
               <svg viewBox="0 0 24 24" className="h-8 w-8">
-                <path d="m5 13 4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="m5 13 4 4L19 7" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </span>
-            <h1 className="mt-6 text-3xl font-semibold leading-tight sm:text-4xl">
+            <div className="mt-4 inline-block bg-[#00ef84] text-black border border-black px-3 py-1 font-mono text-xs font-black uppercase">
+              STATUS // SUBMISSION VERIFIED
+            </div>
+            <h1 className="mt-4 text-3xl sm:text-4xl font-black uppercase tracking-tight text-black">
               {pipeText(form.settings.thankYouMessage, answers, form.blocks, form.settings.hiddenFields)}
             </h1>
-            {visited && <p className="mt-3 text-[14px] opacity-50">Response recorded</p>}
+            {visited && <p className="mt-2 font-mono text-xs font-bold text-neutral-500">Captured to secure database</p>}
             {ctaText && ctaUrl && (
-              <div className="mt-8">
+              <div className="mt-6">
                 <a
                   href={sanitizeUrl(ctaUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block rounded-full px-6 py-3 text-[14px] font-bold shadow-md transition hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
-                  style={{ background: theme.button, color: theme.buttonText }}
+                  className="inline-block border-2 border-black bg-[#ffe600] text-black font-black uppercase text-xs sm:text-sm px-8 py-3.5 shadow-[4px_4px_0px_#000] hover:bg-[#facc15] hover:shadow-[5px_5px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
                 >
-                  {ctaText}
+                  {ctaText} →
                 </a>
               </div>
             )}
@@ -508,111 +502,108 @@ export default function PublicForm() {
   const progress = (pageCount > 1 ? (safePage + 1) / pageCount : 1) * 100
 
   return (
-    <div ref={topRef} className={`tally-app flex min-h-screen flex-col ${dark ? 'dark' : ''}`} style={{ background: theme.background, fontFamily: font, color: dark ? '#f5f5f5' : '#0b0f19' }}>
-      <div className="h-1 w-full" style={{ background: 'transparent' }}>
-        <div className="h-full transition-all duration-300" style={{ width: `${progress}%`, background: theme.button }} />
+    <div ref={topRef} className={`tally-app flex min-h-screen flex-col bg-[#fffdfa] text-black`} style={{ fontFamily: font }}>
+      {/* Top Chunky Progress Bar */}
+      <div className="h-2 w-full border-b-2 border-black bg-neutral-200">
+        <div className="h-full bg-[#ffe600] border-r-2 border-black transition-all duration-300" style={{ width: `${progress}%` }} />
       </div>
 
       {form.settings.coverImageUrl && (
-        <div className="w-full h-[180px] sm:h-[260px] overflow-hidden relative">
+        <div className="w-full h-[180px] sm:h-[240px] overflow-hidden relative border-b-2 border-black">
           <img src={form.settings.coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
         </div>
       )}
 
       {pageCount > 1 && (
-        <div className="mt-4 flex items-center justify-end px-6 text-[13px]" style={{ opacity: 0.5 }}>
-          {safePage + 1} / {pageCount}
+        <div className="mx-auto w-full max-w-2xl mt-6 px-6 flex justify-end">
+          <span className="font-mono text-xs font-bold uppercase bg-black text-white px-3 py-1 border-2 border-black shadow-[2px_2px_0px_#ffe600]">
+            PAGE {safePage + 1} / {pageCount}
+          </span>
         </div>
       )}
 
-      <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col px-6 pb-16 pt-10">
-        <div className="my-auto w-full">
+      <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 sm:px-6 pb-16 pt-6">
+        <div className="w-full border-2 sm:border-3 border-black bg-white p-6 sm:p-10 shadow-[8px_8px_0px_#000]">
           {form.settings.logoUrl && (
-            <div
-              className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-4 shadow-sm ${
-                form.settings.coverImageUrl ? '-mt-20 sm:-mt-22 mb-6 z-10 relative' : 'mb-6'
-              }`}
-              style={{ borderColor: theme.background }}
-            >
+            <div className="w-20 h-20 sm:w-24 sm:h-24 border-2 border-black overflow-hidden shadow-[4px_4px_0px_#000] mb-6 bg-white">
               <img src={form.settings.logoUrl} alt="Logo" className="w-full h-full object-cover" />
             </div>
           )}
-          <div className="tally-form-title mb-10">
-          <div className="text-[38px] font-semibold leading-[1.15] tracking-tight sm:text-[44px]" style={{ color: dark ? '#fff' : '#1c1c1e' }}>
-            <RichText text={pipeText(form.settings.title, answers, form.blocks, form.settings.hiddenFields)} />
-          </div>
-          {form.settings.description && (
-            <p className="mt-3 text-[17px] leading-relaxed" style={{ opacity: 0.6 }}>
-              <RichText text={pipeText(form.settings.description, answers, form.blocks, form.settings.hiddenFields)} />
-            </p>
-          )}
-        </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (safePage < pageCount - 1) goNext()
-            else submit()
-          }}
-          className="tally-form space-y-8"
-        >
-          {rowLayout(visibleHere).map((row) => {
-            const resolved = resolveRow(row)
-            const rendered = row.blocks.map((block) => (
-              <div key={block.id} className="tally-block">
-                <BlockView
-                  form={form}
-                  block={block}
-                  answers={answers}
-                  errors={errors}
-                  onChange={changeAnswer}
-                />
-              </div>
-            ))
-            if (!resolved.template) return rendered[0]
-            return (
-              <div
-                key={row.key}
-                className="col-split"
-                style={{ gridTemplateColumns: resolved.template }}
-              >
-                {rendered}
-              </div>
-            )
-          })}
-
-          <div className="flex items-center justify-between pt-2">
-            {safePage > 0 ? (
-              <button
-                type="button"
-                onClick={() => {
-                  if (pageHistory.length > 1) {
-                    const nextHistory = [...pageHistory]
-                    nextHistory.pop()
-                    const prev = nextHistory[nextHistory.length - 1] ?? 0
-                    setPageHistory(nextHistory)
-                    setCurrentPage(prev)
-                  } else {
-                    setCurrentPage((p) => Math.max(0, p - 1))
-                  }
-                }}
-                className="rounded-full px-5 py-3 text-[15px] font-medium transition"
-                style={{ color: dark ? '#f5f5f5' : '#3a3a3c' }}
-              >
-                ← Back
-              </button>
-            ) : (
-              <span />
+          <div className="tally-form-title mb-8 border-b-2 border-black pb-6">
+            <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-black">
+              <RichText text={pipeText(form.settings.title, answers, form.blocks, form.settings.hiddenFields)} />
+            </h1>
+            {form.settings.description && (
+              <p className="mt-2 text-sm sm:text-base font-bold text-neutral-700 leading-relaxed">
+                <RichText text={pipeText(form.settings.description, answers, form.blocks, form.settings.hiddenFields)} />
+              </p>
             )}
-            <button
-              type="submit"
-              className="tally-submit-button rounded-full px-8 py-3.5 text-[15px] font-semibold shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0"
-              style={{ background: accent, color: theme.buttonText }}
-            >
-              {safePage < pageCount - 1 ? 'Next' : 'Submit'}
-            </button>
           </div>
-        </form>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (safePage < pageCount - 1) goNext()
+              else submit()
+            }}
+            className="tally-form space-y-7"
+          >
+            {rowLayout(visibleHere).map((row) => {
+              const resolved = resolveRow(row)
+              const rendered = row.blocks.map((block) => (
+                <div key={block.id} className="tally-block">
+                  <BlockView
+                    form={form}
+                    block={block}
+                    answers={answers}
+                    errors={errors}
+                    onChange={changeAnswer}
+                  />
+                </div>
+              ))
+              if (!resolved.template) return rendered[0]
+              return (
+                <div
+                  key={row.key}
+                  className="col-split"
+                  style={{ gridTemplateColumns: resolved.template }}
+                >
+                  {rendered}
+                </div>
+              )
+            })}
+
+            <div className="flex items-center justify-between pt-6 border-t-2 border-black">
+              {safePage > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (pageHistory.length > 1) {
+                      const nextHistory = [...pageHistory]
+                      nextHistory.pop()
+                      const prev = nextHistory[nextHistory.length - 1] ?? 0
+                      setPageHistory(nextHistory)
+                      setCurrentPage(prev)
+                    } else {
+                      setCurrentPage((p) => Math.max(0, p - 1))
+                    }
+                  }}
+                  className="border-2 border-black bg-white text-black font-black uppercase text-xs px-5 py-3 shadow-[2px_2px_0px_#000] hover:bg-neutral-100 transition"
+                >
+                  ← BACK
+                </button>
+              ) : (
+                <span />
+              )}
+              <button
+                type="submit"
+                className="tally-submit-button border-2 border-black bg-[#ffe600] text-black font-black uppercase text-xs sm:text-sm px-8 py-3.5 shadow-[4px_4px_0px_#000] hover:bg-[#facc15] hover:shadow-[5px_5px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+              >
+                {safePage < pageCount - 1 ? 'NEXT STEP →' : 'SUBMIT FORM →'}
+              </button>
+            </div>
+          </form>
         </div>
       </main>
 
@@ -632,13 +623,10 @@ function sanitizeUrl(url: string): string {
 
 function PoweredBy({ dark, font }: { dark: boolean; font: string }) {
   return (
-    <footer
-      className="tally-footer flex w-full items-center justify-center gap-2 py-8 text-[13px]"
-      style={{ opacity: 0.45, fontFamily: font }}
-    >
-      <LogoMark className="h-4 w-4" />
-      <span style={{ color: dark ? '#fff' : '#0b0f19' }}>
-        Powered by <span className="font-semibold">Folly</span>
+    <footer className="flex w-full items-center justify-center gap-2 py-8 text-xs font-mono font-bold" style={{ fontFamily: font }}>
+      <span className="border-2 border-black bg-white px-3 py-1 text-black shadow-[2px_2px_0px_#000] inline-flex items-center gap-2">
+        <LogoMark className="h-4 w-4" />
+        <span>POWERED BY FOLLY.SO</span>
       </span>
     </footer>
   )

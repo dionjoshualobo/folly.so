@@ -122,7 +122,7 @@ export function SelectionToolbar({ containerRef }: { containerRef: React.RefObje
 
   return (
     <div
-      className="animate-pop fixed z-50 flex items-center gap-0.5 rounded-full bg-ink px-1.5 py-1 text-white shadow-xl -translate-x-1/2"
+      className="animate-pop fixed z-50 flex items-center gap-1 border-2 border-black bg-black px-2 py-1 text-white shadow-[4px_4px_0px_#ffe600] -translate-x-1/2 font-mono text-xs"
       style={{ top: coords.top, left: coords.left }}
       onMouseDown={(e) => {
         // Prevent clicking toolbar buttons from unfocusing / deselecting the text!
@@ -131,42 +131,42 @@ export function SelectionToolbar({ containerRef }: { containerRef: React.RefObje
     >
       <button
         onClick={() => formatSelection('**')}
-        className="flex h-7 w-7 items-center justify-center rounded-full text-[13px] font-bold transition hover:bg-white/20"
+        className="flex h-7 w-7 items-center justify-center border border-transparent hover:border-black hover:bg-[#ffe600] hover:text-black font-black transition"
         title="Bold (Ctrl+B)"
       >
         B
       </button>
       <button
         onClick={() => formatSelection('*')}
-        className="flex h-7 w-7 items-center justify-center rounded-full text-[13px] italic font-serif transition hover:bg-white/20"
+        className="flex h-7 w-7 items-center justify-center border border-transparent hover:border-black hover:bg-[#ffe600] hover:text-black italic font-serif font-black transition"
         title="Italic (Ctrl+I)"
       >
         i
       </button>
       <button
         onClick={() => formatSelection('<u>', '</u>')}
-        className="flex h-7 w-7 items-center justify-center rounded-full text-[13px] underline transition hover:bg-white/20"
+        className="flex h-7 w-7 items-center justify-center border border-transparent hover:border-black hover:bg-[#ffe600] hover:text-black underline font-black transition"
         title="Underline"
       >
         U
       </button>
       <button
         onClick={() => formatSelection('~~')}
-        className="flex h-7 w-7 items-center justify-center rounded-full text-[13px] line-through transition hover:bg-white/20"
+        className="flex h-7 w-7 items-center justify-center border border-transparent hover:border-black hover:bg-[#ffe600] hover:text-black line-through font-black transition"
         title="Strikethrough"
       >
         S
       </button>
       <button
         onClick={() => formatSelection('`')}
-        className="flex h-7 w-7 items-center justify-center rounded-full font-mono text-[11px] transition hover:bg-white/20"
+        className="flex h-7 w-7 items-center justify-center border border-transparent hover:border-black hover:bg-[#ffe600] hover:text-black font-mono text-[10px] font-black transition"
         title="Inline code"
       >
         &lt;/&gt;
       </button>
       <button
         onClick={formatLink}
-        className="flex h-7 w-7 items-center justify-center rounded-full text-[12px] transition hover:bg-white/20"
+        className="flex h-7 w-7 items-center justify-center border border-transparent hover:border-black hover:bg-[#ffe600] hover:text-black transition"
         title="Insert Link"
       >
         🔗

@@ -35,59 +35,55 @@ export function SlashMenu({
   return (
     <div
       ref={ref}
-      className="animate-pop fixed z-50 w-[340px] overflow-hidden rounded-xl border border-ink/10 bg-white shadow-pop"
+      className="animate-pop fixed z-50 w-[350px] overflow-hidden border-2 border-black bg-white shadow-[8px_8px_0px_#000]"
       style={{ top, left }}
       onMouseDown={(e) => e.preventDefault()}
     >
-      <div className="flex items-center gap-2 border-b border-ink/[0.06] px-3 py-2 text-[12px] text-ink/40">
-        <span className="flex h-4 w-4 items-center justify-center rounded bg-ink/[0.06] font-mono text-[10px] font-bold text-ink/60">
-          /
-        </span>
-        {query ? (
-          <span>
-            <span className="font-medium text-ink/70">‘{query}’</span>
-            — no results? try another block
+      <div className="flex items-center justify-between border-b-2 border-black bg-[#ffe600] px-3.5 py-2 font-mono text-xs font-black uppercase text-black">
+        <div className="flex items-center gap-2">
+          <span className="flex h-5 w-5 items-center justify-center border border-black bg-white font-mono text-xs font-black shadow-[1px_1px_0px_#000]">
+            /
           </span>
-        ) : (
-          <span>Insert block</span>
-        )}
+          <span>{query ? `SEARCH: "${query}"` : 'INSERT BLOCK'}</span>
+        </div>
+        <span className="text-[10px] text-neutral-600">[ ESC TO CLOSE ]</span>
       </div>
-      <div className="max-h-[320px] overflow-y-auto p-1.5">
+
+      <div className="max-h-[320px] overflow-y-auto p-2 bg-[#fffdfa]">
         {results.length === 0 && (
-          <div className="px-3 py-6 text-center text-[13px] text-ink/40">Nothing matches “{query}”.</div>
+          <div className="px-3 py-6 text-center font-mono text-xs font-bold text-neutral-500">
+            NO BLOCKS MATCH “{query}”.
+          </div>
         )}
         {GROUPS.map((group) => {
           const items = results.filter((b) => b.group === group)
           if (items.length === 0) return null
           return (
-            <div key={group}>
-              <div className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-wider text-ink/35">{group}</div>
-              {items.map((b) => (
-                <button
-                  key={b.type}
-                  ref={b.type === results[0]?.type ? activeRef : undefined}
-                  onMouseEnter={(e) => {
-                    // visual hover handled by CSS
-                  }}
-                  onClick={() => onSelect(b.type)}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition hover:bg-ink/[0.05]"
-                >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink/[0.04] text-ink/70">
-                    <Icon name={b.type} />
-                  </span>
-                  <span className="flex-1">
-                    <span className="block text-[14px] font-semibold text-ink">{b.label}</span>
-                    <span className="block text-[12px] text-ink/45">{b.hint}</span>
-                  </span>
-                  {b.shortcut && <kbd className="rounded bg-ink/[0.05] px-1.5 py-0.5 font-mono text-[10px] text-ink/40">{b.shortcut}</kbd>}
-                </button>
-              ))}
+            <div key={group} className="mb-2">
+              <div className="px-2 pb-1 pt-2 font-mono text-[10px] font-black uppercase tracking-wider text-neutral-500">
+                {group}
+              </div>
+              <div className="space-y-1">
+                {items.map((b) => (
+                  <button
+                    key={b.type}
+                    ref={b.type === results[0]?.type ? activeRef : undefined}
+                    onClick={() => onSelect(b.type)}
+                    className="flex w-full items-center gap-3 border border-transparent p-2 text-left transition hover:border-black hover:bg-[#ffe600]/30 hover:shadow-[2px_2px_0px_#000]"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-black bg-white text-black shadow-[1px_1px_0px_#000]">
+                      <Icon name={b.type} className="h-4 w-4" />
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-xs font-black uppercase tracking-tight text-black">{b.label}</span>
+                      <span className="block text-[11px] font-medium text-neutral-600 truncate">{b.hint}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           )
         })}
-      </div>
-      <div className="border-t border-ink/[0.06] px-3 py-2 text-[11px] text-ink/35">
-        <kbd className="rounded bg-ink/[0.05] px-1 py-0.5 font-mono">↵</kbd> to insert · <kbd className="rounded bg-ink/[0.05] px-1 py-0.5 font-mono">esc</kbd> to close
       </div>
     </div>
   )

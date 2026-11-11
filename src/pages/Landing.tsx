@@ -1,759 +1,458 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Logo, LogoMark } from '../components/ui'
-import { icons } from '../blockCatalog'
+import { LogoMark } from '../components/ui'
 import { useForms } from '../store'
-import { PeepBangsRose, PeepBunInk, PeepShortMoustache, PeepCurlyDress } from '../components/openPeeps'
 
-function Art({ children }: { children: React.ReactNode }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6" aria-hidden>
-      {children}
-    </svg>
-  )
-}
-
-export interface PreviewTheme {
-  label: string
-  background: string
-  accent: string
-  buttonText: string
-  font: 'system' | 'serif' | 'playful'
-  darkMode: boolean
-}
-
-export const THEME_PRESETS: PreviewTheme[] = [
-  { label: 'Clean', background: '#ffffff', accent: '#0b0f19', buttonText: '#ffffff', font: 'system', darkMode: false },
-  { label: 'Midnight', background: '#0b0f19', accent: '#ff5470', buttonText: '#ffffff', font: 'system', darkMode: true },
-  { label: 'Paper', background: '#fdf6ef', accent: '#1a7f5a', buttonText: '#ffffff', font: 'serif', darkMode: false },
-]
-
-const NAV = [
-  { label: 'Pricing', href: '#' },
-  { label: 'Templates', href: '#' },
-  { label: 'Integrations', href: '#' },
-  { label: 'Help', href: '#' },
-]
-
-const COMPANIES = ['Acme', 'Notionette', 'Kite', 'Rakutenly', 'Glover', 'Brush&Co']
-
-function ScrollReveal({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true)
-          observer.unobserve(entry.target)
-        }
-      },
-      { threshold: 0.08 }
-    )
-    if (ref.current) observer.observe(ref.current)
-    return () => observer.disconnect()
-  }, [])
-
-  return (
-    <div
-      ref={ref}
-      className={`transition-all duration-700 ease-out transform ${
-        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      } ${className}`}
-    >
-      {children}
-    </div>
-  )
-}
-
-const FAQ = [
+const FEATURES = [
   {
-    q: 'Is Folly really free?',
-    a: 'Yes. Born out of frustration with pay-per-response form builders, Folly offers unlimited forms and unlimited submissions for free, forever. Upgrade only if you want to remove branding or use custom CSS.',
+    title: 'DOCUMENT-STYLE EDITING',
+    bg: '#ffe600',
+    tag: 'KEYBOARD NATIVE',
+    desc: 'Write questions naturally like a Notion document. Press / for blocks, drag handles to reorder, and never touch a clumsy sidebar.',
   },
   {
-    q: 'Why does it work like a text document?',
-    a: 'Because form building should feel like writing, not wiring together widgets. Click into any block and keep typing. Hit / to insert any question type — same model as Notion.',
+    title: 'UNLIMITED FREE INTAKE',
+    bg: '#5ce1e6',
+    tag: 'ZERO PAYWALLS',
+    desc: 'Collect 10 responses or 100,000 without hitting an artificial billing limit. Your data belongs to you, always.',
   },
   {
-    q: 'Can I make forms adapt to the respondent?',
-    a: 'Yes. Conditional logic lets you show or hide questions based on earlier answers, split forms into multiple pages, and calculate values with formulas.',
+    title: 'CONDITIONAL LOGIC & JUMPS',
+    bg: '#ff90e8',
+    tag: 'SMART ROUTING',
+    desc: 'Show or hide questions dynamically based on prior answers, or jump respondents directly to specific pages with instant logic.',
   },
   {
-    q: 'What happens to my data?',
-    a: 'It lives entirely in your browser. There is no tracking, no cookies, and nothing leaves your machine unless you share a form link. GDPR-friendly by construction.',
+    title: 'VANITY URL PATHS',
+    bg: '#00ef84',
+    tag: 'CUSTOM SLUGS',
+    desc: 'Claim clean, memorable links like /f/rsvp, /f/feedback, or /f/apply instead of random hexadecimal machine hashes.',
+  },
+  {
+    title: 'CLIENT DRAFT RESTORE',
+    bg: '#ff5a27',
+    tag: 'LOCAL PERSISTENCE',
+    desc: 'Respondents never lose half-typed answers if their connection drops or they refresh the tab. Automatic local draft recovery.',
+  },
+  {
+    title: 'WEBHOOK DISPATCH & EXPORT',
+    bg: '#a855f7',
+    tag: 'OPEN TELEMETRY',
+    desc: 'Real-time JSON signals sent straight to your webhooks, Supabase, Discord, or Slack, plus instant CSV exports anytime.',
   },
 ]
 
-// Static, black-and-white Open Peeps scattered across the page as background
-// texture. Deliberately inert: no transitions, no hover handlers, no animation.
-const PEEP_FIELD: { Peep: (p: { className?: string }) => JSX.Element; spot: string; size: string; tilt: string; flip?: boolean; wide?: boolean }[] = [
-  { Peep: PeepBangsRose, spot: 'left-[3%] top-[6%]', size: 'h-20 sm:h-24', tilt: '-rotate-3' },
-  { Peep: PeepBunInk, spot: 'left-[38%] top-[4%]', size: 'h-16 sm:h-20', tilt: 'rotate-6', wide: true },
-  { Peep: PeepShortMoustache, spot: 'right-[6%] top-[9%]', size: 'h-24 sm:h-28', tilt: '-rotate-3' },
-  { Peep: PeepCurlyDress, spot: 'left-[16%] top-[18%]', size: 'h-16 sm:h-20', tilt: 'rotate-2', flip: true, wide: true },
-  { Peep: PeepBangsRose, spot: 'right-[22%] top-[22%]', size: 'h-20 sm:h-24', tilt: 'rotate-3' },
-  { Peep: PeepBunInk, spot: 'left-[46%] top-[27%]', size: 'h-24 sm:h-28', tilt: '-rotate-6' },
-  { Peep: PeepShortMoustache, spot: 'right-[40%] top-[33%]', size: 'h-16 sm:h-20', tilt: 'rotate-2', flip: true, wide: true },
-  { Peep: PeepCurlyDress, spot: 'left-[6%] top-[38%]', size: 'h-20 sm:h-24', tilt: 'rotate-2' },
-  { Peep: PeepBangsRose, spot: 'left-[34%] top-[44%]', size: 'h-16 sm:h-20', tilt: '-rotate-2', wide: true },
-  { Peep: PeepBunInk, spot: 'right-[12%] top-[48%]', size: 'h-24 sm:h-28', tilt: '-rotate-4' },
-  { Peep: PeepShortMoustache, spot: 'left-[52%] top-[55%]', size: 'h-20 sm:h-24', tilt: 'rotate-3', flip: true },
-  { Peep: PeepCurlyDress, spot: 'right-[30%] top-[61%]', size: 'h-16 sm:h-20', tilt: 'rotate-5', wide: true },
-  { Peep: PeepBangsRose, spot: 'left-[10%] top-[68%]', size: 'h-24 sm:h-28', tilt: '-rotate-2' },
-  { Peep: PeepBunInk, spot: 'right-[50%] top-[74%]', size: 'h-20 sm:h-24', tilt: 'rotate-2' },
-  { Peep: PeepShortMoustache, spot: 'left-[40%] top-[82%]', size: 'h-16 sm:h-20', tilt: '-rotate-3', flip: true, wide: true },
-  { Peep: PeepCurlyDress, spot: 'right-[8%] top-[88%]', size: 'h-20 sm:h-24', tilt: 'rotate-4' },
+const FAQS = [
+  {
+    q: 'IS FOLLY REALLY COMPLETELY FREE?',
+    a: 'Yes. Folly is built as an open-source, indie alternative to corporate form builders that charge $39 to $99 per month. Unlimited forms, unlimited questions, and unlimited responses.',
+  },
+  {
+    q: 'HOW DOES LOGIC JUMPING WORK?',
+    a: 'You can configure conditional rules on any question block. Choose "Show block if", "Hide block if", or "Jump to page if" based on respondent answers.',
+  },
+  {
+    q: 'CAN I USE CUSTOM URLS?',
+    a: 'Yes! In the form settings, you can define a custom slug like /f/my-event-rsvp or /f/user-research and share it directly.',
+  },
+  {
+    q: 'DO YOU TRACK OR SELL RESPONDENT DATA?',
+    a: 'Never. No surveillance cookies, no third-party ad pixels, and no analytics SDKs tracking your users across the web.',
+  },
 ]
 
-function BackgroundPeeps() {
-  return (
-    <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
-      {PEEP_FIELD.map(({ Peep, spot, size, tilt, flip, wide }, i) => (
-        <span
-          key={i}
-          className={`absolute ${spot} opacity-[0.14] ${tilt} ${flip ? 'scale-x-[-1]' : ''} ${
-            wide ? 'hidden md:block' : ''
-          }`}
-        >
-          <Peep className={`${size} w-auto`} />
-        </span>
-      ))}
-    </div>
-  )
-}
+export default function Landing() {
+  const [selectedOption, setSelectedOption] = useState<string | null>(null)
+  const [submitted, setSubmitted] = useState(false)
+  const [activeFaq, setActiveFaq] = useState<number | null>(null)
 
-function Hero() {
   const go = () => {
     useForms.getState().createForm()
     window.location.hash = '#/forms'
   }
 
   return (
-    <section className="relative overflow-hidden z-10">
-      <div className="dot-bg absolute inset-0 -z-10 opacity-60 animate-fade" />
-      <div className="mx-auto max-w-5xl px-6 pt-16 pb-20 text-center sm:pt-24 sm:pb-28">
-
-        <a
-          href="#/"
-          onClick={go}
-          className="group inline-flex items-center gap-2 rounded-full border border-ink/10 bg-white/80 px-4 py-1.5 text-sm font-medium text-ink/70 shadow-sm transition hover:border-brand-300 hover:text-ink"
-        >
-          <span className="h-2 w-2 rounded-full bg-brand-500" />
-          Try it now — no signup required
-          <span className="transition group-hover:translate-x-0.5">→</span>
-        </a>
-
-        <h1 className="mt-7 text-5xl font-extrabold leading-[1.02] tracking-tight text-ink sm:text-7xl">
-          The simplest way to
-          <br />
-          create <span className="highlight italic">beautiful</span> forms
-        </h1>
-
-        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-ink/60">
-          Say goodbye to boring forms. Folly is the free, intuitive form builder you’ve been looking for
-          — type your questions like you would in a doc.
-        </p>
-
-        <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <button
-            onClick={go}
-            className="rounded-full bg-ink px-7 py-3.5 text-[15px] font-semibold text-white shadow-lg shadow-ink/20 transition hover:-translate-y-0.5 hover:bg-black"
-          >
-            Create a free form
-          </button>
-          <Link
-            to="/forms"
-            className="rounded-full border border-ink/15 bg-white px-7 py-3.5 text-[15px] font-semibold text-ink transition hover:border-ink/30"
-          >
-            Browse the builder
-          </Link>
-        </div>
-        <p className="mt-3 text-sm text-ink/40">No account needed · Unlimited forms &amp; submissions</p>
-
-        <div className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-ink/35">
-          <span className="text-[13px] font-semibold uppercase tracking-widest">
-            Powering <span className="font-bold text-ink/60">500,000+</span> teams
-          </span>
-          {COMPANIES.map((c) => (
-            <span key={c} className="text-lg font-bold tracking-tight opacity-75">
-              {c}
-            </span>
-          ))}
-        </div>
+    <div className="min-h-screen bg-[#fffdfa] text-black font-sans selection:bg-[#ffe600] selection:text-black">
+      {/* Top Warning Ribbon */}
+      <div className="bg-[#ffe600] text-black font-black uppercase text-xs py-2 px-6 border-b-2 border-black flex justify-between items-center tracking-wider overflow-hidden">
+        <span className="whitespace-nowrap">★ 100% FREE FOREVER · ZERO COMMISSIONS · UNLIMITED RESPONSES · OPEN SOURCE CRAFT ★</span>
+        <span className="hidden md:inline font-mono">NEOBRUTALIST REVOLUTION // V.2.0</span>
       </div>
-    </section>
-  )
-}
 
-function MiniEditor({ theme }: { theme: PreviewTheme }) {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null)
-  const [submitted, setSubmitted] = useState(false)
-  const [searchText, setSearchText] = useState('')
-
-  const fontStyle =
-    theme.font === 'serif'
-      ? "'Fraunces', Georgia, serif"
-      : theme.font === 'playful'
-      ? "'Space Grotesk', monospace"
-      : "'Inter', sans-serif"
-
-  const textCol = theme.darkMode ? '#f3f4f6' : '#0b0f19'
-  const subTextCol = theme.darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(11,15,25,0.45)'
-  const borderCol = theme.darkMode ? 'rgba(255,255,255,0.12)' : 'rgba(11,15,25,0.08)'
-
-  if (submitted) {
-    return (
-      <div
-        className="mx-auto w-full max-w-lg overflow-hidden rounded-2xl border shadow-pop transition-all duration-300"
-        style={{ background: theme.background, color: textCol, borderColor: borderCol, fontFamily: fontStyle }}
-      >
-        <div className="flex items-center gap-2 border-b px-5 py-3.5" style={{ borderColor: borderCol }}>
-          <span className="h-2.5 w-2.5 rounded-full bg-black/10 dark:bg-white/10" />
-          <span className="h-2.5 w-2.5 rounded-full bg-black/10 dark:bg-white/10" />
-          <span className="h-2.5 w-2.5 rounded-full bg-brand-300" />
-          <span className="ml-3 rounded-md bg-black/[0.04] dark:bg-white/[0.04] px-2 py-0.5 text-xs font-semibold" style={{ color: subTextCol }}>
-            Live preview
-          </span>
-        </div>
-        <div className="flex flex-col items-center justify-center px-6 py-12 text-center animate-pop">
-          <span
-            className="flex h-12 w-12 items-center justify-center rounded-full transition-all duration-300 shadow-md"
-            style={{ background: theme.accent, color: theme.buttonText }}
-          >
-            <svg viewBox="0 0 24 24" className="h-6 w-6">
-              <path d="m5 13 4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          <h3 className="mt-5 text-xl font-bold leading-tight">Thank you!</h3>
-          <p className="mt-1.5 text-[14px]" style={{ color: subTextCol }}>
-            Response recorded in simulator
-          </p>
-          <button
-            onClick={() => {
-              setSubmitted(false)
-              setSelectedOption(null)
-              setSearchText('')
-            }}
-            className="mt-6 text-[12px] font-bold transition hover:opacity-85"
-            style={{ color: theme.accent }}
-          >
-            ← Fill again
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div
-      className="mx-auto w-full max-w-lg overflow-hidden rounded-2xl border shadow-pop transition-all duration-300"
-      style={{ background: theme.background, color: textCol, borderColor: borderCol, fontFamily: fontStyle }}
-    >
-      <div className="flex items-center gap-2 border-b px-5 py-3.5" style={{ borderColor: borderCol }}>
-        <span className="h-2.5 w-2.5 rounded-full bg-black/10 dark:bg-white/10" />
-        <span className="h-2.5 w-2.5 rounded-full bg-black/10 dark:bg-white/10" />
-        <span className="h-2.5 w-2.5 rounded-full bg-brand-300" />
-        <span className="ml-3 rounded-md bg-black/[0.04] dark:bg-white/[0.04] px-2 py-0.5 text-xs font-semibold" style={{ color: subTextCol }}>
-          Live preview
-        </span>
-      </div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          setSubmitted(true)
-        }}
-        className="space-y-4 px-6 py-6"
-      >
-        <div className="text-[20px] font-bold leading-snug">
-          How did you hear about us?
-        </div>
-        <div className="space-y-2">
-          {['Word of mouth', 'Google search', 'Social media', 'Read a blog post'].map((o) => {
-            const isSelected = selectedOption === o
-            return (
-              <button
-                key={o}
-                type="button"
-                onClick={() => setSelectedOption(o)}
-                className="flex w-full items-center gap-3 rounded-xl border px-3.5 py-2.5 text-left text-[14px] transition-all hover:bg-black/[0.02] dark:hover:bg-white/[0.02]"
-                style={{
-                  borderColor: isSelected ? theme.accent : borderCol,
-                  background: isSelected ? `${theme.accent}12` : 'transparent',
-                }}
-              >
-                <span
-                  className="flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border transition"
-                  style={{ borderColor: isSelected ? theme.accent : borderCol }}
-                >
-                  {isSelected && <span className="h-2 w-2 rounded-full" style={{ background: theme.accent }} />}
-                </span>
-                <span className="font-semibold text-[14px]" style={{ color: isSelected ? textCol : subTextCol }}>
-                  {o}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-
-        {selectedOption === 'Google search' && (
-          <div className="space-y-1.5 pt-1.5 animate-pop">
-            <label className="block text-[13px] font-bold" style={{ color: subTextCol }}>
-              What search term did you use?
-            </label>
-            <input
-              type="text"
-              required
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="e.g. clean form builder"
-              className="w-full rounded-xl border bg-transparent px-3.5 py-2 text-[14px] outline-none transition"
-              style={{ borderColor: borderCol, color: textCol }}
-            />
-          </div>
-        )}
-
-        <div className="pt-2 flex items-center justify-between">
-          <span className="text-[12px] italic opacity-40">“Type / for any block”</span>
-          <button
-            type="submit"
-            className="rounded-full px-5 py-2 text-[13px] font-bold shadow-md transition hover:-translate-y-0.5"
-            style={{ background: theme.accent, color: theme.buttonText }}
-          >
-            Submit
-          </button>
-        </div>
-      </form>
-    </div>
-  )
-}
-
-function Features({ theme }: { theme: PreviewTheme }) {
-  return (
-    <section className="mx-auto max-w-6xl px-6 py-20">
-      <ScrollReveal>
-        <div className="mx-auto mb-14 max-w-2xl text-center">
-          <p className="mb-3 text-sm font-bold uppercase tracking-widest text-brand-500">A form builder like no other</p>
-          <h2 className="text-4xl font-extrabold tracking-tight text-ink sm:text-5xl">
-            Fill it out the way you <span className="highlight italic">think</span>
-          </h2>
-          <p className="mt-4 text-lg text-ink/55">
-            Folly makes it simple for anyone to build free online forms. No code needed — just type your
-            questions like you would in a doc, and hit <code className="rounded bg-ink/5 px-1.5 py-0.5 font-mono text-sm">/</code> to insert any question type.
-          </p>
-        </div>
-      </ScrollReveal>
-
-      <ScrollReveal className="grid gap-8 lg:grid-cols-[1.1fr_1fr]">
-        <div className="flex flex-col justify-center rounded-3xl border border-ink/10 bg-ink/[0.02] p-8">
-          <h3 className="text-3xl font-bold tracking-tight text-ink">Nothing to learn.</h3>
-          <p className="mt-2 max-w-md text-[15px] leading-relaxed text-ink/55">
-            The editor works like Notion. Enter to drop a new question, <code className="rounded bg-ink/5 px-1 py-0.5 font-mono text-[13px]">/</code> for the
-            block picker, <code className="rounded bg-ink/5 px-1 py-0.5 font-mono text-[13px]">⋮⋮</code> to drag, reorder and configure each block.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-2">
-            {['Drag & reorder', 'Inline editing', 'Slash commands', 'Format shortcuts'].map((t) => (
-              <span key={t} className="rounded-full border border-ink/10 bg-white px-3 py-1.5 text-[13px] font-medium text-ink/70">
-                {t}
-              </span>
-            ))}
-          </div>
-        </div>
-        <MiniEditor theme={theme} />
-      </ScrollReveal>
-    </section>
-  )
-}
-
-const INPUT_TYPES = [
-  { icon: 'shortText', label: 'Short text' },
-  { icon: 'longText', label: 'Long text' },
-  { icon: 'email', label: 'Email' },
-  { icon: 'number', label: 'Numbers' },
-  { icon: 'multipleChoice', label: 'Multiple choice' },
-  { icon: 'checkbox', label: 'Checkbox' },
-  { icon: 'dropdown', label: 'Dropdown' },
-  { icon: 'rating', label: 'Rating' },
-  { icon: 'signature', label: 'Signature' },
-  { icon: 'date', label: 'Date & time' },
-  { icon: 'link', label: 'Links' },
-  { icon: 'fileUpload', label: 'File upload' },
-  { icon: 'matrix', label: 'Matrix' },
-  { icon: 'nps', label: 'NPS score' },
-  { icon: 'payments', label: 'Payments' },
-  { icon: 'embed', label: 'Embed video' },
-]
-
-function InputTypes() {
-  return (
-    <section className="mx-auto max-w-6xl px-6 py-20">
-      <div className="grid items-center gap-12 lg:grid-cols-2">
-        <div>
-          <p className="mb-3 text-sm font-bold uppercase tracking-widest text-brand-500">Simple but powerful</p>
-          <h2 className="text-4xl font-extrabold tracking-tight text-ink sm:text-5xl">
-            Build any form <span className="highlight italic">in seconds</span>
-          </h2>
-          <p className="mt-4 text-lg leading-relaxed text-ink/55">
-            From contact info to payments, signatures and file uploads — collect any kind of data with a
-            wide range of free input blocks. Everything from surveys to quizzes to lead generation forms.
-          </p>
-          <Link
-            to="/forms"
-            className="mt-7 inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-black"
-          >
-            Start building <span>→</span>
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {INPUT_TYPES.map((t) => (
-            <div
-              key={t.label}
-              className="group flex flex-col items-center gap-2 rounded-2xl border border-ink/10 bg-white p-4 text-center shadow-sm transition hover:-translate-y-1 hover:border-brand-200 hover:shadow-card"
-            >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-ink/[0.04] text-ink transition group-hover:bg-brand-50 group-hover:text-brand-600">
-                <span className="[&_svg]:h-[22px] [&_svg]:w-[22px]">{icons[t.icon]}</span>
-              </span>
-              <span className="text-[12px] font-medium leading-tight text-ink/60">{t.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-const SMART = [
-  {
-    icon: (
-      <Art>
-        <circle cx="12" cy="4.5" r="2" />
-        <circle cx="5" cy="19.5" r="2" />
-        <circle cx="19" cy="19.5" r="2" />
-        <path d="M12 6.5v1a3 3 0 0 1-3 3H7a3 3 0 0 0-3 3v2" />
-        <path d="M12 6.5v1a3 3 0 0 0 3 3h2a3 3 0 0 1 3 3v2" />
-      </Art>
-    ),
-    title: 'Conditional logic',
-    desc: 'Build dynamic forms that adapt to answers — show, hide and skip questions based on prior input.',
-  },
-  {
-    icon: (
-      <Art>
-        <rect x="4" y="3" width="16" height="18" rx="3" />
-        <path d="M8 7.5h8" />
-        <path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01M16 17h.01" />
-      </Art>
-    ),
-    title: 'Calculator',
-    desc: 'Use variables to create dynamic content, scores and prices. Compute values as respondents type.',
-  },
-  {
-    icon: (
-      <Art>
-        <path d="M3 12.5s3.1-5.5 8.5-5.5 8.5 5.5 8.5 5.5-3.1 5.5-8.5 5.5-8.5-5.5-8.5-5.5Z" />
-        <circle cx="11.5" cy="12.5" r="2.6" />
-        <path d="M19.5 5.5 16.5 8.5M19.5 5.5H16V8" />
-      </Art>
-    ),
-    title: 'Hidden fields',
-    desc: 'Pass data through your form URL. Pre-fill fields and pipe answers into later questions.',
-  },
-  {
-    icon: (
-      <Art>
-        <path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z" />
-        <path d="m4 12 8 4.5 8-4.5" />
-        <path d="m4 16.5 8 4.5 8-4.5" />
-      </Art>
-    ),
-    title: 'Multi-page forms',
-    desc: 'Split long surveys into pages with a gentle progress bar. One tap per section.',
-  },
-]
-
-function Smart() {
-  return (
-    <section className="bg-ink py-20 text-white">
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="mb-12 max-w-2xl">
-          <p className="mb-3 text-sm font-bold uppercase tracking-widest text-brand-400">Craft intelligent forms</p>
-          <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-            Forms that think <span className="italic text-brand-400">ahead</span>
-          </h2>
-        </div>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {SMART.map((f) => (
-            <div
-              key={f.title}
-              className="group rounded-2xl border border-white/10 bg-white/[0.04] p-6 transition hover:border-white/25 hover:bg-white/[0.07]"
-            >
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-400/15 text-brand-300 transition group-hover:bg-brand-400/25 group-hover:text-brand-200 [&_svg]:h-6 [&_svg]:w-6">
-                {f.icon}
-              </span>
-              <h3 className="mt-4 text-lg font-bold">{f.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-white/60">{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function Themes({
-  activeTheme,
-  onChange,
-}: {
-  activeTheme: PreviewTheme
-  onChange: (t: PreviewTheme) => void
-}) {
-  return (
-    <section className="mx-auto max-w-6xl px-6 py-20">
-      <ScrollReveal className="grid items-center gap-14 lg:grid-cols-2">
-        <div className="order-2 lg:order-1">
-          <div className="grid grid-cols-3 gap-4">
-            {THEME_PRESETS.map((t) => {
-              const isSelected = activeTheme.label === t.label
-              return (
-                <button
-                  key={t.label}
-                  type="button"
-                  onClick={() => onChange(t)}
-                  className={`overflow-hidden text-left rounded-2xl border transition-all duration-300 ${
-                    isSelected ? 'border-ink ring-4 ring-ink/5 shadow-md -translate-y-1' : 'border-ink/10 hover:border-ink/20 hover:scale-102'
-                  }`}
-                >
-                  <div className="p-4" style={{ background: t.background }}>
-                    <div className="h-2 w-2/3 rounded-full" style={{ background: t.accent }} />
-                    <div className="mt-2 h-1.5 w-full rounded-full bg-black/10 dark:bg-white/10" />
-                    <div className="mt-2 h-1.5 w-4/5 rounded-full bg-black/10 dark:bg-white/10" />
-                    <div className="mt-3 flex justify-end">
-                      <span className="h-5 w-9 rounded-full text-[8px] font-bold leading-5 text-center" style={{ background: t.accent, color: t.buttonText }}>
-                        OK
-                      </span>
-                    </div>
-                  </div>
-                  <div className="bg-white dark:bg-zinc-900 border-t border-ink/5 px-4 py-2.5 text-[12px] font-bold text-ink/70">
-                    {t.label} {isSelected && '✓'}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-        <div className="order-1 lg:order-2">
-          <p className="mb-3 text-sm font-bold uppercase tracking-widest text-brand-500">Make forms uniquely yours</p>
-          <h2 className="text-4xl font-extrabold tracking-tight text-ink sm:text-5xl">
-            Pick a theme, or craft <span className="highlight italic">your own</span>
-          </h2>
-          <p className="mt-4 text-lg leading-relaxed text-ink/55">
-            Choose a background, a button color, and a typeface. Add a logo, cover image or embedded video.
-            Column layouts, custom fonts and even full custom CSS — all without touching code. Click presets here to test themes live!
-          </p>
-        </div>
-      </ScrollReveal>
-    </section>
-  )
-}
-
-function HowItWorks() {
-  const steps = [
-    { n: '01', t: 'Start typing', d: 'Open the builder and write your first question. Press Enter for the next one.' },
-    { n: '02', t: 'Add magic', d: 'Hit / for blocks, set up conditional logic and split into pages with a page break.' },
-    { n: '03', t: 'Share & collect', d: 'Grab your Folly link, embed it anywhere, and watch submissions roll in — unlimited.' },
-  ]
-  return (
-    <section className="mx-auto max-w-6xl px-6 py-20">
-      <div className="mb-12 text-center">
-        <p className="mb-3 text-sm font-bold uppercase tracking-widest text-brand-500">Roll up your sleeves</p>
-        <h2 className="text-4xl font-extrabold tracking-tight text-ink sm:text-5xl">
-          Build stunning forms, free.
-        </h2>
-        <p className="mx-auto mt-4 max-w-lg text-lg text-ink/55">
-          It’s as simple as one-two-three — and you don’t even need an account to try it.
-        </p>
-      </div>
-      <div className="grid gap-6 md:grid-cols-3">
-        {steps.map((s) => (
-          <div key={s.n} className="rounded-3xl border border-ink/10 p-8 shadow-sm transition hover:shadow-card">
-            <span className="text-sm font-black tracking-widest text-brand-500">{s.n}</span>
-            <h3 className="mt-3 text-xl font-bold text-ink">{s.t}</h3>
-            <p className="mt-2 text-[15px] leading-relaxed text-ink/55">{s.d}</p>
-          </div>
-        ))}
-      </div>
-      <div className="mt-12 text-center">
-        <Link
-          to="/forms"
-          className="rounded-full bg-ink px-8 py-4 text-[15px] font-semibold text-white shadow-lg shadow-ink/20 transition hover:-translate-y-0.5 hover:bg-black"
-        >
-          Create a free form
-        </Link>
-      </div>
-    </section>
-  )
-}
-
-function FAQSection() {
-  return (
-    <section className="mx-auto max-w-3xl px-6 py-20">
-      <h2 className="mb-10 text-center text-4xl font-extrabold tracking-tight text-ink">Questions &amp; answers</h2>
-      <div className="divide-y divide-ink/10 rounded-3xl border border-ink/10 bg-white shadow-sm">
-        {FAQ.map((f) => (
-          <details key={f.q} className="group px-6 py-5">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] font-semibold text-ink [&::-webkit-details-marker]:hidden">
-              {f.q}
-              <span className="shrink-0 text-ink/30 transition group-open:rotate-45">＋</span>
-            </summary>
-            <p className="mt-3 text-[15px] leading-relaxed text-ink/60">{f.a}</p>
-          </details>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function CTA() {
-  return (
-    <section className="relative mx-auto max-w-6xl px-6 pb-24">
-      <div className="overflow-hidden rounded-[2rem] bg-brand-500 px-8 py-16 text-center text-white sm:px-16">
-        <LogoMark className="mx-auto h-10 w-10" />
-        <h2 className="mx-auto mt-6 max-w-xl text-4xl font-extrabold tracking-tight sm:text-5xl">
-          Say goodbye to boring forms
-        </h2>
-        <p className="mx-auto mt-3 max-w-md text-lg text-white/85">
-          Free forever. Unlimited forms. Unlimited submissions.
-        </p>
-        <Link
-          to="/forms"
-          className="mt-8 inline-block rounded-full bg-white px-8 py-4 text-[15px] font-bold text-brand-600 shadow-lg transition hover:-translate-y-0.5"
-        >
-          Create a free form →
-        </Link>
-      </div>
-    </section>
-  )
-}
-
-function Footer() {
-  const cols: Array<[string, string[]]> = [
-    ['Product', ['Pricing', 'Features', 'Templates', 'Changelog', 'API docs']],
-    ['Help', ['Get started', 'Help center', 'Contact support', 'Feedback']],
-    ['Company', ['About us', 'Blog', 'Status', 'Security']],
-    ['Compare', ['Typeform alternative', 'Jotform alternative', 'Google Forms alternative']],
-  ]
-  return (
-    <footer className="border-t border-ink/10 bg-ink/[0.02]">
-      <div className="mx-auto max-w-6xl px-6 py-14">
-        <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(4,1fr)]">
-          <div>
-            <Logo />
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink/50">
-              The free form builder for people who can’t stand form builders.
-            </p>
-            <p className="mt-6 text-xs text-ink/35">
-              Made with{' '}
-              <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="inline h-3.5 w-3.5 -translate-y-[1px] text-brand-500"
-                aria-hidden
-              >
-                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-              </svg>{' '}
-              · Runs entirely in your browser
-            </p>
-          </div>
-          {cols.map(([title, links]) => (
-            <div key={title}>
-              <h4 className="text-[13px] font-bold uppercase tracking-wider text-ink/45">{title}</h4>
-              <ul className="mt-4 space-y-2.5">
-                {links.map((l) => (
-                  <li key={l}>
-                    <span className="cursor-pointer text-sm text-ink/60 transition hover:text-brand-500">{l}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-ink/10 pt-6 text-xs text-ink/40 sm:flex-row">
-          <span>© {new Date().getFullYear()} Folly BV — Built as an MVP clone of tally.so</span>
-          <div className="flex gap-5">
-            {['X', 'Reddit', 'LinkedIn', 'Instagram', 'Bluesky'].map((s) => (
-              <span key={s} className="cursor-pointer hover:text-ink/70">
-                {s}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </footer>
-  )
-}
-
-export default function Landing() {
-  const [activeTheme, setActiveTheme] = useState<PreviewTheme>(THEME_PRESETS[0])
-
-  const goCreate = () => {
-    useForms.getState().createForm()
-    window.location.hash = '#/forms'
-  }
-
-  return (
-    <div className="relative isolate min-h-full bg-white">
-      <BackgroundPeeps />
-      <header className="sticky top-0 z-40 border-b border-ink/[0.06] bg-white/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Logo />
-          <nav className="hidden items-center gap-7 text-[14px] font-medium text-ink/60 md:flex">
-            {NAV.map((n) => (
-              <a key={n.label} href={n.href} className="transition hover:text-ink">
-                {n.label}
-              </a>
-            ))}
-          </nav>
+      {/* Retro Window Navigation Header */}
+      <header className="border-b-2 border-black bg-white px-6 py-4 sticky top-0 z-40">
+        <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link to="/forms" className="hidden text-[14px] font-medium text-ink/60 transition hover:text-ink sm:block">
-              Sign in
+            <Link to="/" className="flex items-center gap-2">
+              <span className="bg-[#ffe600] text-black border-2 border-black px-2.5 py-1 text-sm font-black -rotate-2 shadow-[2px_2px_0px_#000]">
+                FOLLY.SO
+              </span>
+            </Link>
+            <span className="text-xs font-mono font-bold uppercase hidden sm:inline bg-black text-white px-2 py-0.5">
+              NO SUBSCRIPTIONS
+            </span>
+          </div>
+
+          <nav className="hidden md:flex items-center gap-6 font-bold text-sm uppercase tracking-wide">
+            <a href="#features" className="hover:bg-[#ffe600] px-2 py-1 transition border-2 border-transparent hover:border-black">
+              Features
+            </a>
+            <a href="#comparison" className="hover:bg-[#5ce1e6] px-2 py-1 transition border-2 border-transparent hover:border-black">
+              Vs Monopoly
+            </a>
+            <a href="#faq" className="hover:bg-[#ff90e8] px-2 py-1 transition border-2 border-transparent hover:border-black">
+              FAQ
+            </a>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <Link
+              to="/forms"
+              className="text-xs font-black uppercase px-4 py-2 border-2 border-black hover:bg-neutral-100 transition hidden sm:inline-block"
+            >
+              Sign In
             </Link>
             <button
-              onClick={goCreate}
-              className="rounded-full bg-ink px-5 py-2 text-[13px] font-semibold text-white transition hover:bg-black"
+              onClick={go}
+              className="bg-[#ffe600] text-black font-black text-xs uppercase px-5 py-2.5 border-2 border-black shadow-[3px_3px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#000] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all"
             >
-              Create form
+              CREATE FORM ⚡
             </button>
           </div>
         </div>
       </header>
 
-      <Hero />
-      <Features theme={activeTheme} />
-      
-      <ScrollReveal>
-        <InputTypes />
-      </ScrollReveal>
-      
-      <ScrollReveal>
-        <Smart />
-      </ScrollReveal>
-      
-      <Themes activeTheme={activeTheme} onChange={setActiveTheme} />
-      
-      <ScrollReveal>
-        <HowItWorks />
-      </ScrollReveal>
-      
-      <ScrollReveal>
-        <FAQSection />
-      </ScrollReveal>
-      
-      <ScrollReveal>
-        <CTA />
-      </ScrollReveal>
-      
-      <Footer />
+      {/* Hero Section */}
+      <main className="mx-auto max-w-6xl px-6 py-14 space-y-20">
+        <div className="grid lg:grid-cols-12 gap-12 items-center">
+          <div className="lg:col-span-7 space-y-6">
+            <div className="inline-block bg-[#ff90e8] text-black border-2 border-black px-3 py-1 text-xs font-black uppercase rotate-[-1deg] shadow-[3px_3px_0px_#000]">
+              WHY PAY $49/MO FOR 100 RESPONSES?
+            </div>
+
+            <h1 className="text-5xl sm:text-7xl font-black uppercase tracking-tight text-black leading-none">
+              CREATE FORMS <br />
+              <span className="bg-[#ffe600] px-4 py-1 border-2 border-black shadow-[5px_5px_0px_#000] inline-block -rotate-1 mt-2">
+                THAT ACTUALLY SLAP.
+              </span>
+            </h1>
+
+            <p className="text-lg font-bold text-neutral-800 max-w-lg leading-relaxed">
+              No complex wizard drag-and-drop nonsense. Write your questions like a Notion doc,
+              press slash <code className="bg-[#5ce1e6] px-1.5 py-0.5 border border-black font-mono font-bold">/</code> for blocks,
+              and ship forms with unlimited responses for $0.
+            </p>
+
+            <div className="pt-2 flex flex-wrap gap-4 items-center">
+              <button
+                onClick={go}
+                className="bg-[#ffe600] text-black font-black uppercase text-sm px-8 py-4 border-2 border-black shadow-[5px_5px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[3px_3px_0px_#000] active:translate-x-[5px] active:translate-y-[5px] active:shadow-none transition-all"
+              >
+                START CRUSHING IT (FREE) ⚡
+              </button>
+              <Link
+                to="/forms"
+                className="bg-white text-black font-black uppercase text-sm px-6 py-4 border-2 border-black shadow-[4px_4px_0px_#000] hover:bg-neutral-50 transition"
+              >
+                OPEN WORKSPACE →
+              </Link>
+            </div>
+
+            <div className="pt-6 border-t-2 border-black grid grid-cols-3 gap-4 font-mono text-xs font-bold">
+              <div>
+                <span className="text-2xl font-black block">$0.00</span>
+                <span>NO SUBSCRIPTION</span>
+              </div>
+              <div>
+                <span className="text-2xl font-black block">∞</span>
+                <span>RESPONSES</span>
+              </div>
+              <div>
+                <span className="text-2xl font-black block">100%</span>
+                <span>DATA OWNERSHIP</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Sticky Notes & Interactive Simulator */}
+          <div className="lg:col-span-5 space-y-6">
+            {/* Retro OS Window Interactive Simulator */}
+            <div className="bg-white border-2 border-black shadow-[8px_8px_0px_#000] overflow-hidden">
+              <div className="bg-[#ffe600] border-b-2 border-black px-4 py-2.5 flex justify-between items-center font-mono text-xs font-bold">
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full bg-red-400 border border-black" />
+                  <span className="h-3 w-3 rounded-full bg-yellow-400 border border-black" />
+                  <span className="h-3 w-3 rounded-full bg-green-400 border border-black" />
+                  <span className="ml-2">LIVE_DEMO.EXE</span>
+                </div>
+                <span>[ _ ][ 口 ][ X ]</span>
+              </div>
+
+              <div className="p-6">
+                {submitted ? (
+                  <div className="py-8 text-center space-y-3">
+                    <span className="text-4xl block">🔥</span>
+                    <h3 className="text-2xl font-black uppercase">BOOM! RESPONSE RECORDED</h3>
+                    <p className="text-xs font-bold text-neutral-600">
+                      You just tested the live form engine. Fast, punchy, zero friction.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSubmitted(false)
+                        setSelectedOption(null)
+                      }}
+                      className="mt-4 bg-[#5ce1e6] text-black font-black px-4 py-2 text-xs uppercase border-2 border-black shadow-[3px_3px_0px_#000] hover:bg-[#ffe600] transition"
+                    >
+                      TRY AGAIN ↺
+                    </button>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      if (selectedOption) setSubmitted(true)
+                    }}
+                    className="space-y-4"
+                  >
+                    <label className="block text-base sm:text-lg font-black uppercase text-black">
+                      WHICH THING ANNOYS YOU MOST ABOUT MODERN FORMS?
+                    </label>
+
+                    <div className="space-y-2 pt-1">
+                      {[
+                        'Subscriptions that charge per response',
+                        'Complex wizards that take 10 clicks per block',
+                        'Sneaky tracking pixels and surveillance cookies',
+                        'Ugly randomized URL slugs with no vanity names',
+                      ].map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setSelectedOption(opt)}
+                          className={`w-full text-left p-3 border-2 border-black font-bold text-xs transition ${
+                            selectedOption === opt
+                              ? 'bg-[#ffe600] shadow-[3px_3px_0px_#000]'
+                              : 'bg-white hover:bg-[#ff90e8]/20'
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="pt-3 flex justify-between items-center border-t-2 border-black">
+                      <span className="font-mono text-[11px] font-bold text-neutral-500">PICK AN ANSWER</span>
+                      <button
+                        type="submit"
+                        disabled={!selectedOption}
+                        className="bg-black text-white font-black uppercase px-5 py-2.5 border-2 border-black shadow-[3px_3px_0px_#000] disabled:opacity-40 hover:bg-[#ffe600] hover:text-black transition text-xs"
+                      >
+                        SUBMIT TEST →
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+
+            {/* Sticker Badges */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-[#5ce1e6] border-2 border-black p-4 shadow-[4px_4px_0px_#000] rotate-1">
+                <span className="font-mono text-[10px] font-bold uppercase block text-black/70">STICKER // #01</span>
+                <span className="text-base font-black uppercase block mt-1">ZERO FEES</span>
+                <span className="text-xs font-bold text-black/80 mt-1 block">Free forever. No card required.</span>
+              </div>
+              <div className="bg-[#ff90e8] border-2 border-black p-4 shadow-[4px_4px_0px_#000] -rotate-1">
+                <span className="font-mono text-[10px] font-bold uppercase block text-black/70">STICKER // #02</span>
+                <span className="text-base font-black uppercase block mt-1">SLASH MENU</span>
+                <span className="text-xs font-bold text-black/80 mt-1 block">Type / to summon any block.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION: FEATURE CARDS GRID */}
+        <section id="features" className="pt-12">
+          <div className="border-b-2 border-black pb-4 mb-8 flex flex-col sm:flex-row justify-between sm:items-end gap-2">
+            <div>
+              <span className="bg-black text-white px-2 py-0.5 text-xs font-mono font-bold uppercase">
+                TOOLKIT ARCHITECTURE
+              </span>
+              <h2 className="text-4xl font-black uppercase tracking-tight mt-2">
+                BUILT FOR MAXIMUM VELOCITY
+              </h2>
+            </div>
+            <span className="font-mono text-xs font-bold">6 CORE WEAPONS INCLUDED</span>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {FEATURES.map((feat) => (
+              <div
+                key={feat.title}
+                className="border-2 border-black bg-white shadow-[6px_6px_0px_#000] flex flex-col justify-between hover:-translate-y-1 transition-transform"
+              >
+                <div>
+                  <div
+                    className="border-b-2 border-black px-4 py-2 flex justify-between items-center font-mono text-xs font-bold"
+                    style={{ backgroundColor: feat.bg }}
+                  >
+                    <span>{feat.tag}</span>
+                    <span>★</span>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-black uppercase tracking-tight">{feat.title}</h3>
+                    <p className="mt-3 text-xs font-bold text-neutral-700 leading-relaxed">
+                      {feat.desc}
+                    </p>
+                  </div>
+                </div>
+                <div className="p-4 border-t-2 border-black bg-neutral-50 font-mono text-[10px] font-bold flex justify-between">
+                  <span>STATUS: ACTIVATED</span>
+                  <span>FOLLY ENGINE</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* SECTION: CORPORATE MONOPOLY COMPARISON */}
+        <section id="comparison" className="pt-12">
+          <div className="border-2 border-black bg-white p-8 shadow-[8px_8px_0px_#000]">
+            <div className="border-b-2 border-black pb-4 mb-6">
+              <span className="bg-[#ff5a27] text-white px-2 py-0.5 text-xs font-mono font-bold uppercase">
+                THE HARD TRUTH
+              </span>
+              <h2 className="text-3xl font-black uppercase tracking-tight mt-2">
+                CORPORATE MONOPOLIES VS. FOLLY
+              </h2>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 font-mono text-xs">
+              <div className="border-2 border-black p-5 bg-[#fafafa] space-y-3">
+                <span className="font-black uppercase text-sm block border-b-2 border-black pb-2 text-neutral-600">
+                  THEIR WAY (TYPEFORM / JOTFORM)
+                </span>
+                <div className="flex justify-between py-1 border-b border-black/10 font-bold">
+                  <span>MONTHLY RETAINER</span>
+                  <span className="text-red-600">$39 TO $99/MO</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-black/10 font-bold">
+                  <span>RESPONSE CAP</span>
+                  <span className="text-red-600">100 RESPONSES / MO</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-black/10 font-bold">
+                  <span>WATERMARK REMOVAL</span>
+                  <span className="text-red-600">PAID TIER ONLY</span>
+                </div>
+                <div className="flex justify-between py-1 font-bold">
+                  <span>DATA PRIVACY</span>
+                  <span className="text-red-600">TRACKING COOKIES ACTIVE</span>
+                </div>
+              </div>
+
+              <div className="border-2 border-black p-5 bg-[#ffe600] space-y-3 shadow-[4px_4px_0px_#000]">
+                <span className="font-black uppercase text-sm block border-b-2 border-black pb-2 text-black">
+                  OUR WAY (FOLLY.SO)
+                </span>
+                <div className="flex justify-between py-1 border-b border-black/20 font-black">
+                  <span>MONTHLY RETAINER</span>
+                  <span className="text-black">$0.00 (ALWAYS FREE)</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-black/20 font-black">
+                  <span>RESPONSE CAP</span>
+                  <span className="text-black">UNLIMITED (NO CEILING)</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-black/20 font-black">
+                  <span>WATERMARK REMOVAL</span>
+                  <span className="text-black">FREE FOREVER</span>
+                </div>
+                <div className="flex justify-between py-1 font-black">
+                  <span>DATA PRIVACY</span>
+                  <span className="text-black">100% PRIVATE & UNTETHERED</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION: FAQS */}
+        <section id="faq" className="pt-12">
+          <div className="border-b-2 border-black pb-4 mb-8">
+            <span className="bg-[#ff90e8] text-black px-2 py-0.5 text-xs font-mono font-bold uppercase border-2 border-black shadow-[2px_2px_0px_#000]">
+              QUESTIONS ANSWERED
+            </span>
+            <h2 className="text-3xl font-black uppercase tracking-tight mt-2">
+              FREQUENTLY ASKED QUESTIONS
+            </h2>
+          </div>
+
+          <div className="space-y-4 max-w-3xl">
+            {FAQS.map((faq, idx) => (
+              <div
+                key={faq.q}
+                onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
+                className="border-2 border-black bg-white shadow-[4px_4px_0px_#000] cursor-pointer"
+              >
+                <div className="p-4 flex justify-between items-center font-bold text-sm uppercase">
+                  <span>{faq.q}</span>
+                  <span className="h-6 w-6 border-2 border-black flex items-center justify-center font-black bg-[#ffe600]">
+                    {activeFaq === idx ? '−' : '+'}
+                  </span>
+                </div>
+                {activeFaq === idx && (
+                  <div className="px-4 pb-4 pt-1 border-t-2 border-black text-xs font-bold text-neutral-700 bg-neutral-50 leading-relaxed">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* SECTION: BOTTOM CALL TO ACTION */}
+        <section className="pt-8">
+          <div className="border-2 border-black bg-[#ffe600] p-8 sm:p-14 shadow-[10px_10px_0px_#000] text-center space-y-6">
+            <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tight">
+              STOP WASTING MONEY ON FORMS.
+            </h2>
+            <p className="text-base sm:text-lg font-bold max-w-xl mx-auto">
+              Build your first form in 30 seconds. No credit card, no email confirmation runaround.
+            </p>
+            <button
+              onClick={go}
+              className="bg-black text-white font-black uppercase text-sm sm:text-base px-10 py-5 border-2 border-black shadow-[6px_6px_0px_#fff] hover:bg-[#ff90e8] hover:text-black transition"
+            >
+              CREATE YOUR FIRST FORM NOW ⚡
+            </button>
+          </div>
+        </section>
+      </main>
+
+      {/* Neo-brutalist Footer */}
+      <footer className="border-t-2 border-black bg-white py-12 px-6 text-xs font-mono font-bold mt-20">
+        <div className="mx-auto max-w-6xl flex flex-col sm:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-3">
+            <LogoMark className="h-6 w-6" />
+            <span className="text-sm font-black uppercase tracking-wider">
+              FOLLY.SO // NEO-BRUTALIST EDITION
+            </span>
+          </div>
+
+          <div className="flex gap-6 uppercase text-neutral-600">
+            <Link to="/forms" className="hover:text-black hover:underline">
+              Dashboard
+            </Link>
+            <a href="#features" className="hover:text-black hover:underline">
+              Features
+            </a>
+            <a href="#comparison" className="hover:text-black hover:underline">
+              Vs Monopolies
+            </a>
+          </div>
+
+          <span className="text-neutral-500">© 2026 FOLLY SO · UNLIMITED FORM FREEDOM</span>
+        </div>
+      </footer>
     </div>
   )
 }

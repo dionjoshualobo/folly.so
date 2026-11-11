@@ -73,27 +73,34 @@ export function SettingsPopover({
   return (
     <div
       ref={ref}
-      className="animate-pop fixed z-50 w-[320px] overflow-hidden rounded-xl border border-ink/10 bg-white shadow-pop"
+      className="animate-pop fixed z-50 w-[330px] overflow-hidden border-2 border-black bg-white shadow-[8px_8px_0px_#000]"
       style={{ top, left }}
       onMouseDown={(e) => e.preventDefault()}
     >
-      <div className="flex items-center justify-between border-b border-ink/[0.06] px-3 py-2">
-        <div className="flex gap-1">
+      <div className="flex items-center justify-between border-b-2 border-black bg-[#ffe600] px-3 py-2">
+        <div className="flex gap-1.5 font-mono text-xs">
           <button
             onClick={() => setTab('type')}
-            className={`rounded-md px-2.5 py-1 text-[12px] font-semibold ${tab === 'type' ? 'bg-ink text-white' : 'text-ink/50 hover:bg-ink/[0.05]'}`}
+            className={`border-2 border-black px-2.5 py-0.5 font-black uppercase transition ${
+              tab === 'type' ? 'bg-black text-white shadow-[1px_1px_0px_#ffe600]' : 'bg-white text-black shadow-[1px_1px_0px_#000]'
+            }`}
           >
-            Type
+            BLOCK TYPE
           </button>
           <button
             onClick={() => setTab('settings')}
-            className={`rounded-md px-2.5 py-1 text-[12px] font-semibold ${tab === 'settings' ? 'bg-ink text-white' : 'text-ink/50 hover:bg-ink/[0.05]'}`}
+            className={`border-2 border-black px-2.5 py-0.5 font-black uppercase transition ${
+              tab === 'settings' ? 'bg-black text-white shadow-[1px_1px_0px_#ffe600]' : 'bg-white text-black shadow-[1px_1px_0px_#000]'
+            }`}
           >
-            Settings
+            SETTINGS
           </button>
         </div>
-        <button onClick={onClose} className="flex h-6 w-6 items-center justify-center rounded text-ink/40 hover:bg-ink/[0.05] hover:text-ink">
-          <Icon name="close" />
+        <button
+          onClick={onClose}
+          className="border-2 border-black bg-black text-white px-1.5 py-0.5 text-xs font-black hover:bg-red-500"
+        >
+          [ X ]
         </button>
       </div>
 

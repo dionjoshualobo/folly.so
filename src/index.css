@@ -14,8 +14,8 @@ body,
 
 body {
   margin: 0;
-  background: #ffffff;
-  color: #0b0f19;
+  background: #fbf9f5;
+  color: #000000;
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -37,12 +37,13 @@ img {
 }
 
 ::selection {
-  background: rgba(255, 84, 112, 0.25);
+  background: #ffe600;
+  color: #000000;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #9aa0ab;
+  color: #6b7280;
 }
 
 textarea {
@@ -55,25 +56,32 @@ textarea {
 }
 
 .drop-insert {
-  border-top: 2px solid #ff5470;
-  margin-top: -2px;
+  border-top: 3px solid #000000;
+  margin-top: -3px;
 }
 
 /* animated underline highlight used on landing */
 .highlight {
-  background-image: linear-gradient(100deg, rgba(255, 84, 112, 0.16), rgba(255, 84, 112, 0.16));
+  background-image: linear-gradient(100deg, #ffe600, #ffe600);
   background-position: 0 100%;
   background-repeat: no-repeat;
   background-size: 100% 42%;
 }
 
 .dot-bg {
-  background-image: radial-gradient(circle, #0b0f190d 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-image: radial-gradient(circle, #00000015 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+.grid-bg {
+  background-image: 
+    linear-gradient(to right, #0000000d 1px, transparent 1px),
+    linear-gradient(to bottom, #0000000d 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 input[type='range'] {
-  accent-color: #ff5470;
+  accent-color: #000000;
 }
 
 /* editor contenteditable */
@@ -83,15 +91,12 @@ input[type='range'] {
 
 .empty-placeholder:empty::before {
   content: attr(data-placeholder);
-  color: #b7bdc7;
+  color: #9ca3af;
   pointer-events: none;
   font-weight: 400;
 }
 
-/* Tally-style column rows.
-   Each column is a percentage-width box; the gutter comes from half-paddings on
-   each column (first/last drop their outer half) so the row always totals 100%.
-   Columns collapse to a single stacked column below 576px, like Tally. */
+/* Tally-style column rows. */
 .col-split {
   display: grid;
   align-items: start;
@@ -145,22 +150,92 @@ input[type='range'] {
   animation: fade-in 0.18s ease-out both;
 }
 
-/* Global focus and transitions styling for clean premium feel */
-a, button, input, textarea, select {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
+/* NEO-BRUTALIST UTILITY TOKENS */
+.neo-box {
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  box-shadow: 4px 4px 0px #000000;
 }
 
-/* Remove default focus outlines to use cleaner ring highlights */
-input:focus, textarea:focus, select:focus {
+.neo-box-sm {
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  box-shadow: 2px 2px 0px #000000;
+}
+
+.neo-box-lg {
+  border: 2.5px solid #000000;
+  background-color: #ffffff;
+  box-shadow: 6px 6px 0px #000000;
+}
+
+.neo-btn {
+  border: 2px solid #000000;
+  font-weight: 700;
+  box-shadow: 3px 3px 0px #000000;
+  transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.neo-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #000000;
+}
+.neo-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #000000;
+}
+
+.neo-btn-primary {
+  background-color: #ffe600;
+  color: #000000;
+}
+.neo-btn-primary:hover {
+  background-color: #facc15;
+}
+
+.neo-btn-white {
+  background-color: #ffffff;
+  color: #000000;
+}
+.neo-btn-white:hover {
+  background-color: #f4f4f5;
+}
+
+.neo-btn-black {
+  background-color: #000000;
+  color: #ffffff;
+}
+.neo-btn-black:hover {
+  background-color: #18181b;
+}
+
+.neo-input {
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  color: #000000;
+  box-shadow: 2px 2px 0px #000000;
+  transition: box-shadow 0.12s, transform 0.12s;
+}
+.neo-input:focus {
   outline: none;
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.neo-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid #000000;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  box-shadow: 2px 2px 0px #000000;
 }
 
 .shadow-pop {
-  box-shadow: 0 12px 30px -10px rgba(11, 15, 25, 0.08), 0 4px 12px -5px rgba(11, 15, 25, 0.03);
+  box-shadow: 4px 4px 0px #000000;
 }
 
 .shadow-card {
-  box-shadow: 0 8px 24px -8px rgba(11, 15, 25, 0.06);
+  box-shadow: 4px 4px 0px #000000;
 }

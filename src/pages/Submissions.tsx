@@ -23,22 +23,22 @@ export default function Submissions() {
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
 
   if (!ready) {
-    return <div className="flex min-h-screen items-center justify-center text-sm text-ink/40">Loading…</div>
+    return <div className="flex min-h-screen items-center justify-center font-mono text-sm font-bold">LOADING INTAKE ENGINE…</div>
   }
 
   if (!form) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-white">
-        <LogoMark className="h-10 w-10" />
-        <p className="text-[15px] text-ink/50">Form not found.</p>
-        <Link to="/forms" className="text-sm font-semibold text-brand-600 hover:underline">
-          ← Back to forms
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#fffdfa] p-6 text-center">
+        <LogoMark className="h-12 w-12" />
+        <h2 className="text-2xl font-black uppercase">Form Not Found</h2>
+        <Link to="/forms" className="border-2 border-black bg-[#ffe600] px-6 py-2.5 text-xs font-black uppercase shadow-[3px_3px_0px_#000]">
+          ← Back to Dashboard
         </Link>
       </div>
     )
   }
 
-  const questions = form.blocks.filter((b) => !['heading', 'paragraph', 'image', 'pageBreak', 'thankYou'].includes(b.type))
+  const questions = form.blocks.filter((b) => !['heading', 'heading2', 'heading3', 'label', 'paragraph', 'image', 'pageBreak', 'thankYou', 'divider'].includes(b.type))
 
   const ratingVals = (qid: string) =>
     submissions
@@ -129,44 +129,53 @@ export default function Submissions() {
   }
 
   const stats = [
-    { label: 'Total responses', value: String(submissions.length) },
-    ...(ratingAvg ? [{ label: 'Avg rating', value: `★ ${ratingAvg}` }] : []),
-    ...(npsAvg ? [{ label: 'Avg NPS', value: `${npsAvg} / 10` }] : []),
-    ...(scoreAvg ? [{ label: 'Avg score', value: String(scoreAvg) }] : []),
-    { label: 'Questions', value: String(questions.length) },
+    { label: 'TOTAL RESPONSES', value: String(submissions.length), color: '#ffe600' },
+    ...(ratingAvg ? [{ label: 'AVERAGE RATING', value: `★ ${ratingAvg}`, color: '#ff90e8' }] : []),
+    ...(npsAvg ? [{ label: 'NPS SCORE', value: `${npsAvg} / 10`, color: '#5ce1e6' }] : []),
+    ...(scoreAvg ? [{ label: 'AVERAGE SCORE', value: String(scoreAvg), color: '#00ef84' }] : []),
+    { label: 'QUESTIONS INTAKE', value: String(questions.length), color: '#fafafa' },
   ]
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#fafafb]">
-      <header className="sticky top-0 z-40 border-b border-ink/[0.06] bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
+    <div className="flex min-h-screen flex-col bg-[#fffdfa] text-black">
+      {/* Top Banner */}
+      <div className="bg-[#ffe600] text-black font-black uppercase text-xs py-1.5 px-6 border-b-2 border-black flex justify-between items-center tracking-wider font-mono">
+        <span>★ RESPONSES & TELEMETRY // {form.settings.title || 'UNTITLED FORM'} ★</span>
+        <span>STATUS: LIVE</span>
+      </div>
+
+      <header className="sticky top-0 z-40 border-b-2 border-black bg-white px-6 py-3.5">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-3">
             <Link
               to={`/editor/${form.id}`}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink/50 transition hover:bg-ink/[0.05] hover:text-ink"
+              className="border-2 border-black bg-white p-1.5 shadow-[2px_2px_0px_#000] hover:bg-[#ffe600] transition"
               title="Back to editor"
             >
-              <Icon name="back" />
+              <Icon name="back" className="h-4 w-4" />
             </Link>
-            <span className="truncate text-[14px] font-semibold text-ink/90">{form.settings.title} — Responses</span>
+            <span className="truncate font-black uppercase text-sm sm:text-base">
+              {form.settings.title || 'Untitled form'} <span className="text-neutral-500 font-mono text-xs">/ RESPONSES</span>
+            </span>
           </div>
+
           <div className="flex items-center gap-2">
             {submissions.length > 0 && (
               <>
                 <button
                   onClick={exportToCSV}
-                  className="flex items-center gap-1.5 rounded-full border border-ink/12 px-3.5 py-1.5 text-[13px] font-semibold text-ink/60 transition hover:border-ink/30 hover:text-ink"
-                  title="Download as CSV spreadsheet"
+                  className="border-2 border-black bg-white px-3 py-1.5 text-xs font-black uppercase shadow-[2px_2px_0px_#000] hover:bg-[#ffe600] transition flex items-center gap-1.5"
+                  title="Download CSV"
                 >
-                  <Icon name="download" className="h-4 w-4" />
+                  <Icon name="download" className="h-3.5 w-3.5" />
                   CSV
                 </button>
                 <button
                   onClick={exportToJSON}
-                  className="flex items-center gap-1.5 rounded-full border border-ink/12 px-3.5 py-1.5 text-[13px] font-semibold text-ink/60 transition hover:border-ink/30 hover:text-ink"
-                  title="Download raw responses JSON"
+                  className="border-2 border-black bg-white px-3 py-1.5 text-xs font-black uppercase shadow-[2px_2px_0px_#000] hover:bg-[#5ce1e6] transition flex items-center gap-1.5"
+                  title="Download JSON"
                 >
-                  <Icon name="download" className="h-4 w-4" />
+                  <Icon name="download" className="h-3.5 w-3.5" />
                   JSON
                 </button>
               </>
@@ -174,70 +183,92 @@ export default function Submissions() {
             <Link
               to={`/r/${form.id}`}
               target="_blank"
-              className="rounded-full border border-ink/12 px-3.5 py-1.5 text-[13px] font-semibold text-ink/60 transition hover:border-ink/30 hover:text-ink"
+              className="border-2 border-black bg-white px-3.5 py-1.5 text-xs font-black uppercase shadow-[2px_2px_0px_#000] hover:bg-neutral-100 transition hidden sm:inline-block"
             >
-              View live form
+              Live form ↗
             </Link>
             <Link
               to={`/editor/${form.id}`}
-              className="rounded-full bg-ink px-3.5 py-1.5 text-[13px] font-semibold text-white transition hover:bg-black"
+              className="border-2 border-black bg-[#ffe600] text-black px-4 py-1.5 text-xs font-black uppercase shadow-[3px_3px_0px_#000] hover:bg-[#facc15] transition"
             >
-              Edit form
+              Edit form →
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
+        {/* Metric Cards */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {stats.map((s) => (
-            <div key={s.label} className="rounded-2xl border border-ink/10 bg-white p-4 shadow-sm">
-              <div className="text-[16px] font-bold text-ink">{s.value}</div>
-              <div className="mt-0.5 text-[12px] font-medium text-ink/45">{s.label}</div>
+            <div
+              key={s.label}
+              className="border-2 border-black bg-white p-5 shadow-[4px_4px_0px_#000] flex flex-col justify-between"
+            >
+              <div
+                className="inline-block border border-black font-mono text-[10px] font-black uppercase px-2 py-0.5 w-fit shadow-[1px_1px_0px_#000]"
+                style={{ backgroundColor: s.color }}
+              >
+                {s.label}
+              </div>
+              <div className="text-3xl font-black mt-3">{s.value}</div>
             </div>
           ))}
         </div>
 
         {submissions.length === 0 ? (
-          <div className="mt-16 flex flex-col items-center text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ink/[0.05]">
-              <Icon name="paragraph" className="flex h-6 w-6 items-center text-ink/40" />
-            </div>
-            <h2 className="mt-4 text-lg font-bold text-ink">Waiting for the first response</h2>
-            <p className="mt-1 max-w-sm text-[14px] text-ink/45">
-              Submit your form once via its shared link, or watch responses land here in real time.
+          <div className="mt-16 border-2 border-dashed border-black bg-white p-12 text-center shadow-[6px_6px_0px_#000] max-w-lg mx-auto">
+            <span className="text-3xl block mb-3">📡</span>
+            <h2 className="text-xl font-black uppercase">Waiting for first response</h2>
+            <p className="mt-2 text-xs font-bold text-neutral-600 max-w-sm mx-auto">
+              Share your live form link with respondents, or submit a test response yourself to see it stream here in real time.
             </p>
+            <div className="mt-6 flex justify-center gap-3">
+              <Link
+                to={`/r/${form.id}`}
+                target="_blank"
+                className="border-2 border-black bg-[#ffe600] text-black px-6 py-2.5 text-xs font-black uppercase shadow-[3px_3px_0px_#000] hover:bg-[#facc15] transition"
+              >
+                Open live form ↗
+              </Link>
+            </div>
           </div>
         ) : (
-          <div className="mt-8 rounded-2xl border border-ink/10 bg-white shadow-sm overflow-hidden">
+          <div className="mt-8 border-2 border-black bg-white shadow-[6px_6px_0px_#000] overflow-hidden">
+            {/* Table Window Header */}
+            <div className="border-b-2 border-black bg-black text-white px-4 py-2 flex justify-between items-center font-mono text-xs font-bold">
+              <span>RESPONSES_LOG.CSV // {submissions.length} ROWS</span>
+              <span>[ REALTIME SYNC ]</span>
+            </div>
+
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-[13px]">
-                <thead className="bg-ink/[0.02] border-b border-ink/10">
+              <table className="w-full text-left text-xs font-mono">
+                <thead className="bg-[#fafafa] border-b-2 border-black font-bold uppercase">
                   <tr>
-                    <th className="px-4 py-3 font-semibold text-ink/50 whitespace-nowrap">Submitted At</th>
-                    <th className="px-4 py-3 font-semibold text-ink/50 whitespace-nowrap">ID</th>
+                    <th className="px-4 py-3 border-r-2 border-black whitespace-nowrap">DATE</th>
+                    <th className="px-4 py-3 border-r-2 border-black whitespace-nowrap">ID</th>
                     {questions.map((q) => (
-                      <th key={q.id} className="px-4 py-3 font-semibold text-ink/80 whitespace-nowrap max-w-xs truncate" title={getQuestionLabel(q)}>
+                      <th key={q.id} className="px-4 py-3 border-r-2 border-black whitespace-nowrap max-w-xs truncate" title={getQuestionLabel(q)}>
                         {getQuestionLabel(q)}
                       </th>
                     ))}
                     {(form.settings.hiddenFields ?? []).map((field) => (
-                      <th key={field} className="px-4 py-3 font-semibold text-brand-600/70 whitespace-nowrap">
-                        {field} <span className="ml-1 text-[9px] font-bold uppercase tracking-wider text-brand-500 bg-brand-50 px-1 py-0.5 rounded">Hidden</span>
+                      <th key={field} className="px-4 py-3 border-r-2 border-black whitespace-nowrap text-[#ff5a27]">
+                        {field} (HIDDEN)
                       </th>
                     ))}
-                    <th className="px-4 py-3 text-right font-semibold text-ink/50 whitespace-nowrap" />
+                    <th className="px-4 py-3 text-right whitespace-nowrap">ACTION</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-ink/[0.04]">
+                <tbody className="divide-y-2 border-black divide-black">
                   {submissions.map((s) => (
                     <tr
                       key={s.id}
                       onClick={() => setSelectedSubmission(s)}
-                      className="cursor-pointer hover:bg-ink/[0.03] transition"
+                      className="cursor-pointer hover:bg-[#ffe600]/25 transition"
                     >
-                      <td className="px-4 py-3 text-ink/60 whitespace-nowrap">{formatWhen(s.submittedAt)}</td>
-                      <td className="px-4 py-3 font-mono text-[11px] text-ink/40 whitespace-nowrap">{s.id.slice(0, 8)}</td>
+                      <td className="px-4 py-3 border-r-2 border-black whitespace-nowrap font-bold">{formatWhen(s.submittedAt)}</td>
+                      <td className="px-4 py-3 border-r-2 border-black whitespace-nowrap text-neutral-500 font-bold">{s.id.slice(0, 8)}</td>
                       {questions.map((q) => {
                         const value = s.answers[q.id] as AnswerValue | undefined
                         const hasValue =
@@ -246,7 +277,7 @@ export default function Submissions() {
                           value !== '' &&
                           !(Array.isArray(value) && value.length === 0)
                         return (
-                          <td key={q.id} className={`px-4 py-3 max-w-sm truncate ${hasValue ? 'text-ink' : 'italic text-ink/35'}`} title={hasValue ? formatAnswer(value) : ''}>
+                          <td key={q.id} className={`px-4 py-3 border-r-2 border-black max-w-sm truncate ${hasValue ? 'font-bold text-black' : 'italic text-neutral-400'}`}>
                             {hasValue ? formatAnswer(value) : '—'}
                           </td>
                         )
@@ -255,13 +286,13 @@ export default function Submissions() {
                         const value = s.answers[field] as AnswerValue | undefined
                         const hasValue = value !== undefined && value !== null && value !== ''
                         return (
-                          <td key={field} className={`px-4 py-3 max-w-sm truncate bg-brand-50/10 ${hasValue ? 'text-ink' : 'italic text-ink/35'}`} title={hasValue ? formatAnswer(value) : ''}>
+                          <td key={field} className="px-4 py-3 border-r-2 border-black max-w-sm truncate font-bold text-[#ff5a27]">
                             {hasValue ? formatAnswer(value) : '—'}
                           </td>
                         )
                       })}
-                      <td className="px-4 py-3 text-right text-ink/30 text-[12px]">
-                        Inspect →
+                      <td className="px-4 py-3 text-right font-black uppercase text-xs underline">
+                        INSPECT →
                       </td>
                     </tr>
                   ))}
@@ -308,26 +339,27 @@ function SubmissionDetailModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="animate-pop relative flex max-h-[88vh] w-full max-w-2xl flex-col rounded-3xl bg-white shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between border-b border-ink/[0.08] px-6 py-4">
-          <div>
-            <h2 className="text-lg font-bold text-ink">Response Details</h2>
-            <p className="text-[12px] text-ink/45">
-              Submitted {new Date(submission.submittedAt).toLocaleString()} · ID: <span className="font-mono">{submission.id}</span>
-            </p>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={onClose} />
+      <div className="relative flex max-h-[88vh] w-full max-w-2xl flex-col border-3 border-black bg-white shadow-[12px_12px_0px_#000] overflow-hidden">
+        {/* Retro Window Header */}
+        <div className="border-b-2 border-black bg-[#ffe600] px-4 py-3 flex items-center justify-between font-mono text-xs font-bold">
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-red-400 border border-black" />
+            <span className="h-3 w-3 rounded-full bg-yellow-400 border border-black" />
+            <span className="h-3 w-3 rounded-full bg-green-400 border border-black" />
+            <span className="ml-2 font-black">RESPONSE_{submission.id.slice(0, 8)}.TXT</span>
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-ink/40 transition hover:bg-ink/[0.05] hover:text-ink"
+            className="border-2 border-black bg-black text-white px-2 py-0.5 text-xs font-black hover:bg-red-500"
           >
-            <Icon name="close" />
+            [ X ]
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          <div className="rounded-2xl border border-ink/10 bg-[#fafafb] p-4 text-[13px] text-ink/60">
-            Form: <span className="font-semibold text-ink">{formTitle}</span>
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#fffdfa]">
+          <div className="border-2 border-black bg-white p-3 font-mono text-xs font-bold shadow-[2px_2px_0px_#000]">
+            FORM: <span className="uppercase text-black font-black">{formTitle || 'UNTITLED'}</span> · TIMESTAMP: {new Date(submission.submittedAt).toLocaleString()}
           </div>
 
           <div className="space-y-3">
@@ -335,25 +367,25 @@ function SubmissionDetailModal({
               const val = submission.answers[q.id]
               const hasVal = val !== undefined && val !== null && val !== ''
               return (
-                <div key={q.id} className="rounded-2xl border border-ink/10 bg-white p-4 shadow-sm">
-                  <div className="text-[12px] font-bold text-ink/50 uppercase tracking-wider mb-1.5">
+                <div key={q.id} className="border-2 border-black bg-white p-4 shadow-[3px_3px_0px_#000]">
+                  <div className="font-mono text-[11px] font-black uppercase text-neutral-600 mb-1">
                     {getQuestionLabel(q)}
                   </div>
-                  <div className={`text-[15px] leading-relaxed ${hasVal ? 'text-ink font-medium' : 'italic text-ink/35'}`}>
-                    {hasVal ? formatAnswer(val) : 'No response provided'}
+                  <div className={`text-sm ${hasVal ? 'font-bold text-black' : 'italic text-neutral-400'}`}>
+                    {hasVal ? formatAnswer(val) : 'No answer provided'}
                   </div>
                 </div>
               )
             })}
 
             {hiddenFields.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-ink/[0.08]">
-                <div className="text-[12px] font-bold uppercase tracking-wider text-brand-600 mb-2">Hidden URL Fields</div>
+              <div className="mt-4 pt-4 border-t-2 border-black">
+                <div className="font-mono text-xs font-black uppercase text-[#ff5a27] mb-2">HIDDEN URL PARAMS</div>
                 <div className="grid grid-cols-2 gap-2">
                   {hiddenFields.map((h) => (
-                    <div key={h} className="rounded-xl border border-brand-200 bg-brand-50/40 p-3">
-                      <div className="text-[11px] font-bold text-brand-700">{h}</div>
-                      <div className="text-[14px] text-ink">{String(submission.answers[h] ?? '—')}</div>
+                    <div key={h} className="border-2 border-black bg-[#ff5a27]/10 p-3 shadow-[2px_2px_0px_#000]">
+                      <div className="font-mono text-[10px] font-black uppercase text-[#ff5a27]">{h}</div>
+                      <div className="font-bold text-sm text-black">{String(submission.answers[h] ?? '—')}</div>
                     </div>
                   ))}
                 </div>
@@ -362,18 +394,18 @@ function SubmissionDetailModal({
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-ink/[0.08] px-6 py-3.5 bg-ink/[0.01]">
+        <div className="flex items-center justify-between border-t-2 border-black px-6 py-3.5 bg-neutral-50 font-mono text-xs">
           <button
             onClick={onDelete}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold text-brand-600 transition hover:bg-brand-50"
+            className="border-2 border-black bg-white text-red-600 font-black uppercase px-3 py-1.5 shadow-[2px_2px_0px_#000] hover:bg-red-500 hover:text-white transition"
           >
-            <Icon name="trash" /> Delete response
+            Delete response 🗑
           </button>
           <button
             onClick={onClose}
-            className="rounded-full bg-ink px-5 py-2 text-[13px] font-bold text-white transition hover:bg-black"
+            className="border-2 border-black bg-black text-white font-black uppercase px-5 py-1.5 shadow-[2px_2px_0px_#ffe600] hover:bg-[#ffe600] hover:text-black transition"
           >
-            Done
+            Close window
           </button>
         </div>
       </div>

@@ -10,19 +10,26 @@ export function LogicDrawer({ form, onClose, onOpenSettings }: { form: Form; onC
 
   return (
     <div className="animate-fade fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-ink/20 backdrop-blur-[1px]" onClick={onClose} />
-      <div className="animate-pop absolute right-0 top-0 flex h-full w-[340px] flex-col bg-white shadow-pop sm:w-[420px]">
-        <div className="flex items-center justify-between border-b border-ink/[0.06] px-5 py-3.5">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-xs" onClick={onClose} />
+      <div className="animate-pop absolute right-0 top-0 flex h-full w-[340px] flex-col border-l-3 border-black bg-white shadow-[-8px_0px_0px_#000] sm:w-[420px]">
+        {/* Retro Window Header */}
+        <div className="border-b-2 border-black bg-[#ffe600] px-4 py-3 flex items-center justify-between font-mono text-xs font-black uppercase text-black">
           <div className="flex items-center gap-2">
-            <span className="text-[15px] font-bold text-ink">Logic Map</span>
+            <span className="h-3 w-3 rounded-full bg-red-400 border border-black" />
+            <span className="h-3 w-3 rounded-full bg-yellow-400 border border-black" />
+            <span className="h-3 w-3 rounded-full bg-green-400 border border-black" />
+            <span className="ml-1 font-black">LOGIC_GRAPH.EXE</span>
             {totalRules > 0 && (
-              <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-bold text-brand-600">
-                {totalRules} {totalRules === 1 ? 'rule' : 'rules'}
+              <span className="bg-black text-white px-2 py-0.5 text-[10px] font-bold">
+                {totalRules} {totalRules === 1 ? 'RULE' : 'RULES'}
               </span>
             )}
           </div>
-          <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded text-ink/40 hover:bg-ink/[0.05] hover:text-ink">
-            <Icon name="close" />
+          <button
+            onClick={onClose}
+            className="border-2 border-black bg-black text-white px-2 py-0.5 text-xs font-black hover:bg-red-500"
+          >
+            [ X ]
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-5 space-y-6">

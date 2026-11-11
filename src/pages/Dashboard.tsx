@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Logo } from '../components/ui'
+import { Logo, NeoWindowHeader } from '../components/ui'
 import { useForms } from '../store'
 import { formatWhen } from '../lib/logic'
 import { Icon } from '../blockCatalog'
@@ -59,30 +59,36 @@ export default function Dashboard() {
   }, [forms, submissions, search, sort])
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#fafafb]">
-      <header className="sticky top-0 z-40 border-b border-ink/[0.06] bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
+    <div className="flex min-h-screen flex-col bg-[#fffdfa] text-black">
+      {/* Top Banner */}
+      <div className="bg-[#ffe600] text-black font-black uppercase text-xs py-1.5 px-6 border-b-2 border-black flex justify-between items-center tracking-wider font-mono">
+        <span>★ DASHBOARD // FOLLY NEO-BRUTALIST SUITE ★</span>
+        <span className="hidden sm:inline">100% UNLIMITED INTAKE</span>
+      </div>
+
+      <header className="sticky top-0 z-40 border-b-2 border-black bg-white px-6 py-3.5">
+        <div className="mx-auto flex max-w-6xl items-center justify-between">
           <Logo />
-          <div className="flex items-center gap-4">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink/[0.06] text-[13px] font-bold text-ink/60">
+          <div className="flex items-center gap-3">
+            <span className="flex h-8 w-8 items-center justify-center border-2 border-black bg-[#ffe600] text-xs font-black shadow-[2px_2px_0px_#000]">
               D
             </span>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
         {!ready ? (
           <div className="mt-20 flex flex-col items-center text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-ink/[0.05]">
-              <span className="flex h-5 w-5 animate-spin items-center justify-center rounded-full border-2 border-ink/15 border-t-ink" />
+            <div className="flex h-16 w-16 items-center justify-center border-2 border-black bg-[#ffe600] shadow-[4px_4px_0px_#000]">
+              <span className="h-6 w-6 animate-spin rounded-full border-2 border-black border-t-transparent" />
             </div>
             {error && (
-              <p className="mt-4 max-w-sm text-[14px] text-ink/45">
-                Couldn't reach the server.
+              <p className="mt-4 max-w-sm text-sm font-bold text-red-600">
+                Server connection failed.{' '}
                 <button
                   onClick={() => hydrate()}
-                  className="ml-1.5 font-semibold text-brand-600 hover:underline"
+                  className="underline font-black text-black hover:bg-[#ffe600]"
                 >
                   Retry
                 </button>
@@ -90,232 +96,219 @@ export default function Dashboard() {
             )}
           </div>
         ) : (
-        <>
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-ink">My forms</h1>
-            <p className="mt-1 text-[14px] text-ink/45">
-              {forms.length} form{forms.length === 1 ? '' : 's'} · {submissions.length} total response{submissions.length === 1 ? '' : 's'}
-            </p>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => setTemplateModalOpen(true)}
-              className="flex shrink-0 items-center gap-1.5 rounded-full border border-ink/15 bg-white px-4 py-2.5 text-[14px] font-semibold text-ink/75 transition hover:border-ink/30 hover:text-ink"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4 w-4 text-ink/50">
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <path d="M3 9h18M9 21V9" />
-              </svg>
-              Templates
-            </button>
-            <button
-              onClick={createNew}
-              className="flex shrink-0 items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[14px] font-semibold text-white shadow-lg shadow-ink/15 transition hover:-translate-y-0.5 hover:bg-black"
-            >
-              <Icon name="plus" className="flex h-4 w-4 items-center" />
-              New form
-            </button>
-          </div>
-        </div>
-
-        {forms.length > 0 && (
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative flex-1">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/35" aria-hidden>
-                <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
-              </svg>
-              <input
-                type="search"
-                placeholder="Search forms…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-ink/15 bg-white py-2.5 pl-9 pr-3 text-[14px] text-ink outline-none transition placeholder:text-ink/35 focus:border-ink/40"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[12px] font-medium text-ink/40">Sort:</span>
-              {(['updatedAt', 'createdAt', 'responses', 'name'] as SortKey[]).map((k) => (
-                <button
-                  key={k}
-                  onClick={() => setSort(k)}
-                  className={`rounded-lg px-3 py-1.5 text-[12px] font-semibold transition ${sort === k ? 'bg-ink text-white' : 'bg-white border border-ink/15 text-ink/55 hover:border-ink/30 hover:text-ink'}`}
-                >
-                  {{ updatedAt: 'Modified', createdAt: 'Created', responses: 'Responses', name: 'Name' }[k]}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {filtered.length === 0 && forms.length === 0 ? (
-          <div className="mt-12 flex flex-col items-center">
-            <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-ink/[0.05]">
-                <Icon name="plus" className="flex h-6 w-6 items-center text-ink/40" />
+          <>
+            {/* Header Title & Top Actions */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b-2 border-black pb-6">
+              <div>
+                <div className="inline-block bg-[#ff90e8] text-black border-2 border-black px-2.5 py-0.5 text-xs font-black uppercase tracking-wider -rotate-1 shadow-[2px_2px_0px_#000] mb-2">
+                  WORKSPACE DIRECTORY
+                </div>
+                <h1 className="text-4xl sm:text-5xl font-black uppercase tracking-tight text-black">
+                  My Forms
+                </h1>
+                <p className="mt-1 font-mono text-xs font-bold text-neutral-600 uppercase">
+                  {forms.length} FORM{forms.length === 1 ? '' : 'S'} CREATED · {submissions.length} TOTAL INTAKE RESPONSES
+                </p>
               </div>
-              <h2 className="mt-4 text-xl font-bold text-ink">No forms yet</h2>
-              <p className="mt-1 max-w-sm text-[14px] text-ink/45">
-                Start from a blank canvas or jumpstart with a pre-built template.
-              </p>
-              <div className="mt-5 flex items-center justify-center gap-3">
-                <button
-                  onClick={createNew}
-                  className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-bold text-white transition hover:bg-black"
-                >
-                  Blank form
-                </button>
+
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setTemplateModalOpen(true)}
-                  className="rounded-full border border-ink/20 bg-white px-6 py-2.5 text-[14px] font-bold text-ink transition hover:border-ink/40"
+                  className="flex items-center gap-2 border-2 border-black bg-white px-4 py-2.5 text-xs font-black uppercase shadow-[3px_3px_0px_#000] hover:bg-neutral-50 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
                 >
-                  Browse templates
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M3 9h18M9 21V9" />
+                  </svg>
+                  Templates
+                </button>
+                <button
+                  onClick={createNew}
+                  className="flex items-center gap-2 border-2 border-black bg-[#ffe600] text-black px-5 py-2.5 text-xs font-black uppercase shadow-[4px_4px_0px_#000] hover:bg-[#facc15] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                >
+                  <Icon name="plus" className="flex h-4 w-4 items-center" />
+                  New form +
                 </button>
               </div>
             </div>
 
-            <div className="mt-12 w-full">
-              <div className="mb-4 text-[12px] font-bold uppercase tracking-wider text-ink/40">Popular Templates</div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {TEMPLATES.slice(0, 3).map((t) => (
+            {/* Search & Sort Bar */}
+            {forms.length > 0 && (
+              <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="relative flex-1 max-w-md">
+                  <input
+                    type="search"
+                    placeholder="SEARCH FORMS BY TITLE..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full border-2 border-black bg-white px-4 py-2.5 font-mono text-xs font-bold uppercase shadow-[3px_3px_0px_#000] outline-none placeholder:text-neutral-400 focus:shadow-[5px_5px_0px_#000]"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 font-mono text-xs">
+                  <span className="font-bold uppercase text-neutral-500 mr-1">SORT:</span>
+                  {(['updatedAt', 'createdAt', 'responses', 'name'] as SortKey[]).map((k) => (
+                    <button
+                      key={k}
+                      onClick={() => setSort(k)}
+                      className={`border-2 border-black px-3 py-1 font-bold uppercase transition ${
+                        sort === k
+                          ? 'bg-black text-white shadow-[2px_2px_0px_#ffe600]'
+                          : 'bg-white text-black hover:bg-neutral-100 shadow-[2px_2px_0px_#000]'
+                      }`}
+                    >
+                      {{ updatedAt: 'MODIFIED', createdAt: 'CREATED', responses: 'RESPONSES', name: 'TITLE' }[k]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Forms Grid */}
+            {filtered.length === 0 && forms.length === 0 ? (
+              <div className="mt-12 border-2 border-dashed border-black p-12 text-center bg-white shadow-[6px_6px_0px_#000]">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center border-2 border-black bg-[#ffe600] shadow-[4px_4px_0px_#000] text-2xl font-black mb-4">
+                  +
+                </div>
+                <h2 className="text-2xl font-black uppercase">No forms created yet</h2>
+                <p className="mt-1 font-bold text-xs text-neutral-600 max-w-sm mx-auto">
+                  Start from a clean canvas or jumpstart your questions with pre-built community templates.
+                </p>
+                <div className="mt-6 flex justify-center gap-3">
                   <button
-                    key={t.id}
-                    onClick={() => applyTemplate(t)}
-                    className="group flex flex-col justify-between rounded-2xl border border-ink/10 bg-white p-5 text-left transition hover:-translate-y-0.5 hover:border-ink/30 hover:shadow-md"
+                    onClick={createNew}
+                    className="bg-[#ffe600] text-black font-black uppercase text-xs px-6 py-3 border-2 border-black shadow-[4px_4px_0px_#000] hover:bg-[#facc15] transition"
                   >
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="rounded-full bg-ink/[0.05] px-2.5 py-0.5 text-[10px] font-bold uppercase text-ink/50">
-                          {t.category}
-                        </span>
-                        <span className="text-[12px] font-semibold text-brand-600 opacity-0 transition group-hover:opacity-100">
-                          Use →
-                        </span>
-                      </div>
-                      <h3 className="mt-3 text-[15px] font-bold text-ink">{t.title}</h3>
-                      <p className="mt-1 text-[13px] leading-relaxed text-ink/50">{t.description}</p>
-                    </div>
-                    <div className="mt-4 text-[11px] font-medium text-ink/35">
-                      {t.blocks.length} blocks included
-                    </div>
+                    Blank form +
                   </button>
-                ))}
+                  <button
+                    onClick={() => setTemplateModalOpen(true)}
+                    className="bg-white text-black font-black uppercase text-xs px-6 py-3 border-2 border-black shadow-[4px_4px_0px_#000] hover:bg-neutral-50 transition"
+                  >
+                    Browse templates
+                  </button>
+                </div>
+              </div>
+            ) : filtered.length === 0 && search ? (
+              <div className="mt-16 text-center border-2 border-black bg-white p-8 shadow-[6px_6px_0px_#000] max-w-md mx-auto">
+                <h2 className="text-lg font-black uppercase">No forms match "{search}"</h2>
+                <button
+                  onClick={() => setSearch('')}
+                  className="mt-3 text-xs font-bold uppercase underline hover:bg-[#ffe600]"
+                >
+                  Clear search query
+                </button>
+              </div>
+            ) : (
+              <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {filtered.map((f) => {
+                  const count = responseCount(f.id)
+                  const isClosed = !!(
+                    (f.settings.maxResponses && count >= f.settings.maxResponses) ||
+                    (f.settings.closedAt && Date.now() > f.settings.closedAt)
+                  )
+                  return (
+                    <div
+                      key={f.id}
+                      onClick={() => navigate(`/editor/${f.id}`)}
+                      className="group border-2 border-black bg-white shadow-[6px_6px_0px_#000] hover:-translate-y-1 hover:shadow-[8px_8px_0px_#000] transition-all cursor-pointer flex flex-col justify-between"
+                    >
+                      {/* Window Header */}
+                      <div>
+                        <div className="border-b-2 border-black bg-black text-white px-3 py-1.5 flex justify-between items-center font-mono text-[11px] font-bold">
+                          <div className="flex items-center gap-2">
+                            <span className={`h-2.5 w-2.5 rounded-full border border-black ${isClosed ? 'bg-red-400' : 'bg-[#00ef84]'}`} />
+                            <span>{isClosed ? 'STATUS: CLOSED' : 'STATUS: LIVE'}</span>
+                          </div>
+                          <span>FORM #{f.id.slice(0, 6)}</span>
+                        </div>
+
+                        {/* Card Body */}
+                        <div className="p-5">
+                          <h3 className="text-lg font-black uppercase tracking-tight line-clamp-2">
+                            {f.settings.title || 'Untitled form'}
+                          </h3>
+                          <div className="mt-3 flex items-center gap-2 font-mono text-[11px]">
+                            <span className="bg-[#ffe600] text-black border border-black px-2 py-0.5 font-bold uppercase">
+                              {count} RESPONSE{count === 1 ? '' : 'S'}
+                            </span>
+                            <span className="text-neutral-500 font-bold">
+                              {formatWhen(f.updatedAt)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Card Footer Actions */}
+                      <div className="border-t-2 border-black bg-neutral-50 px-4 py-2.5 flex items-center justify-between font-mono text-xs">
+                        <span className="font-bold text-neutral-600 text-[11px]">CLICK TO EDIT</span>
+                        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => window.location.hash = `#/r/${f.id}`}
+                            className="border-2 border-black bg-white p-1 hover:bg-[#ffe600] shadow-[2px_2px_0px_#000] transition"
+                            title="Open public form"
+                          >
+                            <Icon name="share" className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              const copy = duplicateForm(f.id)
+                              if (copy) navigate(`/editor/${copy.id}`)
+                            }}
+                            className="border-2 border-black bg-white p-1 hover:bg-[#5ce1e6] shadow-[2px_2px_0px_#000] transition"
+                            title="Duplicate form"
+                          >
+                            <Icon name="duplicate" className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (window.confirm('Delete this form and all its responses permanently?')) {
+                                deleteForm(f.id)
+                              }
+                            }}
+                            className="border-2 border-black bg-white p-1 hover:bg-[#ff5470] hover:text-white shadow-[2px_2px_0px_#000] transition"
+                            title="Delete form"
+                          >
+                            <Icon name="trash" className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {/* Create Form Action Box */}
+                <button
+                  onClick={createNew}
+                  className="border-2 border-dashed border-black bg-[#fafafa] p-8 min-h-[170px] shadow-[4px_4px_0px_#000] hover:bg-[#ffe600]/30 hover:border-solid hover:shadow-[6px_6px_0px_#000] transition-all flex flex-col items-center justify-center gap-2 group cursor-pointer text-black"
+                >
+                  <span className="h-10 w-10 border-2 border-black bg-white flex items-center justify-center font-black text-xl shadow-[2px_2px_0px_#000] group-hover:bg-[#ffe600]">
+                    +
+                  </span>
+                  <span className="font-black text-sm uppercase tracking-wide">
+                    Create new form
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {/* Pro Tip Sticky Note */}
+            <div className="mt-14 border-2 border-black bg-[#ffe600] p-6 shadow-[6px_6px_0px_#000]">
+              <div className="flex items-start gap-4">
+                <span className="h-8 w-8 border-2 border-black bg-black text-[#ffe600] flex items-center justify-center font-black text-lg shrink-0 shadow-[2px_2px_0px_#000]">
+                  !
+                </span>
+                <div>
+                  <h3 className="font-black text-sm uppercase tracking-wider">
+                    PRO TIP // SLASH COMMAND POWER
+                  </h3>
+                  <p className="mt-1 text-xs font-bold leading-relaxed text-neutral-900">
+                    Press <kbd className="border-2 border-black bg-white px-2 py-0.5 font-mono text-xs font-black shadow-[1px_1px_0px_#000]">/</kbd> on any empty line in the editor to summon Short Text, Multi-Choice, File Uploads, Ratings, and Logic Jumps. Zero clicking around sidebars.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        ) : filtered.length === 0 && search ? (
-          <div className="mt-16 flex flex-col items-center text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ink/[0.05]">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-ink/40" aria-hidden>
-                <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
-              </svg>
-            </div>
-            <h2 className="mt-4 text-lg font-bold text-ink">No results for "{search}"</h2>
-            <button onClick={() => setSearch('')} className="mt-3 text-[14px] font-semibold text-brand-600 hover:underline">Clear search</button>
-          </div>
-        ) : (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((f) => {
-              const count = responseCount(f.id)
-              const isClosed = !!(
-                (f.settings.maxResponses && count >= f.settings.maxResponses) ||
-                (f.settings.closedAt && Date.now() > f.settings.closedAt)
-              )
-              return (
-                <div
-                  key={f.id}
-                  className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-card"
-                  onClick={() => navigate(`/editor/${f.id}`)}
-                >
-                  <div
-                    className="flex h-28 flex-col justify-between p-4"
-                    style={{ background: f.settings.theme.darkMode ? '#0b0f19' : f.settings.theme.background === '#ffffff' ? '#f4f4f6' : f.settings.theme.background }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span
-                        className="block w-12 rounded-full py-1 text-center text-[10px] font-bold"
-                        style={{ background: f.settings.theme.button, color: f.settings.theme.buttonText }}
-                      >
-                        {isClosed ? 'CLOSED' : 'OPEN'}
-                      </span>
-                      {isClosed && (
-                        <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-bold text-orange-600">closed</span>
-                      )}
-                    </div>
-                    <span
-                      className="truncate text-[14px] font-semibold"
-                      style={{ color: f.settings.theme.darkMode ? '#fff' : '#1c1c1e' }}
-                    >
-                      {f.settings.title || 'Untitled form'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div className="text-[12px] text-ink/45">
-                      <span className="font-semibold text-ink/70">{count || '0'}</span> response{count === 1 ? '' : 's'} · Updated {formatWhen(f.updatedAt)}
-                    </div>
-                    <div className="flex gap-1 opacity-0 transition group-hover:opacity-100">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          window.location.hash = `#/r/${f.id}`
-                        }}
-                        className="flex h-7 w-7 items-center justify-center rounded-md text-ink/45 transition hover:bg-ink/[0.05] hover:text-ink"
-                        title="Open published form"
-                      >
-                        <span className="flex items-center justify-center"><Icon name="share" /></span>
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          const copy = duplicateForm(f.id)
-                          if (copy) navigate(`/editor/${copy.id}`)
-                        }}
-                        className="flex h-7 w-7 items-center justify-center rounded-md text-ink/45 transition hover:bg-ink/[0.05] hover:text-ink"
-                        title="Duplicate form"
-                      >
-                        <span className="flex items-center justify-center"><Icon name="duplicate" /></span>
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          if (window.confirm('Delete this form and all its responses?')) deleteForm(f.id)
-                        }}
-                        className="flex h-7 w-7 items-center justify-center rounded-md text-ink/45 transition hover:bg-brand-50 hover:text-brand-600"
-                        title="Delete form"
-                      >
-                        <span className="flex items-center justify-center"><Icon name="trash" /></span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-
-            <button
-              onClick={createNew}
-              className="flex h-full min-h-[160px] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-ink/15 text-ink/40 transition hover:border-ink/40 hover:text-ink/70"
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink/[0.04]">
-                <Icon name="plus" className="flex h-5 w-5 items-center" />
-              </span>
-              <span className="text-[14px] font-semibold">Create a form</span>
-            </button>
-          </div>
-        )}
-
-        <div className="mt-12 rounded-2xl border border-brand-100 bg-brand-50/60 p-5">
-          <div className="flex items-start gap-3">
-            <span className="text-xl">🪄</span>
-            <div>
-              <h3 className="text-[14px] font-bold text-ink/80">Pro tip</h3>
-              <p className="mt-0.5 text-[13px] leading-relaxed text-ink/55">
-                Open any form and hit <kbd className="rounded bg-white px-1.5 py-0.5 font-mono text-[12px] font-bold">/</kbd> to insert blocks — short text, choices, ratings, NPS, file uploads and more. Use the{' '}
-                <span className="font-semibold">⋮⋮</span> settings of a block to add conditional logic.
-              </p>
-            </div>
-          </div>
-        </div>
-        </>
+          </>
         )}
       </main>
 
@@ -345,30 +338,34 @@ function TemplateModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="animate-pop relative flex max-h-[85vh] w-full max-w-3xl flex-col rounded-3xl bg-white shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between border-b border-ink/[0.08] px-6 py-4">
-          <div>
-            <h2 className="text-xl font-bold text-ink">Form Templates</h2>
-            <p className="text-[13px] text-ink/50">Choose a ready-to-use template or customize it as you like.</p>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={onClose} />
+      <div className="relative flex max-h-[85vh] w-full max-w-3xl flex-col border-3 border-black bg-white shadow-[12px_12px_0px_#000] overflow-hidden">
+        {/* Retro Window Header */}
+        <div className="border-b-2 border-black bg-[#ffe600] px-4 py-3 flex items-center justify-between font-mono text-xs font-bold">
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-red-400 border border-black" />
+            <span className="h-3 w-3 rounded-full bg-yellow-400 border border-black" />
+            <span className="h-3 w-3 rounded-full bg-green-400 border border-black" />
+            <span className="ml-2 font-black">TEMPLATES_CATALOG.EXE</span>
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-ink/40 transition hover:bg-ink/[0.05] hover:text-ink"
+            className="border-2 border-black bg-black text-white px-2 py-0.5 text-xs font-black hover:bg-red-500 hover:text-white"
           >
-            <Icon name="close" />
+            [ X ]
           </button>
         </div>
 
-        <div className="flex gap-1.5 border-b border-ink/[0.06] px-6 py-3 overflow-x-auto">
+        {/* Categories Bar */}
+        <div className="flex gap-2 border-b-2 border-black px-6 py-3 overflow-x-auto bg-[#fafafa]">
           {categories.map((c) => (
             <button
               key={c}
               onClick={() => setSelectedCategory(c)}
-              className={`rounded-full px-3.5 py-1 text-[12px] font-semibold transition ${
+              className={`border-2 border-black px-3.5 py-1 text-xs font-black uppercase transition ${
                 selectedCategory === c
-                  ? 'bg-ink text-white'
-                  : 'bg-ink/[0.04] text-ink/60 hover:bg-ink/[0.08] hover:text-ink'
+                  ? 'bg-black text-white shadow-[2px_2px_0px_#ffe600]'
+                  : 'bg-white text-black hover:bg-neutral-100 shadow-[2px_2px_0px_#000]'
               }`}
             >
               {c}
@@ -376,32 +373,35 @@ function TemplateModal({
           ))}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
+        {/* Templates Grid */}
+        <div className="flex-1 overflow-y-auto p-6 bg-[#fffdfa]">
           <div className="grid gap-4 sm:grid-cols-2">
             {filtered.map((t) => (
               <div
                 key={t.id}
-                className="flex flex-col justify-between rounded-2xl border border-ink/10 bg-[#fafafb] p-5 transition hover:border-ink/30 hover:bg-white hover:shadow-md"
+                className="border-2 border-black bg-white p-5 shadow-[4px_4px_0px_#000] flex flex-col justify-between hover:-translate-y-0.5 transition-transform"
               >
                 <div>
-                  <div className="flex items-center justify-between">
-                    <span className="rounded-full bg-ink/[0.06] px-2.5 py-0.5 text-[10px] font-bold uppercase text-ink/50">
+                  <div className="flex items-center justify-between border-b-2 border-black pb-2 mb-3">
+                    <span className="bg-[#5ce1e6] border border-black px-2 py-0.5 text-[10px] font-mono font-bold uppercase">
                       {t.category}
                     </span>
-                    <span className="text-[11px] font-medium text-ink/40">
-                      {t.blocks.length} blocks
+                    <span className="font-mono text-[10px] font-bold text-neutral-600">
+                      {t.blocks.length} BLOCKS
                     </span>
                   </div>
-                  <h3 className="mt-3 text-[16px] font-bold text-ink">{t.title}</h3>
-                  <p className="mt-1 text-[13px] leading-relaxed text-ink/55">{t.description}</p>
+                  <h3 className="text-base font-black uppercase tracking-tight">{t.title}</h3>
+                  <p className="mt-1 text-xs font-bold text-neutral-600 leading-relaxed">
+                    {t.description}
+                  </p>
                 </div>
-                <div className="mt-5 pt-4 border-t border-ink/[0.06] flex items-center justify-between">
-                  <span className="text-[11px] text-ink/40 font-mono">1-click install</span>
+                <div className="mt-4 pt-3 border-t-2 border-black flex items-center justify-between font-mono text-xs">
+                  <span className="font-bold text-[10px]">1-CLICK INSTALL</span>
                   <button
                     onClick={() => onSelect(t)}
-                    className="rounded-full bg-ink px-4 py-1.5 text-[12px] font-bold text-white transition hover:bg-black"
+                    className="border-2 border-black bg-[#ffe600] text-black px-3 py-1 font-black uppercase text-xs shadow-[2px_2px_0px_#000] hover:bg-[#facc15] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
                   >
-                    Use template
+                    USE TEMPLATE →
                   </button>
                 </div>
               </div>
