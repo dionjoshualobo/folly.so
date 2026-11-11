@@ -1,5 +1,6 @@
 import { useId, useRef, useState } from 'react'
 import type { AddressValue, AnswerValue, Block, FilePayload, FormSettings, PaymentValue, SignatureData } from '../types'
+import { RichText } from './richtext'
 
 export function getDefaultValue(block: Block): AnswerValue {
   switch (block.type) {
@@ -195,7 +196,7 @@ function ChoiceControl({
               onChange={() => toggle(o.label)}
               disabled={preview}
             />
-            <span className="text-[15px]">{o.label}</span>
+            <span className="text-[15px]"><RichText text={o.label} /></span>
           </label>
         ) : (
           <label
@@ -215,7 +216,7 @@ function ChoiceControl({
               onChange={() => onChange(o.label)}
               disabled={preview}
             />
-            <span className="text-[15px]">{o.label}</span>
+            <span className="text-[15px]"><RichText text={o.label} /></span>
           </label>
         ),
       )}
@@ -567,7 +568,7 @@ function MultiSelectControl({
                   checked={selected.includes(o.label)}
                   onChange={() => toggle(o.label)}
                 />
-                <span className="text-[14px] text-ink dark:text-white/85">{o.label}</span>
+                <span className="text-[14px] text-ink dark:text-white/85"><RichText text={o.label} /></span>
               </label>
             ))}
           </div>
@@ -627,7 +628,7 @@ function RankingControl({
             >
               {rank ?? '·'}
             </span>
-            <span className="flex-1 text-[15px] text-ink dark:text-white/85">{o.label}</span>
+            <span className="flex-1 text-[15px] text-ink dark:text-white/85"><RichText text={o.label} /></span>
             <button
               type="button"
               disabled={!placed}
@@ -905,64 +906,64 @@ function PaymentControl({
 }) {
   const amountStr =
     typeof formSettings?.paymentAmount === 'number'
-      ? `${(formSettings.paymentAmount / 100).toFixed(2)} ${(formSettings.paymentCurrency ?? 'USD').toUpperCase()}`
+      ? `${Number(formSettings.paymentAmount).toFixed(2)} ${(formSettings.paymentCurrency ?? 'USD').toUpperCase()}`
       : null
 
   const isPaid = Boolean(value && typeof value === 'object' && 'paid' in value && (value as PaymentValue).paid)
 
   return (
-    <div className="max-w-xl rounded-2xl border border-ink/15 bg-ink/[0.02] dark:bg-white/5 p-5">
+    <div className="max-w-xl border-2 border-black bg-white p-5 shadow-[4px_4px_0px_#000]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#635bff] text-white">
+          <span className="flex h-10 w-10 items-center justify-center border-2 border-black bg-[#ffe600] text-black shadow-[1px_1px_0px_#000]">
             <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
               <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2" />
               <path d="M2 10h20" stroke="currentColor" strokeWidth="2" />
             </svg>
           </span>
           <div>
-            <div className="text-[14px] font-semibold text-ink dark:text-white">
+            <div className="text-[14px] font-black uppercase text-black">
               {block.text || 'Payment'}
             </div>
-            <div className="text-[12px] text-ink/50 dark:text-white/50">
+            <div className="text-[12px] font-mono font-bold text-neutral-600">
               {amountStr ? `${amountStr} — ${formSettings?.paymentDescription || 'Secure payment via Stripe'}` : 'Stripe payment'}
             </div>
           </div>
         </div>
         {amountStr && (
-          <span className="rounded-full bg-ink/10 dark:bg-white/10 px-3 py-1 font-mono text-[13px] font-bold text-ink dark:text-white">
+          <span className="border-2 border-black bg-[#5ce1e6] px-3 py-1 font-mono text-[12px] font-black text-black shadow-[2px_2px_0px_#000]">
             {amountStr}
           </span>
         )}
       </div>
 
-      <div className="mt-4 pt-4 border-t border-ink/10 dark:border-white/10">
+      <div className="mt-4 pt-4 border-t-2 border-black">
         {formSettings?.stripePublishableKey ? (
           isPaid ? (
-            <div className="flex items-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 px-4 py-3 text-[14px] font-semibold text-emerald-700 dark:text-emerald-400">
+            <div className="flex items-center gap-2 border-2 border-black bg-[#00ef84] px-4 py-3 text-[14px] font-black text-black shadow-[3px_3px_0px_#000]">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-5 w-5">
                 <path d="m5 13 4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              Payment completed ({amountStr})
+              PAYMENT COMPLETED ({amountStr})
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="rounded-xl border border-ink/15 bg-white dark:bg-white/10 px-3 py-2 text-[14px] text-ink/60 dark:text-white/60 flex items-center justify-between">
+              <div className="border-2 border-black bg-white px-3 py-2 text-[13px] font-mono font-bold text-black shadow-[2px_2px_0px_#000] flex items-center justify-between">
                 <span>•••• •••• •••• 4242</span>
-                <span className="text-[12px] font-mono text-ink/40 dark:text-white/40">12/28 · CVC</span>
+                <span className="text-[12px] text-neutral-500">12/28 · CVC</span>
               </div>
               <button
                 type="button"
                 onClick={() => onChange({ paid: true, amount: formSettings.paymentAmount, currency: formSettings.paymentCurrency, at: Date.now() })}
-                className="w-full rounded-xl bg-[#635bff] py-2.5 text-[14px] font-bold text-white transition hover:bg-[#534be0] active:scale-[0.99]"
+                className="w-full border-2 border-black bg-[#ffe600] py-2.5 text-[14px] font-black uppercase text-black shadow-[3px_3px_0px_#000] hover:bg-[#facc15] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
               >
-                Pay {amountStr ?? 'now'}
+                PAY {amountStr ?? 'NOW'} ⚡
               </button>
             </div>
           )
         ) : (
-          <div className="rounded-xl bg-amber-50 dark:bg-amber-500/10 px-3.5 py-2.5 text-[12px] text-amber-700 dark:text-amber-400">
-            Payment key not configured yet. Set your Stripe Publishable Key in Form settings → Integrations.
+          <div className="border-2 border-black bg-amber-100 p-3 font-mono text-xs font-bold text-black shadow-[2px_2px_0px_#000]">
+            ⚠ Payment key not configured yet. Set your Stripe Publishable Key in block settings (gear icon) or Form settings → Integrations.
           </div>
         )}
       </div>

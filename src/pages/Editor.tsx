@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import type { Block, BlockType, ChoiceOption } from '../types'
+import type { Block, BlockType, ChoiceOption, FormSettings } from '../types'
 import { makeBlock, uid } from '../types'
 import { useForms } from '../store'
 import { BLOCKS, Icon } from '../blockCatalog'
@@ -78,6 +78,12 @@ export default function Editor() {
   const [dragId, setDragId] = useState<string | null>(null)
   const [overIndex, setOverIndex] = useState<number | null>(null)
   const [colZone, setColZone] = useState<{ blockId: string; side: 'left' | 'right' } | null>(null)
+  const [focusDescTick, setFocusDescTick] = useState(0)
+  const [focusTitleTick, setFocusTitleTick] = useState(0)
+  const [imageModal, setImageModal] = useState<{
+    field: 'coverImageUrl' | 'logoUrl'
+    title: string
+  } | null>(null)
   const editorCanvasRef = useRef<HTMLElement>(null)
 
   const historyRef = useRef<Block[][]>([])
@@ -147,6 +153,27 @@ export default function Editor() {
       }
     })
   }, [])
+
+  const handleUploadImageFile = (file: File, field: 'coverImageUrl' | 'logoUrl') => {
+    if (!form) return
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload a valid image file (PNG, JPG, SVG, WebP, GIF).')
+      return
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      alert('Image size exceeds 8MB. Please choose a smaller image.')
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string
+      if (dataUrl) {
+        updateSettings(form.id, { [field]: dataUrl })
+        setImageModal(null)
+      }
+    }
+    reader.readAsDataURL(file)
+  }
 
   const insertNewBlock = (index: number, type: BlockType, text = '') => {
     if (!form) return
@@ -230,6 +257,13 @@ export default function Editor() {
       if (prev) {
         e.preventDefault()
         doFocus(prev.id, 'end')
+      } else {
+        e.preventDefault()
+        if (form?.settings.description) {
+          setFocusDescTick((t) => t + 1)
+        } else {
+          setFocusTitleTick((t) => t + 1)
+        }
       }
       return
     }
@@ -382,17 +416,23 @@ export default function Editor() {
       >
         <SelectionToolbar containerRef={editorCanvasRef} />
         {form.settings.coverImageUrl ? (
-          <div className="group w-full h-[180px] sm:h-[220px] overflow-hidden relative">
+          <div className="group w-full h-[180px] sm:h-[220px] overflow-hidden relative border-b-2 border-black bg-neutral-100">
             <img src={form.settings.coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/0 transition group-hover:bg-black/10 flex items-start justify-end p-4 opacity-0 group-hover:opacity-100">
+            <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button 
-                onClick={() => {
-                  const url = prompt('Enter new cover image URL:', form.settings.coverImageUrl)
-                  if (url !== null) updateSettings(form.id, { coverImageUrl: url })
-                }}
-                className="bg-white text-ink/70 hover:text-ink shadow-sm text-[12px] font-semibold px-3 py-1.5 rounded-md"
+                type="button"
+                onClick={() => setImageModal({ field: 'coverImageUrl', title: 'Cover Image' })}
+                className="border-2 border-black bg-white text-black px-3 py-1 text-xs font-black uppercase shadow-[2px_2px_0px_#000] hover:bg-[#ffe600] active:translate-x-0.5 active:translate-y-0.5 transition-all"
               >
-                Change cover
+                Change Cover 🖼
+              </button>
+              <button
+                type="button"
+                onClick={() => updateSettings(form.id, { coverImageUrl: undefined })}
+                className="border-2 border-black bg-white text-black px-2.5 py-1 text-xs font-black uppercase shadow-[2px_2px_0px_#000] hover:bg-[#ff5a27] hover:text-white active:translate-x-0.5 active:translate-y-0.5 transition-all"
+                title="Remove cover"
+              >
+                ✕
               </button>
             </div>
           </div>
@@ -402,19 +442,28 @@ export default function Editor() {
         <div className="mx-auto w-full max-w-2xl px-6 py-10 my-6 border-2 sm:border-3 border-black bg-white shadow-[8px_8px_0px_#000] relative">
           {form.settings.logoUrl && (
             <div
-              className={`group w-20 h-20 sm:w-24 sm:h-24 border-2 border-black shadow-[4px_4px_0px_#000] overflow-hidden ${
-                form.settings.coverImageUrl ? '-mt-16 sm:-mt-18 mb-6 z-10 relative bg-white' : 'mb-6'
+              className={`group w-20 h-20 sm:w-24 sm:h-24 border-2 border-black shadow-[4px_4px_0px_#000] overflow-hidden relative ${
+                form.settings.coverImageUrl ? '-mt-16 sm:-mt-18 mb-6 z-10 bg-white' : 'mb-6'
               }`}
             >
               <img src={form.settings.logoUrl} alt="Logo" className="w-full h-full object-cover" />
               <div 
-                className="absolute inset-0 bg-black/0 transition group-hover:bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer"
-                onClick={() => {
-                  const url = prompt('Enter new logo URL:', form.settings.logoUrl)
-                  if (url !== null) updateSettings(form.id, { logoUrl: url })
-                }}
+                className="absolute inset-0 bg-black/60 transition group-hover:opacity-100 opacity-0 flex flex-col items-center justify-center gap-1.5 p-1"
               >
-                 <Icon name="image" className="text-white drop-shadow-md" />
+                <button
+                  type="button"
+                  onClick={() => setImageModal({ field: 'logoUrl', title: 'Logo Image' })}
+                  className="border border-black bg-[#ffe600] text-black px-2 py-0.5 text-[10px] font-black uppercase shadow-[1px_1px_0px_#000] hover:bg-yellow-300"
+                >
+                  Change
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateSettings(form.id, { logoUrl: undefined })}
+                  className="border border-black bg-[#ff5a27] text-white px-2 py-0.5 text-[10px] font-black uppercase shadow-[1px_1px_0px_#000] hover:bg-red-600"
+                >
+                  Remove
+                </button>
               </div>
             </div>
           )}
@@ -424,31 +473,41 @@ export default function Editor() {
           }`}>
             {!form.settings.coverImageUrl && (
               <button 
-                 onClick={() => {
-                   const url = prompt('Enter cover image URL:')
-                   if (url) updateSettings(form.id, { coverImageUrl: url })
-                 }}
-                 className="flex items-center gap-1.5 font-mono text-xs font-black uppercase border border-black px-2 py-1 shadow-[1px_1px_0px_#000] hover:bg-[#ffe600] transition"
+                 type="button"
+                 onClick={() => setImageModal({ field: 'coverImageUrl', title: 'Cover Image' })}
+                 className="flex items-center gap-1.5 font-mono text-xs font-black uppercase border-2 border-black bg-white text-black px-2.5 py-1 shadow-[2px_2px_0px_#000] hover:bg-[#ffe600] active:translate-x-0.5 active:translate-y-0.5 transition-all"
               >
-                <Icon name="image" /> Add cover
+                <Icon name="image" /> + Add cover
               </button>
             )}
             {!form.settings.logoUrl && (
               <button 
-                 onClick={() => {
-                   const url = prompt('Enter logo image URL:')
-                   if (url) updateSettings(form.id, { logoUrl: url })
-                 }}
-                 className="flex items-center gap-1.5 font-mono text-xs font-black uppercase border border-black px-2 py-1 shadow-[1px_1px_0px_#000] hover:bg-[#ffe600] transition"
+                 type="button"
+                 onClick={() => setImageModal({ field: 'logoUrl', title: 'Logo Image' })}
+                 className="flex items-center gap-1.5 font-mono text-xs font-black uppercase border-2 border-black bg-white text-black px-2.5 py-1 shadow-[2px_2px_0px_#000] hover:bg-[#ff90e8] active:translate-x-0.5 active:translate-y-0.5 transition-all"
               >
-                <Icon name="image" /> Add logo
+                <Icon name="image" /> + Add logo
               </button>
             )}
           </div>
-          <TitleEditor title={form.settings.title} onChange={(t) => updateSettings(form.id, { title: t })} />
+          <TitleEditor
+            title={form.settings.title}
+            onChange={(t) => updateSettings(form.id, { title: t })}
+            onGoToDescription={() => setFocusDescTick((t) => t + 1)}
+            focusTick={focusTitleTick}
+          />
           <DescriptionEditor
             description={form.settings.description}
             onChange={(d) => updateSettings(form.id, { description: d })}
+            focusTick={focusDescTick}
+            onGoToTitle={() => setFocusTitleTick((t) => t + 1)}
+            onGoToNext={() => {
+              if (form.blocks.length > 0) {
+                doFocus(form.blocks[0].id, 'start')
+              } else {
+                insertNewBlock(0, 'shortText')
+              }
+            }}
           />
 
           <div className="mt-8 space-y-1 pb-24">
@@ -460,6 +519,7 @@ export default function Editor() {
                   <BlockRow
                     key={block.id}
                     formId={form.id}
+                    formSettings={form.settings}
                     block={block}
                     index={index}
                     active={activeId === block.id}
@@ -557,6 +617,165 @@ export default function Editor() {
       {logicOpen && <LogicDrawer form={form} onClose={() => setLogicOpen(false)} onOpenSettings={(id) => { setLogicOpen(false); setSettingsFor(id); requestAnimationFrame(() => doFocus(id, 'end')); }} />}
       {themeOpen && <ThemeDrawer form={form} onClose={() => setThemeOpen(false)} />}
       {shareOpen && <ShareDrawer form={form} onClose={() => setShareOpen(false)} />}
+
+      {imageModal && (
+        <ImageUploadModal
+          title={imageModal.title}
+          currentUrl={form.settings[imageModal.field]}
+          onUploadFile={(file) => handleUploadImageFile(file, imageModal.field)}
+          onSetUrl={(url) => {
+            updateSettings(form.id, { [imageModal.field]: url })
+            setImageModal(null)
+          }}
+          onRemove={
+            form.settings[imageModal.field]
+              ? () => {
+                  updateSettings(form.id, { [imageModal.field]: undefined })
+                  setImageModal(null)
+                }
+              : undefined
+          }
+          onClose={() => setImageModal(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+function ImageUploadModal({
+  title,
+  currentUrl,
+  onUploadFile,
+  onSetUrl,
+  onRemove,
+  onClose,
+}: {
+  title: string
+  currentUrl?: string
+  onUploadFile: (file: File) => void
+  onSetUrl: (url: string) => void
+  onRemove?: () => void
+  onClose: () => void
+}) {
+  const [urlInput, setUrlInput] = useState(currentUrl || '')
+  const [isDragging, setIsDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+      <div className="w-full max-w-md border-3 border-black bg-white shadow-[10px_10px_0px_#000] overflow-hidden">
+        {/* Retro Header */}
+        <div className="flex items-center justify-between border-b-2 border-black bg-[#ffe600] px-4 py-2.5 font-mono text-xs font-black uppercase text-black">
+          <div className="flex items-center gap-2">
+            <span className="flex h-5 w-5 items-center justify-center border border-black bg-white text-xs font-black shadow-[1px_1px_0px_#000]">
+              ★
+            </span>
+            <span>{title}</span>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex h-5 w-5 items-center justify-center border border-black bg-white text-xs font-bold hover:bg-black hover:text-white transition shadow-[1px_1px_0px_#000]"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {/* File Upload Dropzone */}
+          <div>
+            <span className="block font-mono text-xs font-black uppercase mb-2">1. Upload File from Device</span>
+            <div
+              onDragOver={(e) => {
+                e.preventDefault()
+                setIsDragging(true)
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault()
+                setIsDragging(false)
+                const f = e.dataTransfer.files?.[0]
+                if (f) onUploadFile(f)
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              className={`flex cursor-pointer flex-col items-center justify-center border-2 border-dashed p-6 text-center transition ${
+                isDragging
+                  ? 'border-black bg-[#ffe600]/30 shadow-[3px_3px_0px_#000]'
+                  : 'border-black bg-[#fffdfa] hover:bg-[#ffe600]/15 hover:shadow-[3px_3px_0px_#000]'
+              }`}
+            >
+              <span className="text-3xl mb-2">📁</span>
+              <span className="text-sm font-black uppercase text-black">Click to browse or drop image</span>
+              <span className="mt-1 font-mono text-[11px] text-neutral-500 font-bold">
+                PNG, JPG, WebP, SVG, GIF (up to 8MB)
+              </span>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) onUploadFile(f)
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 font-mono text-xs font-bold text-neutral-400">
+            <span className="h-px flex-1 bg-black/20" />
+            <span>OR PASTE URL</span>
+            <span className="h-px flex-1 bg-black/20" />
+          </div>
+
+          {/* URL Input */}
+          <div>
+            <span className="block font-mono text-xs font-black uppercase mb-2">2. Image Web Link</span>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                placeholder="https://images.unsplash.com/..."
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && urlInput.trim()) {
+                    e.preventDefault()
+                    onSetUrl(urlInput.trim())
+                  }
+                }}
+                className="flex-1 border-2 border-black bg-white px-3 py-2 font-mono text-xs font-bold text-black outline-none shadow-[2px_2px_0px_#000]"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (urlInput.trim()) onSetUrl(urlInput.trim())
+                }}
+                className="border-2 border-black bg-[#5ce1e6] px-4 py-2 font-black uppercase text-xs shadow-[2px_2px_0px_#000] hover:bg-[#38bdf8] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+              >
+                Set Link
+              </button>
+            </div>
+          </div>
+
+          {/* Current preview & remove action */}
+          {currentUrl && (
+            <div className="pt-2 border-t-2 border-black flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <img src={currentUrl} alt="Preview" className="h-10 w-10 border border-black object-cover shadow-[1px_1px_0px_#000]" />
+                <span className="font-mono text-[11px] font-bold text-neutral-600">Current Image</span>
+              </div>
+              {onRemove && (
+                <button
+                  type="button"
+                  onClick={onRemove}
+                  className="border-2 border-black bg-[#ff5a27] text-white px-3 py-1 font-mono text-xs font-black uppercase shadow-[2px_2px_0px_#000] hover:bg-red-600 active:translate-x-0.5 active:translate-y-0.5 transition-all"
+                >
+                  ✕ Remove
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
@@ -629,7 +848,17 @@ function TopBar({
   )
 }
 
-function TitleEditor({ title, onChange }: { title: string; onChange: (t: string) => void }) {
+function TitleEditor({
+  title,
+  onChange,
+  onGoToDescription,
+  focusTick,
+}: {
+  title: string
+  onChange: (t: string) => void
+  onGoToDescription?: () => void
+  focusTick?: number
+}) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -639,6 +868,13 @@ function TitleEditor({ title, onChange }: { title: string; onChange: (t: string)
     }
   }, [title])
 
+  useEffect(() => {
+    if (focusTick && focusTick > 0 && ref.current) {
+      ref.current.focus()
+      placeCaret(ref.current, 'end')
+    }
+  }, [focusTick])
+
   return (
     <div
       ref={ref}
@@ -646,9 +882,11 @@ function TitleEditor({ title, onChange }: { title: string; onChange: (t: string)
       suppressContentEditableWarning
       onBlur={() => onChange((ref.current?.textContent ?? '').replace(/\n/g, ' ').trim())}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' || e.key === 'ArrowDown') {
           e.preventDefault()
-          ;(e.currentTarget as HTMLElement).blur()
+          onChange((ref.current?.textContent ?? '').replace(/\n/g, ' ').trim())
+          onGoToDescription?.()
+          return
         }
         if (e.key === 'Escape') (e.currentTarget as HTMLElement).blur()
       }}
@@ -659,7 +897,19 @@ function TitleEditor({ title, onChange }: { title: string; onChange: (t: string)
   )
 }
 
-function DescriptionEditor({ description, onChange }: { description?: string; onChange: (d: string) => void }) {
+function DescriptionEditor({
+  description,
+  onChange,
+  onGoToNext,
+  onGoToTitle,
+  focusTick,
+}: {
+  description?: string
+  onChange: (d: string) => void
+  onGoToNext?: () => void
+  onGoToTitle?: () => void
+  focusTick?: number
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(!!description && description.trim().length > 0)
   const [focused, setFocused] = useState(false)
@@ -672,7 +922,21 @@ function DescriptionEditor({ description, onChange }: { description?: string; on
   }, [description])
 
   useEffect(() => {
-    if (focused && ref.current) ref.current.focus()
+    if (focusTick && focusTick > 0) {
+      setOpen(true)
+      requestAnimationFrame(() => {
+        if (ref.current) {
+          ref.current.focus()
+          placeCaret(ref.current, 'end')
+        }
+      })
+    }
+  }, [focusTick])
+
+  useEffect(() => {
+    if (focused && ref.current && document.activeElement !== ref.current) {
+      ref.current.focus()
+    }
   }, [focused])
 
   const commit = () => onChange((ref.current?.textContent ?? '').trim())
@@ -737,9 +1001,23 @@ function DescriptionEditor({ description, onChange }: { description?: string; on
         onFocus={() => setFocused(true)}
         onInput={() => onChange(ref.current?.textContent ?? '')}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') {
+          if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()
-            ;(e.currentTarget as HTMLElement).blur()
+            commit()
+            onGoToNext?.()
+            return
+          }
+          if (e.key === 'ArrowDown' && atEdge(e.currentTarget, 'end')) {
+            e.preventDefault()
+            commit()
+            onGoToNext?.()
+            return
+          }
+          if (e.key === 'ArrowUp' && atEdge(e.currentTarget, 'start')) {
+            e.preventDefault()
+            commit()
+            onGoToTitle?.()
+            return
           }
           if (e.key === 'Escape') {
             setOpen(false)
@@ -893,7 +1171,7 @@ function Rail({
   onDragEnd: () => void
 }) {
   return (
-    <div className="absolute -left-11 top-2 flex-col items-center gap-0.5 opacity-0 transition group-hover:opacity-100 hidden lg:flex">
+    <div className="absolute left-1.5 top-2 flex flex-col items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 z-10">
       <span
         draggable
         onDragStart={(e) => {
@@ -901,21 +1179,22 @@ function Rail({
           onDragStart()
         }}
         onDragEnd={onDragEnd}
-        className="flex h-7 w-7 cursor-grab items-center justify-center rounded-lg text-ink/35 transition hover:bg-ink/[0.08] hover:text-ink/70 active:cursor-grabbing"
+        className="flex h-6 w-6 cursor-grab items-center justify-center border border-black bg-white text-black shadow-[1px_1px_0px_#000] hover:bg-[#ffe600] active:cursor-grabbing transition"
         title="Drag to reorder"
       >
-        <Icon name="dots" />
+        <Icon name="dots" className="h-3.5 w-3.5" />
       </span>
       <button
+        type="button"
         onMouseDown={(e) => {
           e.preventDefault()
           e.stopPropagation()
           onOpenSettings()
         }}
-        className="flex h-7 w-7 items-center justify-center rounded-lg text-ink/35 transition hover:bg-ink/[0.08] hover:text-ink/70"
+        className="flex h-6 w-6 items-center justify-center border border-black bg-white text-black shadow-[1px_1px_0px_#000] hover:bg-[#ff90e8] transition"
         title="Block settings"
       >
-        <Icon name="gear" />
+        <Icon name="gear" className="h-3.5 w-3.5" />
       </button>
     </div>
   )
@@ -923,6 +1202,7 @@ function Rail({
 
 function BlockRow({
   formId,
+  formSettings,
   block,
   index,
   active,
@@ -942,6 +1222,7 @@ function BlockRow({
   formBlocks,
 }: {
   formId: string
+  formSettings?: FormSettings
   block: Block
   index: number
   active: boolean
@@ -963,6 +1244,7 @@ function BlockRow({
   const questionRef = useRef<HTMLDivElement>(null)
   const optionRefs = useRef<Map<string, HTMLSpanElement>>(new Map())
   const updateBlock = useForms((s) => s.updateBlock)
+  const updateSettings = useForms((s) => s.updateSettings)
 
   useEffect(() => {
     onRegister(questionRef.current)
@@ -1072,7 +1354,7 @@ function BlockRow({
     }
   }
 
-  const wrapperCls = `group relative rounded-xl transition ${
+  const wrapperCls = `group relative rounded-xl pl-9 sm:pl-10 pr-2 transition ${
     active ? 'bg-ink/[0.035] ring-1 ring-ink/[0.04]' : 'hover:bg-ink/[0.02]'
   }`
 
@@ -1089,7 +1371,7 @@ function BlockRow({
       <div
         onDragOver={onDragZone}
         onDrop={onDropBlock}
-        className={`${wrapperCls} px-1 py-2`}
+        className={`${wrapperCls} py-2`}
       >
         {overIndex && <InsertLine />}
         {colZoneSide && <ColEdgeLine side={colZoneSide} />}
@@ -1113,7 +1395,7 @@ function BlockRow({
       <div
         onDragOver={onDragZone}
         onDrop={onDropBlock}
-        className={`${wrapperCls} px-1 py-2`}
+        className={`${wrapperCls} py-2`}
       >
         {overIndex && <InsertLine />}
         {colZoneSide && <ColEdgeLine side={colZoneSide} />}
@@ -1133,7 +1415,7 @@ function BlockRow({
       <div
         onDragOver={onDragZone}
         onDrop={onDropBlock}
-        className={`${wrapperCls} px-1 py-1.5`}
+        className={`${wrapperCls} py-1.5`}
       >
         {overIndex && <InsertLine />}
         {colZoneSide && <ColEdgeLine side={colZoneSide} />}
@@ -1159,7 +1441,7 @@ function BlockRow({
       <div
         onDragOver={onDragZone}
         onDrop={onDropBlock}
-        className={`${wrapperCls} px-1 py-1.5`}
+        className={`${wrapperCls} py-1.5`}
       >
         {overIndex && <InsertLine />}
         {colZoneSide && <ColEdgeLine side={colZoneSide} />}
@@ -1183,7 +1465,7 @@ function BlockRow({
       <div
         onDragOver={onDragZone}
         onDrop={onDropBlock}
-        className={`${wrapperCls} px-1 py-1`}
+        className={`${wrapperCls} py-1`}
       >
         {overIndex && <InsertLine />}
         {colZoneSide && <ColEdgeLine side={colZoneSide} />}
@@ -1209,7 +1491,7 @@ function BlockRow({
       <div
         onDragOver={onDragZone}
         onDrop={onDropBlock}
-        className={`${wrapperCls} px-1 py-1`}
+        className={`${wrapperCls} py-1`}
       >
         {overIndex && <InsertLine />}
         {colZoneSide && <ColEdgeLine side={colZoneSide} />}
@@ -1232,7 +1514,7 @@ function BlockRow({
       <div
         onDragOver={onDragZone}
         onDrop={onDropBlock}
-        className={`${wrapperCls} px-1 py-1.5`}
+        className={`${wrapperCls} py-1.5`}
       >
         {overIndex && <InsertLine />}
         {colZoneSide && <ColEdgeLine side={colZoneSide} />}
@@ -1253,7 +1535,7 @@ function BlockRow({
       <div
         onDragOver={onDragZone}
         onDrop={onDropBlock}
-        className={`${wrapperCls} px-1 py-1.5`}
+        className={`${wrapperCls} py-1.5`}
       >
         {overIndex && <InsertLine />}
         {colZoneSide && <ColEdgeLine side={colZoneSide} />}
@@ -1396,7 +1678,7 @@ function BlockRow({
       <div
         onDragOver={onDragZone}
         onDrop={onDropBlock}
-        className={`${wrapperCls} px-1 py-1.5`}
+        className={`${wrapperCls} py-1.5`}
       >
         {overIndex && <InsertLine />}
         {colZoneSide && <ColEdgeLine side={colZoneSide} />}
@@ -1447,7 +1729,7 @@ function BlockRow({
 
   if (block.type === 'signature') {
     return (
-      <div onDragOver={onDragZone} onDrop={onDropBlock} className={`${wrapperCls} px-1 py-1.5`}>
+      <div onDragOver={onDragZone} onDrop={onDropBlock} className={`${wrapperCls} py-1.5`}>
         {overIndex && <InsertLine />}
         {colZoneSide && <ColEdgeLine side={colZoneSide} />}
         <Rail onOpenSettings={onOpenSettings} onDragStart={onDragStart} onDragEnd={onDragEnd} />
@@ -1481,7 +1763,7 @@ function BlockRow({
     }
     const count = sources.filter((b) => selected.includes(b.id)).length
     return (
-      <div onDragOver={onDragZone} onDrop={onDropBlock} className={`${wrapperCls} px-1 py-1.5`}>
+      <div onDragOver={onDragZone} onDrop={onDropBlock} className={`${wrapperCls} py-1.5`}>
         {overIndex && <InsertLine />}
         {colZoneSide && <ColEdgeLine side={colZoneSide} />}
         <Rail onOpenSettings={onOpenSettings} onDragStart={onDragStart} onDragEnd={onDragEnd} />
@@ -1534,7 +1816,7 @@ function BlockRow({
       <div
         onDragOver={onDragZone}
         onDrop={onDropBlock}
-        className={`${wrapperCls} px-1 py-1.5`}
+        className={`${wrapperCls} py-1.5`}
       >
         {overIndex && <InsertLine />}
         {colZoneSide && <ColEdgeLine side={colZoneSide} />}
@@ -1631,7 +1913,7 @@ function BlockRow({
     <div
       onDragOver={onDragZone}
       onDrop={onDropBlock}
-      className={`${wrapperCls} px-1 py-1.5`}
+      className={`${wrapperCls} py-1.5`}
     >
       {overIndex && <InsertLine />}
         {colZoneSide && <ColEdgeLine side={colZoneSide} />}
@@ -1729,14 +2011,87 @@ function BlockRow({
             </div>
           </div>
         ) : block.type === 'payment' ? (
-          <div className="max-w-xl rounded-2xl border border-ink/15 bg-ink/[0.02] p-4 opacity-75">
-            <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#635bff] text-white">
-                <Icon name="payment" />
-              </span>
-              <div>
-                <div className="text-[13px] font-semibold text-ink">Stripe Checkout</div>
-                <div className="text-[11px] text-ink/45">Configure amount and key in Form Settings → Integrations</div>
+          <div className="pointer-events-auto max-w-xl border-2 border-black bg-white p-4 shadow-[4px_4px_0px_#000]">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black/10 pb-3">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center border-2 border-black bg-[#ffe600] text-black shadow-[2px_2px_0px_#000]">
+                  <Icon name="payment" />
+                </span>
+                <div>
+                  <div className="text-[13px] font-black uppercase text-black tracking-wide">
+                    Stripe Payment
+                  </div>
+                  <div className="text-[11px] font-mono font-bold text-neutral-600">
+                    {formSettings?.paymentDescription || 'One-time payment collection'}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onOpenSettings()
+                }}
+                className="border-2 border-black bg-white px-2.5 py-1 text-[11px] font-mono font-bold uppercase shadow-[2px_2px_0px_#000] hover:bg-[#ffe600] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+              >
+                Settings ⚙
+              </button>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono text-xs font-black uppercase text-black">Currency:</span>
+                <select
+                  value={formSettings?.paymentCurrency?.toLowerCase() || 'usd'}
+                  onChange={(e) => updateSettings(formId, { paymentCurrency: e.target.value.toLowerCase() })}
+                  className="rounded border-2 border-black bg-white px-2 py-1 font-mono text-xs font-bold text-black outline-none shadow-[2px_2px_0px_#000] cursor-pointer"
+                >
+                  <option value="usd">USD ($)</option>
+                  <option value="eur">EUR (€)</option>
+                  <option value="gbp">GBP (£)</option>
+                  <option value="inr">INR (₹)</option>
+                  <option value="cad">CAD ($)</option>
+                  <option value="aud">AUD ($)</option>
+                  <option value="jpy">JPY (¥)</option>
+                  <option value="chf">CHF (Fr)</option>
+                  <option value="brl">BRL (R$)</option>
+                  <option value="sgd">SGD ($)</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono text-xs font-black uppercase text-black">Amount:</span>
+                <div className="relative flex items-center">
+                  <span className="pointer-events-none absolute left-2 font-mono text-xs font-bold text-neutral-500">
+                    {formSettings?.paymentCurrency?.toLowerCase() === 'inr'
+                      ? '₹'
+                      : formSettings?.paymentCurrency?.toLowerCase() === 'eur'
+                      ? '€'
+                      : formSettings?.paymentCurrency?.toLowerCase() === 'gbp'
+                      ? '£'
+                      : formSettings?.paymentCurrency?.toLowerCase() === 'jpy'
+                      ? '¥'
+                      : '$'}
+                  </span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="10.00"
+                    value={typeof formSettings?.paymentAmount === 'number' ? formSettings.paymentAmount : ''}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value)
+                      updateSettings(formId, { paymentAmount: isNaN(val) ? undefined : val })
+                    }}
+                    className="w-28 rounded border-2 border-black bg-white pl-6 pr-2 py-1 font-mono text-xs font-bold text-black outline-none shadow-[2px_2px_0px_#000]"
+                  />
+                </div>
+              </div>
+
+              <div className="ml-auto font-mono text-xs font-black text-black bg-[#ffe600] px-2 py-1 border-2 border-black shadow-[2px_2px_0px_#000]">
+                {typeof formSettings?.paymentAmount === 'number'
+                  ? `${Number(formSettings.paymentAmount).toFixed(2)} ${(formSettings?.paymentCurrency ?? 'USD').toUpperCase()}`
+                  : 'Free / Not set'}
               </div>
             </div>
           </div>

@@ -396,26 +396,53 @@ export function ThemeDrawer({ form, onClose }: { form: Form; onClose: () => void
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <div className="mb-1 text-[11px] font-medium text-ink/50">Amount (cents)</div>
+                      <div className="mb-1 text-[11px] font-medium text-ink/50">Amount</div>
                       <input
                         type="number"
+                        step="0.01"
                         min={0}
-                        placeholder="500"
-                        value={form.settings.paymentAmount ?? ''}
-                        onChange={(e) => updateSettings(form.id, { paymentAmount: Number(e.target.value) || undefined })}
+                        placeholder="10.00"
+                        value={typeof form.settings.paymentAmount === 'number' ? form.settings.paymentAmount : ''}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value)
+                          updateSettings(form.id, { paymentAmount: isNaN(val) ? undefined : val })
+                        }}
                         className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] text-ink outline-none focus:border-ink"
                       />
                     </div>
                     <div>
                       <div className="mb-1 text-[11px] font-medium text-ink/50">Currency</div>
-                      <input
-                        type="text"
-                        maxLength={3}
-                        placeholder="usd"
-                        value={form.settings.paymentCurrency ?? ''}
-                        onChange={(e) => updateSettings(form.id, { paymentCurrency: e.target.value.toLowerCase() })}
-                        className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] text-ink outline-none focus:border-ink"
-                      />
+                      <select
+                        value={['usd', 'eur', 'gbp', 'inr', 'cad', 'aud', 'jpy', 'chf', 'brl', 'sgd'].includes(form.settings.paymentCurrency?.toLowerCase() ?? '') ? form.settings.paymentCurrency?.toLowerCase() : 'other'}
+                        onChange={(e) => {
+                          if (e.target.value !== 'other') {
+                            updateSettings(form.id, { paymentCurrency: e.target.value })
+                          }
+                        }}
+                        className="w-full rounded-xl border border-ink/15 px-2.5 py-2 text-[13px] text-ink outline-none focus:border-ink"
+                      >
+                        <option value="usd">USD ($ — US Dollar)</option>
+                        <option value="eur">EUR (€ — Euro)</option>
+                        <option value="gbp">GBP (£ — British Pound)</option>
+                        <option value="inr">INR (₹ — Indian Rupee)</option>
+                        <option value="cad">CAD ($ — Canadian Dollar)</option>
+                        <option value="aud">AUD ($ — Australian Dollar)</option>
+                        <option value="jpy">JPY (¥ — Japanese Yen)</option>
+                        <option value="chf">CHF (Fr — Swiss Franc)</option>
+                        <option value="brl">BRL (R$ — Brazilian Real)</option>
+                        <option value="sgd">SGD ($ — Singapore Dollar)</option>
+                        <option value="other">Custom ISO Code…</option>
+                      </select>
+                      {(!['usd', 'eur', 'gbp', 'inr', 'cad', 'aud', 'jpy', 'chf', 'brl', 'sgd'].includes(form.settings.paymentCurrency?.toLowerCase() ?? '') || form.settings.paymentCurrency === '') && (
+                        <input
+                          type="text"
+                          maxLength={3}
+                          placeholder="e.g. eur"
+                          value={form.settings.paymentCurrency ?? ''}
+                          onChange={(e) => updateSettings(form.id, { paymentCurrency: e.target.value.toLowerCase() })}
+                          className="mt-1.5 w-full rounded-xl border border-ink/15 px-3 py-1.5 font-mono text-[12px] uppercase text-ink outline-none focus:border-ink"
+                        />
+                      )}
                     </div>
                   </div>
                   <div>

@@ -24,6 +24,7 @@ export function SettingsPopover({
   const formId = form.id
   const block = form.blocks.find((b) => b.id === blockId)
   const updateBlock = useForms((s) => s.updateBlock)
+  const updateSettings = useForms((s) => s.updateSettings)
   const removeBlock = useForms((s) => s.removeBlock)
   const duplicateBlock = useForms((s) => s.duplicateBlock)
   const moveBlock = useForms((s) => s.moveBlock)
@@ -75,7 +76,7 @@ export function SettingsPopover({
       ref={ref}
       className="animate-pop fixed z-50 w-[330px] overflow-hidden border-2 border-black bg-white shadow-[8px_8px_0px_#000]"
       style={{ top, left }}
-      onMouseDown={(e) => e.preventDefault()}
+      onMouseDown={(e) => e.stopPropagation()}
     >
       <div className="flex items-center justify-between border-b-2 border-black bg-[#ffe600] px-3 py-2">
         <div className="flex gap-1.5 font-mono text-xs">
@@ -289,9 +290,83 @@ export function SettingsPopover({
             )}
 
             {block.type === 'payment' && (
-              <div className="rounded-xl bg-ink/[0.03] p-3 text-[12px] text-ink/70">
-                <div className="mb-1 font-semibold text-ink">Stripe Payments</div>
-                Configure currency, amount, and Stripe API keys in <span className="font-semibold">Form Settings → Integrations</span>.
+              <div className="space-y-3 px-1 py-1">
+                <div className="rounded border-2 border-black bg-[#ffe600]/30 p-2 text-[11px] font-bold text-black">
+                  <div className="font-black uppercase">Stripe Payment Block</div>
+                  Collect payments, orders, or tips directly from respondents using Stripe.
+                </div>
+
+                <Row label="Currency">
+                  <select
+                    value={form.settings.paymentCurrency?.toLowerCase() || 'usd'}
+                    onChange={(e) => updateSettings(formId, { paymentCurrency: e.target.value.toLowerCase() })}
+                    className="rounded border-2 border-black bg-white px-2 py-1 font-mono text-xs font-bold text-black outline-none shadow-[2px_2px_0px_#000]"
+                  >
+                    <option value="usd">USD ($ — US Dollar)</option>
+                    <option value="eur">EUR (€ — Euro)</option>
+                    <option value="gbp">GBP (£ — British Pound)</option>
+                    <option value="inr">INR (₹ — Indian Rupee)</option>
+                    <option value="cad">CAD ($ — Canadian Dollar)</option>
+                    <option value="aud">AUD ($ — Australian Dollar)</option>
+                    <option value="jpy">JPY (¥ — Japanese Yen)</option>
+                    <option value="chf">CHF (Fr — Swiss Franc)</option>
+                    <option value="brl">BRL (R$ — Brazilian Real)</option>
+                    <option value="sgd">SGD ($ — Singapore Dollar)</option>
+                  </select>
+                </Row>
+
+                <Row label="Amount">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-xs font-bold text-black">
+                      {form.settings.paymentCurrency?.toLowerCase() === 'inr'
+                        ? '₹'
+                        : form.settings.paymentCurrency?.toLowerCase() === 'eur'
+                        ? '€'
+                        : form.settings.paymentCurrency?.toLowerCase() === 'gbp'
+                        ? '£'
+                        : form.settings.paymentCurrency?.toLowerCase() === 'jpy'
+                        ? '¥'
+                        : '$'}
+                    </span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="10.00"
+                      value={typeof form.settings.paymentAmount === 'number' ? form.settings.paymentAmount : ''}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value)
+                        updateSettings(formId, { paymentAmount: isNaN(val) ? undefined : val })
+                      }}
+                      className="w-24 rounded border-2 border-black bg-white px-2 py-1 font-mono text-xs font-bold text-black outline-none shadow-[2px_2px_0px_#000]"
+                    />
+                  </div>
+                </Row>
+
+                <div className="space-y-1">
+                  <span className="block text-[11px] font-black uppercase text-black">Payment Description</span>
+                  <input
+                    type="text"
+                    placeholder="e.g. Registration Fee / Coffee"
+                    value={form.settings.paymentDescription || ''}
+                    onChange={(e) => updateSettings(formId, { paymentDescription: e.target.value })}
+                    className="w-full rounded border-2 border-black bg-white px-2 py-1 text-xs font-bold text-black outline-none shadow-[2px_2px_0px_#000]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <span className="block text-[11px] font-black uppercase text-black">Stripe Publishable Key</span>
+                  <input
+                    type="text"
+                    placeholder="pk_live_... or pk_test_..."
+                    value={form.settings.stripePublishableKey || ''}
+                    onChange={(e) => updateSettings(formId, { stripePublishableKey: e.target.value })}
+                    className="w-full rounded border-2 border-black bg-white px-2 py-1 font-mono text-[11px] text-black outline-none shadow-[2px_2px_0px_#000]"
+                  />
+                  <span className="block text-[10px] text-neutral-500 font-mono">
+                    Stripe Dashboard → Developers → API keys
+                  </span>
+                </div>
               </div>
             )}
 
@@ -324,9 +399,31 @@ export function SettingsPopover({
             )}
 
             {block.type === 'image' && (
-              <div className="space-y-2 px-2 py-2">
+              <div className="space-y-3 px-2 py-2">
+                <div>
+                  <label className="block text-[11px] font-black uppercase text-black mb-1">Image Asset</label>
+                  <label className="flex cursor-pointer items-center justify-center gap-2 border-2 border-black bg-white hover:bg-[#ffe600] py-2 px-3 font-mono text-xs font-bold text-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition">
+                    <Icon name="image" className="h-4 w-4" />
+                    <span>📁 UPLOAD IMAGE FILE</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        const reader = new FileReader()
+                        reader.onload = (ev) => {
+                          const res = ev.target?.result as string
+                          if (res) updateBlock(formId, block.id, { imageUrl: res })
+                        }
+                        reader.readAsDataURL(file)
+                      }}
+                    />
+                  </label>
+                </div>
                 <LabeledInput
-                  label="Image URL"
+                  label="Or Image URL"
                   value={block.imageUrl ?? ''}
                   onChange={(v) => {
                     updateBlock(formId, block.id, { imageUrl: v })

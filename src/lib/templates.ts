@@ -127,7 +127,7 @@ export const TEMPLATES: FormTemplate[] = [
       { type: 'payment', text: 'Complete Payment' },
     ],
     settings: {
-      paymentAmount: 2900,
+      paymentAmount: 29,
       paymentCurrency: 'usd',
       paymentDescription: 'Folly Order',
     },

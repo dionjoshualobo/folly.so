@@ -132,7 +132,7 @@ export interface FormSettings {
   emailNotifyTo?: string
   /** Stripe publishable key for payment block */
   stripePublishableKey?: string
-  /** Payment amount in smallest currency unit (e.g. cents) */
+  /** Payment amount in standard currency units (e.g. 10.00 or 25, adjustable with decimals) */
   paymentAmount?: number
   /** Payment currency (ISO 4217, e.g. 'usd') */
   paymentCurrency?: string
