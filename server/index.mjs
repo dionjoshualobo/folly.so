@@ -156,7 +156,14 @@ app.post('/api/forms/:id/submissions', async (req, res) => {
       [submission.id, submission.formId, JSON.stringify(submission)],
     )
     // A concurrent retry inserted it first: reply the same way, skip the webhook.
-    if (rowCount === 0 && (await replyIfDuplicate(res, submission.id, form.id))) return
+    // If that row is already gone (deleted in between), nothing was stored, so
+    // don't report success; the client can retry with the same id.
+    if (rowCount === 0) {
+      if (!(await replyIfDuplicate(res, submission.id, form.id))) {
+        res.status(503).json({ error: 'Submission was not saved. Please retry.' })
+      }
+      return
+    }
 
     if (form.settings?.webhookUrl) {
       fetch(form.settings.webhookUrl, {
