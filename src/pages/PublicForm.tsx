@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import type { AnswerValue, Block, Form } from '../types'
+import { uid } from '../types'
 import { useForms } from '../store'
 import { blockVisible, computeScore, formatWhen, getPageJumpTarget, getQuestionLabel, pipeText, splitBlocksByPage, splitIntoPages } from '../lib/logic'
 import { rowLayout, resolveRow } from '../lib/layout'
@@ -184,6 +185,9 @@ export default function PublicForm() {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const attemptRef = useRef<{ id: string; key: string } | null>(null)
+  const activeFormRef = useRef(formId)
+  activeFormRef.current = formId
   const [visited, setVisited] = useState(false)
   const [formFailed, setFormFailed] = useState(false)
   const [passwordInput, setPasswordInput] = useState('')
@@ -241,6 +245,9 @@ export default function PublicForm() {
     setCurrentPage(0)
     setPageHistory([0])
     setSubmitted(false)
+    setSubmitting(false)
+    setSubmitError('')
+    attemptRef.current = null
   }, [formId, form?.settings.hiddenFields])
 
   // Persist response draft to localStorage
@@ -556,17 +563,29 @@ export default function PublicForm() {
         }
       }
     }
+    // Retrying the same answers reuses the id so the server can dedupe it;
+    // edited answers count as a new response and get a fresh id.
+    const key = JSON.stringify(collected)
+    if (attemptRef.current?.key !== key) attemptRef.current = { id: uid(), key }
+    const startedFor = formId
+
     setSubmitting(true)
     setSubmitError('')
+    let saved = false
     try {
-      await addSubmission(form.id, collected)
+      await addSubmission(form.id, collected, attemptRef.current.id)
+      saved = true
     } catch (err) {
       console.error('[folly] failed to save submission', err)
+    }
+    // The respondent switched to another form while this was in flight.
+    if (activeFormRef.current !== startedFor) return
+    setSubmitting(false)
+    if (!saved) {
       setSubmitError('We couldn’t save your response. Please check your connection and try again.')
       return
-    } finally {
-      setSubmitting(false)
     }
+    attemptRef.current = null
     setAnswers((a) => ({ ...a, ...scorePatch }))
 
     // Redirect logic:
