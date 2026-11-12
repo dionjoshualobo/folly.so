@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useForms } from '../store'
 import { formatAnswer, formatWhen, getQuestionLabel } from '../lib/logic'
+import { csvCell } from '../lib/csv'
 import { Icon } from '../blockCatalog'
 import { LogoMark } from '../components/ui'
 import type { AnswerValue, Block, Submission } from '../types'
@@ -92,20 +93,9 @@ export default function Submissions() {
       })
     ])
 
-    const formatCell = (raw: string) => {
-      // Respondent input starting with = + - @ (or tab/CR) would run as a
-      // formula in Excel/Sheets; a leading apostrophe forces plain text.
-      const val = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw
-      const clean = val.replace(/"/g, '""')
-      if (clean.includes(',') || clean.includes('\n') || clean.includes('\r') || clean.includes('"')) {
-        return `"${clean}"`
-      }
-      return clean
-    }
-
     const csvContent = [
-      headers.map(formatCell).join(','),
-      ...rows.map(r => r.map(formatCell).join(','))
+      headers.map(csvCell).join(','),
+      ...rows.map(r => r.map(csvCell).join(','))
     ].join('\n')
 
     // BOM so Excel detects UTF-8 instead of mangling accents and emoji.
