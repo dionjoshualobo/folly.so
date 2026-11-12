@@ -186,6 +186,10 @@ export default function PublicForm() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const attemptRef = useRef<{ id: string; key: string } | null>(null)
+  // True from the moment a submit starts until it fails (or the form changes).
+  // A ref, not state, so the keyboard shortcut handler always reads the
+  // current value: no second submission and no edits while saving.
+  const lockRef = useRef(false)
   const activeFormRef = useRef(formId)
   activeFormRef.current = formId
   const [visited, setVisited] = useState(false)
@@ -248,6 +252,7 @@ export default function PublicForm() {
     setSubmitting(false)
     setSubmitError('')
     attemptRef.current = null
+    lockRef.current = false
   }, [formId, form?.settings.hiddenFields])
 
   // Persist response draft to localStorage
@@ -471,6 +476,7 @@ export default function PublicForm() {
   const isLastPage = nextVisibleAfterCurrent === 'submit'
 
   const changeAnswer = (blockId: string, v: AnswerValue) => {
+    if (lockRef.current) return
     const next = { ...answers, [blockId]: v }
     setAnswers(next)
     setErrors((e) => ({ ...e, [blockId]: '' }))
@@ -535,11 +541,12 @@ export default function PublicForm() {
   }
 
   const submit = async () => {
-    if (isClosed || submitting) return
+    if (isClosed || lockRef.current) return
     if (!validateVisible()) {
       topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       return
     }
+    lockRef.current = true
     const scorePatch: Record<string, number> = {}
     for (const b of form.blocks) {
       if (b.type !== 'score') continue
@@ -582,6 +589,7 @@ export default function PublicForm() {
     if (activeFormRef.current !== startedFor) return
     setSubmitting(false)
     if (!saved) {
+      lockRef.current = false
       setSubmitError('We couldn’t save your response. Please check your connection and try again.')
       return
     }
@@ -709,6 +717,7 @@ export default function PublicForm() {
             }}
             className="tally-form space-y-7"
           >
+            <fieldset disabled={submitting} className="min-w-0 space-y-7 disabled:opacity-60">
             {rowLayout(visibleHere).map((row) => {
               const resolved = resolveRow(row)
               const rendered = row.blocks.map((block) => (
@@ -733,6 +742,7 @@ export default function PublicForm() {
                 </div>
               )
             })}
+            </fieldset>
 
             <div className="flex items-center justify-between pt-6 border-t-2 border-black">
               {safePage > 0 ? (
