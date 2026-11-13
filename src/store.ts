@@ -92,10 +92,22 @@ export const useForms = create<State>()((set, get) => {
     },
 
     ensureForm: async (id) => {
-      if (get().forms.some((f) => f.id === id)) return true
+      const normalized = id.trim().toLowerCase()
+      const existing = get().forms.find(
+        (f) => f.id === id || (f.settings?.slug && f.settings.slug.trim().toLowerCase() === normalized)
+      )
+      if (existing) return true
       try {
         const { form } = await api.getForm(id)
-        set((s) => (s.forms.some((f) => f.id === form.id) ? s : { forms: [...s.forms, form] }))
+        set((s) => {
+          const idx = s.forms.findIndex((f) => f.id === form.id)
+          if (idx >= 0) {
+            const next = [...s.forms]
+            next[idx] = form
+            return { forms: next }
+          }
+          return { forms: [...s.forms, form] }
+        })
         return true
       } catch {
         return false
