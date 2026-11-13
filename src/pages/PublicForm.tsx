@@ -174,7 +174,13 @@ function getUrlQueryParams(): Record<string, string> {
 
 export default function PublicForm() {
   const { formId = '' } = useParams()
-  const form = useForms((s) => s.forms.find((f) => f.id === formId))
+  const form = useForms((s) =>
+    s.forms.find(
+      (f) =>
+        f.id === formId ||
+        (f.settings?.slug && f.settings.slug.trim().toLowerCase() === formId.trim().toLowerCase())
+    )
+  )
   const addSubmission = useForms((s) => s.addSubmission)
   const ensureForm = useForms((s) => s.ensureForm)
 
@@ -228,7 +234,8 @@ export default function PublicForm() {
 
     // Restore draft from localStorage if available
     try {
-      const draft = localStorage.getItem(`folly_draft_${formId}`)
+      const draftKey = form?.id || formId
+      const draft = localStorage.getItem(`folly_draft_${draftKey}`) || localStorage.getItem(`folly_draft_${formId}`)
       if (draft) {
         const parsed = JSON.parse(draft)
         if (parsed && typeof parsed === 'object') {
@@ -253,15 +260,16 @@ export default function PublicForm() {
     setSubmitError('')
     attemptRef.current = null
     lockRef.current = false
-  }, [formId, form?.settings.hiddenFields])
+  }, [formId, form?.id, form?.settings.hiddenFields])
 
   // Persist response draft to localStorage
   useEffect(() => {
-    if (submitted || !formId || Object.keys(answers).length === 0) return
+    const draftKey = form?.id || formId
+    if (submitted || !draftKey || Object.keys(answers).length === 0) return
     try {
-      localStorage.setItem(`folly_draft_${formId}`, JSON.stringify(answers))
+      localStorage.setItem(`folly_draft_${draftKey}`, JSON.stringify(answers))
     } catch {}
-  }, [answers, submitted, formId])
+  }, [answers, submitted, form?.id, formId])
 
   // Emit auto-resize height messages to embedding parent windows
   useEffect(() => {
@@ -607,6 +615,9 @@ export default function PublicForm() {
 
     try {
       localStorage.removeItem(`folly_draft_${form.id}`)
+      if (form.settings.slug) {
+        localStorage.removeItem(`folly_draft_${form.settings.slug}`)
+      }
     } catch {}
 
     setSubmitted(true)

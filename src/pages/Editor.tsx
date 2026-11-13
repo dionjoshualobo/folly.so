@@ -55,7 +55,13 @@ export default function Editor() {
   const { formId = '' } = useParams()
   const navigate = useNavigate()
   const storeReady = useForms((s) => s.ready)
-  const form = useForms((s) => s.forms.find((f) => f.id === formId))
+  const form = useForms((s) =>
+    s.forms.find(
+      (f) =>
+        f.id === formId ||
+        (f.settings?.slug && f.settings.slug.trim().toLowerCase() === formId.trim().toLowerCase())
+    )
+  )
   const createForm = useForms((s) => s.createForm)
   const updateBlock = useForms((s) => s.updateBlock)
   const addBlock = useForms((s) => s.addBlock)
@@ -137,10 +143,12 @@ export default function Editor() {
     if (!ready && formId === 'new') {
       const f = createForm()
       navigate(`/editor/${f.id}`, { replace: true })
+    } else if (formId && formId !== 'new' && !form) {
+      useForms.getState().ensureForm(formId)
     }
     setReady(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formId])
+  }, [formId, form])
 
   const doFocus = useCallback((id: string, at: Anchor) => {
     focusTick.current[id] = (focusTick.current[id] ?? 0) + 1

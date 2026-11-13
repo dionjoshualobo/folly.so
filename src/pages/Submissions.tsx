@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useForms } from '../store'
 import { formatAnswer, formatWhen, getQuestionLabel } from '../lib/logic'
@@ -16,10 +16,25 @@ function average(nums: number[]): string | null {
 export default function Submissions() {
   const { formId = '' } = useParams()
   const ready = useForms((s) => s.ready)
-  const form = useForms((s) => s.forms.find((f) => f.id === formId))
+  const form = useForms((s) =>
+    s.forms.find(
+      (f) =>
+        f.id === formId ||
+        (f.settings?.slug && f.settings.slug.trim().toLowerCase() === formId.trim().toLowerCase())
+    )
+  )
   const allSubmissions = useForms((s) => s.submissions)
   const deleteSubmission = useForms((s) => s.deleteSubmission)
-  const submissions = useMemo(() => allSubmissions.filter((x) => x.formId === formId), [allSubmissions, formId])
+  const submissions = useMemo(
+    () => allSubmissions.filter((x) => x.formId === (form?.id || formId)),
+    [allSubmissions, form?.id, formId]
+  )
+
+  useEffect(() => {
+    if (!form && formId) {
+      useForms.getState().ensureForm(formId)
+    }
+  }, [form, formId])
 
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
 
