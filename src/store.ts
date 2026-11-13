@@ -24,7 +24,7 @@ interface State {
   removeBlock: (formId: string, blockId: string) => void
   moveBlock: (formId: string, fromIndex: number, toIndex: number) => void
   duplicateBlock: (formId: string, blockId: string) => void
-  addSubmission: (formId: string, answers: Record<string, AnswerValue>) => Submission
+  addSubmission: (formId: string, answers: Record<string, AnswerValue>, id?: string) => Promise<Submission>
   deleteSubmission: (id: string) => void
 }
 
@@ -235,14 +235,15 @@ export const useForms = create<State>()((set, get) => {
         return { ...f, blocks }
       }),
 
-    addSubmission: (formId, answers) => {
-      const submission: Submission = { id: uid(), formId, submittedAt: Date.now(), answers }
-      set((s) => ({ submissions: [submission, ...s.submissions] }))
-      api.addSubmission(formId, submission).catch((err) => {
-        console.error('[folly] failed to save submission', err)
-        set((s) => ({ submissions: s.submissions.filter((x) => x !== submission) }))
-      })
-      return submission
+    // Resolves only once the server has stored the submission, so callers
+    // can safely show a confirmation or navigate away.
+    // Pass the same `id` when retrying the same response: the server treats a
+    // repeat id as success instead of storing a duplicate.
+    addSubmission: async (formId, answers, id = uid()) => {
+      const submission: Submission = { id, formId, submittedAt: Date.now(), answers }
+      const { submission: saved } = await api.addSubmission(formId, submission)
+      set((s) => ({ submissions: [saved, ...s.submissions.filter((x) => x.id !== saved.id)] }))
+      return saved
     },
 
     deleteSubmission: (id) => {

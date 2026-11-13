@@ -18,6 +18,17 @@ async function rowToForm(idOrSlug) {
   return rows[0]?.data ?? null
 }
 
+// Submission ids are client-generated and reused on retry. If the id already
+// exists, reply with the stored submission (same form) or 409 (another form)
+// and return true; otherwise return false so the caller inserts it.
+async function replyIfDuplicate(res, id, formId) {
+  const { rows } = await pool.query('SELECT form_id, data FROM submissions WHERE id = $1', [id])
+  if (!rows[0]) return false
+  if (rows[0].form_id === formId) res.status(200).json({ submission: rows[0].data })
+  else res.status(409).json({ error: 'submission.id is already used by another form' })
+  return true
+}
+
 // ---- API routes -------------------------------------------------------
 
 app.get('/api/health', async (_req, res) => {
@@ -124,6 +135,10 @@ app.post('/api/forms/:id/submissions', async (req, res) => {
     if (!form) return res.status(404).json({ error: 'Form not found' })
     submission.formId = form.id
 
+    // A retry reuses the same id; answer it before the close/limit checks so
+    // a response that already counted is not rejected on retry.
+    if (await replyIfDuplicate(res, submission.id, form.id)) return
+
     if (form.settings?.closedAt && Date.now() > form.settings.closedAt) {
       return res.status(403).json({ error: 'This form has reached its closing date and is closed.' })
     }
@@ -136,11 +151,19 @@ app.post('/api/forms/:id/submissions', async (req, res) => {
       }
     }
 
-    await pool.query('INSERT INTO submissions (id, form_id, data) VALUES ($1, $2, $3::jsonb)', [
-      submission.id,
-      submission.formId,
-      JSON.stringify(submission),
-    ])
+    const { rowCount } = await pool.query(
+      'INSERT INTO submissions (id, form_id, data) VALUES ($1, $2, $3::jsonb) ON CONFLICT (id) DO NOTHING',
+      [submission.id, submission.formId, JSON.stringify(submission)],
+    )
+    // A concurrent retry inserted it first: reply the same way, skip the webhook.
+    // If that row is already gone (deleted in between), nothing was stored, so
+    // don't report success; the client can retry with the same id.
+    if (rowCount === 0) {
+      if (!(await replyIfDuplicate(res, submission.id, form.id))) {
+        res.status(503).json({ error: 'Submission was not saved. Please retry.' })
+      }
+      return
+    }
 
     if (form.settings?.webhookUrl) {
       fetch(form.settings.webhookUrl, {

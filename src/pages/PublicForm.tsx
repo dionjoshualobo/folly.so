@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import type { AnswerValue, Block, Form } from '../types'
+import { uid } from '../types'
 import { useForms } from '../store'
 import { blockVisible, computeScore, formatWhen, getPageJumpTarget, getQuestionLabel, pipeText, splitBlocksByPage, splitIntoPages } from '../lib/logic'
 import { rowLayout, resolveRow } from '../lib/layout'
@@ -188,6 +189,15 @@ export default function PublicForm() {
   const [currentPage, setCurrentPage] = useState(0)
   const [pageHistory, setPageHistory] = useState<number[]>([0])
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const attemptRef = useRef<{ id: string; key: string } | null>(null)
+  // True from the moment a submit starts until it fails (or the form changes).
+  // A ref, not state, so the keyboard shortcut handler always reads the
+  // current value: no second submission and no edits while saving.
+  const lockRef = useRef(false)
+  const activeFormRef = useRef(formId)
+  activeFormRef.current = formId
   const [visited, setVisited] = useState(false)
   const [formFailed, setFormFailed] = useState(false)
   const [passwordInput, setPasswordInput] = useState('')
@@ -246,6 +256,10 @@ export default function PublicForm() {
     setCurrentPage(0)
     setPageHistory([0])
     setSubmitted(false)
+    setSubmitting(false)
+    setSubmitError('')
+    attemptRef.current = null
+    lockRef.current = false
   }, [formId, form?.id, form?.settings.hiddenFields])
 
   // Persist response draft to localStorage
@@ -470,6 +484,7 @@ export default function PublicForm() {
   const isLastPage = nextVisibleAfterCurrent === 'submit'
 
   const changeAnswer = (blockId: string, v: AnswerValue) => {
+    if (lockRef.current) return
     const next = { ...answers, [blockId]: v }
     setAnswers(next)
     setErrors((e) => ({ ...e, [blockId]: '' }))
@@ -533,12 +548,13 @@ export default function PublicForm() {
     setCurrentPage(nextVis)
   }
 
-  const submit = () => {
-    if (isClosed) return
+  const submit = async () => {
+    if (isClosed || lockRef.current) return
     if (!validateVisible()) {
       topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       return
     }
+    lockRef.current = true
     const scorePatch: Record<string, number> = {}
     for (const b of form.blocks) {
       if (b.type !== 'score') continue
@@ -562,7 +578,30 @@ export default function PublicForm() {
         }
       }
     }
-    addSubmission(form.id, collected)
+    // Retrying the same answers reuses the id so the server can dedupe it;
+    // edited answers count as a new response and get a fresh id.
+    const key = JSON.stringify(collected)
+    if (attemptRef.current?.key !== key) attemptRef.current = { id: uid(), key }
+    const startedFor = formId
+
+    setSubmitting(true)
+    setSubmitError('')
+    let saved = false
+    try {
+      await addSubmission(form.id, collected, attemptRef.current.id)
+      saved = true
+    } catch (err) {
+      console.error('[folly] failed to save submission', err)
+    }
+    // The respondent switched to another form while this was in flight.
+    if (activeFormRef.current !== startedFor) return
+    setSubmitting(false)
+    if (!saved) {
+      lockRef.current = false
+      setSubmitError('We couldn’t save your response. Please check your connection and try again.')
+      return
+    }
+    attemptRef.current = null
     setAnswers((a) => ({ ...a, ...scorePatch }))
 
     // Redirect logic:
@@ -689,6 +728,7 @@ export default function PublicForm() {
             }}
             className="tally-form space-y-7"
           >
+            <fieldset disabled={submitting} className="min-w-0 space-y-7 disabled:opacity-60">
             {rowLayout(visibleHere).map((row) => {
               const resolved = resolveRow(row)
               const rendered = row.blocks.map((block) => (
@@ -713,6 +753,7 @@ export default function PublicForm() {
                 </div>
               )
             })}
+            </fieldset>
 
             <div className="flex items-center justify-between pt-6 border-t-2 border-black">
               {safePage > 0 ? (
@@ -738,11 +779,17 @@ export default function PublicForm() {
               )}
               <button
                 type="submit"
-                className="tally-submit-button border-2 border-black bg-[#ffe600] text-black font-black uppercase text-xs sm:text-sm px-8 py-3.5 shadow-[4px_4px_0px_#000] hover:bg-[#facc15] hover:shadow-[5px_5px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                disabled={submitting}
+                className="tally-submit-button border-2 border-black bg-[#ffe600] text-black font-black uppercase text-xs sm:text-sm px-8 py-3.5 shadow-[4px_4px_0px_#000] hover:bg-[#facc15] hover:shadow-[5px_5px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all disabled:cursor-wait disabled:opacity-60"
               >
-                {!isLastPage ? 'NEXT STEP →' : 'SUBMIT FORM →'}
+                {!isLastPage ? 'NEXT STEP →' : submitting ? 'SUBMITTING…' : 'SUBMIT FORM →'}
               </button>
             </div>
+            {submitError && (
+              <p role="alert" className="border-2 border-black bg-[#ffd6d6] px-4 py-3 text-sm font-bold text-black">
+                {submitError}
+              </p>
+            )}
           </form>
         </div>
       </main>

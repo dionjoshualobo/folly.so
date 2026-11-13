@@ -7,7 +7,9 @@ services:
       POSTGRES_PASSWORD: folly
       POSTGRES_DB: folly
     ports:
-      - "5440:5432"
+      # Host port for Postgres. If you change DB_PORT, use the same port in
+      # DATABASE_URL so the host-run API (npm run dev / dev:api) can connect.
+      - "${DB_PORT:-5440}:5432"
     volumes:
       - folly_pg:/var/lib/postgresql/data
     healthcheck:

@@ -68,7 +68,8 @@ Settings can be customized via `.env`:
 
 | Variable | Default | Description |
 | :--- | :--- | :--- |
-| `DATABASE_URL` | `postgres://folly:folly@localhost:5440/folly` | PostgreSQL connection string |
+| `DATABASE_URL` | `postgres://folly:folly@localhost:5440/folly` | PostgreSQL connection string. Its port must match `DB_PORT` |
+| `DB_PORT` | `5440` | Host port the Docker Postgres container is published on. If you change it, update the port in `DATABASE_URL` too |
 | `PORT` | `3001` | Port for the API and static server |
 | `SEED_DEMO` | `true` | Pre-populates sample forms if the database is empty |
 
