@@ -2,451 +2,252 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { LogoMark } from '../components/ui'
 import { useForms } from '../store'
+import { CopyCommand, FormDemo, SlashDemo, btn } from './LandingDemos'
 
-const FEATURES = [
-  {
-    title: 'DOCUMENT-STYLE EDITING',
-    bg: '#ffe600',
-    tag: 'KEYBOARD NATIVE',
-    desc: 'Write questions naturally like a Notion document. Press / for blocks, drag handles to reorder, and never touch a clumsy sidebar.',
-  },
-  {
-    title: 'UNLIMITED FREE INTAKE',
-    bg: '#5ce1e6',
-    tag: 'ZERO PAYWALLS',
-    desc: 'Collect 10 responses or 100,000 without hitting an artificial billing limit. Your data belongs to you, always.',
-  },
-  {
-    title: 'CONDITIONAL LOGIC & JUMPS',
-    bg: '#ff90e8',
-    tag: 'SMART ROUTING',
-    desc: 'Show or hide questions dynamically based on prior answers, or jump respondents directly to specific pages with instant logic.',
-  },
-  {
-    title: 'VANITY URL PATHS',
-    bg: '#00ef84',
-    tag: 'CUSTOM SLUGS',
-    desc: 'Claim clean, memorable links like /f/rsvp, /f/feedback, or /f/apply instead of random hexadecimal machine hashes.',
-  },
-  {
-    title: 'CLIENT DRAFT RESTORE',
-    bg: '#ff5a27',
-    tag: 'LOCAL PERSISTENCE',
-    desc: 'Respondents never lose half-typed answers if their connection drops or they refresh the tab. Automatic local draft recovery.',
-  },
-  {
-    title: 'WEBHOOK DISPATCH & EXPORT',
-    bg: '#a855f7',
-    tag: 'OPEN TELEMETRY',
-    desc: 'Real-time JSON signals sent straight to your webhooks, Supabase, Discord, or Slack, plus instant CSV exports anytime.',
-  },
+// Sections are scrolled to from buttons, not #anchors: the app uses HashRouter,
+// so a plain href="#demo" would be read as a route.
+const SECTIONS = [
+  { id: 'demo', label: 'Live demo', hover: 'hover:bg-[#ffe600]' },
+  { id: 'blocks', label: 'Slash menu', hover: 'hover:bg-[#5ce1e6]' },
+  { id: 'self-host', label: 'Self-host', hover: 'hover:bg-[#00ef84]' },
 ]
+
+const h2 = 'text-4xl font-black uppercase leading-[1.1] tracking-tight sm:text-5xl'
+const lead = 'text-lg font-bold leading-relaxed text-neutral-700'
+
+function jump(id: string) {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  document.getElementById(id)?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' })
+}
 
 const FAQS = [
   {
-    q: 'IS FOLLY REALLY COMPLETELY FREE?',
-    a: 'Yes. Folly is built as an open-source, indie alternative to corporate form builders that charge $39 to $99 per month. Unlimited forms, unlimited questions, and unlimited responses.',
+    q: 'Is Folly really completely free?',
+    a: 'Yes. Folly is an open-source alternative to form builders that charge $39 to $99 per month. Unlimited forms, unlimited questions and unlimited responses.',
   },
   {
-    q: 'HOW DOES LOGIC JUMPING WORK?',
-    a: 'You can configure conditional rules on any question block. Choose "Show block if", "Hide block if", or "Jump to page if" based on respondent answers.',
+    q: 'How does logic jumping work?',
+    a: 'Add a rule to any question block: “Show block if”, “Hide block if” or “Jump to page if”, based on what the respondent answered earlier. The Logic tab in the demo above runs on the same rules.',
   },
   {
-    q: 'CAN I USE CUSTOM URLS?',
-    a: 'Yes! In the form settings, you can define a custom slug like /f/my-event-rsvp or /f/user-research and share it directly.',
+    q: 'Can I use custom URLs?',
+    a: 'Yes. In the form settings, set a slug like /f/my-event-rsvp or /f/user-research and share that link.',
   },
   {
-    q: 'DO YOU TRACK OR SELL RESPONDENT DATA?',
-    a: 'Never. No surveillance cookies, no third-party ad pixels, and no analytics SDKs tracking your users across the web.',
+    q: 'What else is included?',
+    a: 'Webhooks that send every response to your own endpoint as JSON, one-click CSV export, drafts that survive a refresh, and password protection, response limits and close dates for any form.',
+  },
+  {
+    q: 'Do you track or sell respondent data?',
+    a: 'Never. No surveillance cookies, no third-party ad pixels and no analytics SDKs following your respondents around the web.',
   },
 ]
 
 export default function Landing() {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null)
-  const [submitted, setSubmitted] = useState(false)
-  const [activeFaq, setActiveFaq] = useState<number | null>(null)
-
+  const [menuOpen, setMenuOpen] = useState(false)
   const go = () => {
     useForms.getState().createForm()
     window.location.hash = '#/forms'
   }
 
   return (
-    <div className="min-h-screen bg-[#fffdfa] text-black font-sans selection:bg-[#ffe600] selection:text-black">
-      {/* Top Warning Ribbon */}
-      <div className="bg-[#ffe600] text-black font-black uppercase text-xs py-2 px-6 border-b-2 border-black flex justify-between items-center tracking-wider overflow-hidden">
-        <span className="whitespace-nowrap">★ 100% FREE FOREVER · ZERO COMMISSIONS · UNLIMITED RESPONSES · OPEN SOURCE CRAFT ★</span>
-        <span className="hidden md:inline font-mono">NEOBRUTALIST REVOLUTION // V.2.0</span>
+    <div className="min-h-screen bg-[#fffdfa] font-sans text-black selection:bg-[#ffe600] selection:text-black">
+      <div className="flex items-center justify-between overflow-hidden border-b-2 border-black bg-[#ffe600] px-6 py-2 text-xs font-black uppercase tracking-wider">
+        <span className="whitespace-nowrap">★ 100% free forever · Zero commissions · Unlimited responses · Open source ★</span>
+        <span className="hidden font-mono md:inline">MIT licensed</span>
       </div>
 
-      {/* Retro Window Navigation Header */}
-      <header className="border-b-2 border-black bg-white px-6 py-4 sticky top-0 z-40">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-2">
-              <span className="bg-[#ffe600] text-black border-2 border-black px-2.5 py-1 text-sm font-black -rotate-2 shadow-[2px_2px_0px_#000]">
-                FOLLY.SO
-              </span>
-            </Link>
-            <span className="text-xs font-mono font-bold uppercase hidden sm:inline bg-black text-white px-2 py-0.5">
-              NO SUBSCRIPTIONS
-            </span>
-          </div>
+      <header className="sticky top-0 z-40 border-b-2 border-black bg-white px-6 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+          <Link to="/" className="-rotate-2 border-2 border-black bg-[#ffe600] px-2.5 py-1 text-sm font-black shadow-[2px_2px_0px_#000]">
+            FOLLY.SO
+          </Link>
 
-          <nav className="hidden md:flex items-center gap-6 font-bold text-sm uppercase tracking-wide">
-            <Link to="/docs/how-to-use" className="bg-[#ffe600] px-2.5 py-1 transition border-2 border-black shadow-[2px_2px_0px_#000] hover:bg-[#facc15]">
-              How to Use ⚡
-            </Link>
-            <Link to="/docs" className="hover:bg-[#5ce1e6] px-2 py-1 transition border-2 border-transparent hover:border-black">
+          <nav className="hidden items-center gap-2 text-sm font-bold uppercase tracking-wide lg:flex">
+            {SECTIONS.map((s) => (
+              <button key={s.id} onClick={() => jump(s.id)} className={`border-2 border-transparent px-2 py-1 uppercase transition hover:border-black ${s.hover}`}>
+                {s.label}
+              </button>
+            ))}
+            <Link to="/docs" className="border-2 border-transparent px-2 py-1 transition hover:border-black hover:bg-[#ff5a27]">
               Docs
             </Link>
-            <a href="#features" className="hover:bg-[#ffe600] px-2 py-1 transition border-2 border-transparent hover:border-black">
-              Features
-            </a>
-            <a href="#comparison" className="hover:bg-[#ff90e8] px-2 py-1 transition border-2 border-transparent hover:border-black">
-              Vs Monopoly
-            </a>
-            <a href="#faq" className="hover:bg-[#00ef84] px-2 py-1 transition border-2 border-transparent hover:border-black">
-              FAQ
-            </a>
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link
-              to="/forms"
-              className="text-xs font-black uppercase px-4 py-2 border-2 border-black hover:bg-neutral-100 transition hidden sm:inline-block"
-            >
-              Sign In
+            <Link to="/forms" className="hidden border-2 border-black px-4 py-2 text-xs font-black uppercase transition hover:bg-neutral-100 sm:inline-block">
+              Dashboard
             </Link>
+            <button onClick={go} className={`${btn} bg-[#ffe600] px-5 py-2.5 text-xs`}>
+              Create form
+            </button>
             <button
-              onClick={go}
-              className="bg-[#ffe600] text-black font-black text-xs uppercase px-5 py-2.5 border-2 border-black shadow-[3px_3px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#000] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-nav"
+              className="border-2 border-black bg-white px-3 py-2 text-xs font-black uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black lg:hidden"
             >
-              CREATE FORM ⚡
+              {menuOpen ? 'Close' : 'Menu'}
             </button>
           </div>
         </div>
+
+        {menuOpen && (
+          <nav
+            id="mobile-nav"
+            className="absolute inset-x-0 top-full flex flex-col border-y-2 border-black bg-white text-sm font-black uppercase shadow-[0_6px_0px_#000] lg:hidden [&>*]:px-6"
+          >
+            {SECTIONS.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => {
+                  setMenuOpen(false)
+                  jump(s.id)
+                }}
+                className={`border-b-2 border-black px-4 py-3.5 text-left uppercase ${s.hover}`}
+              >
+                {s.label}
+              </button>
+            ))}
+            <Link to="/docs" className="border-b-2 border-black px-4 py-3.5 hover:bg-[#ff5a27]">
+              Docs
+            </Link>
+            <Link to="/forms" className="px-4 py-3.5 hover:bg-neutral-100">
+              Dashboard
+            </Link>
+          </nav>
+        )}
       </header>
 
-      {/* Hero Section */}
-      <main className="mx-auto max-w-6xl px-6 py-14 space-y-20">
-        <div className="grid lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-7 space-y-6">
-            <div className="inline-block bg-[#ff90e8] text-black border-2 border-black px-3 py-1 text-xs font-black uppercase rotate-[-1deg] shadow-[3px_3px_0px_#000]">
-              WHY PAY $49/MO FOR 100 RESPONSES?
-            </div>
-
-            <h1 className="text-5xl sm:text-7xl font-black uppercase tracking-tight text-black leading-none">
-              CREATE FORMS <br />
-              <span className="bg-[#ffe600] px-4 py-1 border-2 border-black shadow-[5px_5px_0px_#000] inline-block -rotate-1 mt-2">
-                THAT ACTUALLY SLAP.
-              </span>
-            </h1>
-
-            <p className="text-lg font-bold text-neutral-800 max-w-lg leading-relaxed">
-              No complex wizard drag-and-drop nonsense. Write your questions like a Notion doc,
-              press slash <code className="bg-[#5ce1e6] px-1.5 py-0.5 border border-black font-mono font-bold">/</code> for blocks,
-              and ship forms with unlimited responses for $0.
-            </p>
-
-            <div className="pt-2 flex flex-wrap gap-4 items-center">
-              <button
-                onClick={go}
-                className="bg-[#ffe600] text-black font-black uppercase text-sm px-8 py-4 border-2 border-black shadow-[5px_5px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[3px_3px_0px_#000] active:translate-x-[5px] active:translate-y-[5px] active:shadow-none transition-all"
-              >
-                START CRUSHING IT (FREE) ⚡
-              </button>
-              <Link
-                to="/forms"
-                className="bg-white text-black font-black uppercase text-sm px-6 py-4 border-2 border-black shadow-[4px_4px_0px_#000] hover:bg-neutral-50 transition"
-              >
-                OPEN WORKSPACE →
-              </Link>
-            </div>
-
-            <div className="pt-6 border-t-2 border-black grid grid-cols-3 gap-4 font-mono text-xs font-bold">
-              <div>
-                <span className="text-2xl font-black block">$0.00</span>
-                <span>NO SUBSCRIPTION</span>
-              </div>
-              <div>
-                <span className="text-2xl font-black block">∞</span>
-                <span>RESPONSES</span>
-              </div>
-              <div>
-                <span className="text-2xl font-black block">100%</span>
-                <span>DATA OWNERSHIP</span>
-              </div>
-            </div>
+      <main className="mx-auto max-w-6xl space-y-28 px-6 pb-8 pt-12">
+        <section className="mx-auto max-w-5xl space-y-7 text-center">
+          <div className="inline-block -rotate-1 border-2 border-black bg-[#ff90e8] px-3 py-1 text-xs font-black uppercase shadow-[3px_3px_0px_#000]">
+            Why pay $49/mo for 100 responses?
           </div>
 
-          {/* Sticky Notes & Interactive Simulator */}
-          <div className="lg:col-span-5 space-y-6">
-            {/* Retro OS Window Interactive Simulator */}
-            <div className="bg-white border-2 border-black shadow-[8px_8px_0px_#000] overflow-hidden">
-              <div className="bg-[#ffe600] border-b-2 border-black px-4 py-2.5 flex justify-between items-center font-mono text-xs font-bold">
-                <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-red-400 border border-black" />
-                  <span className="h-3 w-3 rounded-full bg-yellow-400 border border-black" />
-                  <span className="h-3 w-3 rounded-full bg-green-400 border border-black" />
-                  <span className="ml-2">LIVE_DEMO.EXE</span>
-                </div>
-                <span>[ _ ][ 口 ][ X ]</span>
-              </div>
+          <h1 className="text-5xl font-black uppercase leading-none tracking-tight sm:text-7xl">
+            Create forms
+            <br />
+            <span className="mt-3 inline-block -rotate-1 border-2 border-black bg-[#ffe600] px-4 py-1 shadow-[6px_6px_0px_#000] lg:whitespace-nowrap">that actually slap.</span>
+          </h1>
 
-              <div className="p-6">
-                {submitted ? (
-                  <div className="py-8 text-center space-y-3">
-                    <span className="text-4xl block">🔥</span>
-                    <h3 className="text-2xl font-black uppercase">BOOM! RESPONSE RECORDED</h3>
-                    <p className="text-xs font-bold text-neutral-600">
-                      You just tested the live form engine. Fast, punchy, zero friction.
-                    </p>
-                    <button
-                      onClick={() => {
-                        setSubmitted(false)
-                        setSelectedOption(null)
-                      }}
-                      className="mt-4 bg-[#5ce1e6] text-black font-black px-4 py-2 text-xs uppercase border-2 border-black shadow-[3px_3px_0px_#000] hover:bg-[#ffe600] transition"
-                    >
-                      TRY AGAIN ↺
-                    </button>
-                  </div>
-                ) : (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault()
-                      if (selectedOption) setSubmitted(true)
-                    }}
-                    className="space-y-4"
-                  >
-                    <label className="block text-base sm:text-lg font-black uppercase text-black">
-                      WHICH THING ANNOYS YOU MOST ABOUT MODERN FORMS?
-                    </label>
+          <p className="mx-auto max-w-2xl text-lg font-bold leading-relaxed text-neutral-800">
+            Write your questions like a doc, press <code className="border border-black bg-[#5ce1e6] px-1.5 py-0.5 font-mono">/</code> for blocks, and
+            collect unlimited responses for $0. Everything below is the real form engine running in your browser, so go ahead and poke it.
+          </p>
 
-                    <div className="space-y-2 pt-1">
-                      {[
-                        'Subscriptions that charge per response',
-                        'Complex wizards that take 10 clicks per block',
-                        'Sneaky tracking pixels and surveillance cookies',
-                        'Ugly randomized URL slugs with no vanity names',
-                      ].map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => setSelectedOption(opt)}
-                          className={`w-full text-left p-3 border-2 border-black font-bold text-xs transition ${
-                            selectedOption === opt
-                              ? 'bg-[#ffe600] shadow-[3px_3px_0px_#000]'
-                              : 'bg-white hover:bg-[#ff90e8]/20'
-                          }`}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="pt-3 flex justify-between items-center border-t-2 border-black">
-                      <span className="font-mono text-[11px] font-bold text-neutral-500">PICK AN ANSWER</span>
-                      <button
-                        type="submit"
-                        disabled={!selectedOption}
-                        className="bg-black text-white font-black uppercase px-5 py-2.5 border-2 border-black shadow-[3px_3px_0px_#000] disabled:opacity-40 hover:bg-[#ffe600] hover:text-black transition text-xs"
-                      >
-                        SUBMIT TEST →
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            </div>
-
-            {/* Sticker Badges */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-[#5ce1e6] border-2 border-black p-4 shadow-[4px_4px_0px_#000] rotate-1">
-                <span className="font-mono text-[10px] font-bold uppercase block text-black/70">STICKER // #01</span>
-                <span className="text-base font-black uppercase block mt-1">ZERO FEES</span>
-                <span className="text-xs font-bold text-black/80 mt-1 block">Free forever. No card required.</span>
-              </div>
-              <div className="bg-[#ff90e8] border-2 border-black p-4 shadow-[4px_4px_0px_#000] -rotate-1">
-                <span className="font-mono text-[10px] font-bold uppercase block text-black/70">STICKER // #02</span>
-                <span className="text-base font-black uppercase block mt-1">SLASH MENU</span>
-                <span className="text-xs font-bold text-black/80 mt-1 block">Type / to summon any block.</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION: FEATURE CARDS GRID */}
-        <section id="features" className="pt-12">
-          <div className="border-b-2 border-black pb-4 mb-8 flex flex-col sm:flex-row justify-between sm:items-end gap-2">
-            <div>
-              <span className="bg-black text-white px-2 py-0.5 text-xs font-mono font-bold uppercase">
-                TOOLKIT ARCHITECTURE
-              </span>
-              <h2 className="text-4xl font-black uppercase tracking-tight mt-2">
-                BUILT FOR MAXIMUM VELOCITY
-              </h2>
-            </div>
-            <span className="font-mono text-xs font-bold">6 CORE WEAPONS INCLUDED</span>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {FEATURES.map((feat) => (
-              <div
-                key={feat.title}
-                className="border-2 border-black bg-white shadow-[6px_6px_0px_#000] flex flex-col justify-between hover:-translate-y-1 transition-transform"
-              >
-                <div>
-                  <div
-                    className="border-b-2 border-black px-4 py-2 flex justify-between items-center font-mono text-xs font-bold"
-                    style={{ backgroundColor: feat.bg }}
-                  >
-                    <span>{feat.tag}</span>
-                    <span>★</span>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-black uppercase tracking-tight">{feat.title}</h3>
-                    <p className="mt-3 text-xs font-bold text-neutral-700 leading-relaxed">
-                      {feat.desc}
-                    </p>
-                  </div>
-                </div>
-                <div className="p-4 border-t-2 border-black bg-neutral-50 font-mono text-[10px] font-bold flex justify-between">
-                  <span>STATUS: ACTIVATED</span>
-                  <span>FOLLY ENGINE</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* SECTION: CORPORATE MONOPOLY COMPARISON */}
-        <section id="comparison" className="pt-12">
-          <div className="border-2 border-black bg-white p-8 shadow-[8px_8px_0px_#000]">
-            <div className="border-b-2 border-black pb-4 mb-6">
-              <span className="bg-[#ff5a27] text-white px-2 py-0.5 text-xs font-mono font-bold uppercase">
-                THE HARD TRUTH
-              </span>
-              <h2 className="text-3xl font-black uppercase tracking-tight mt-2">
-                CORPORATE MONOPOLIES VS. FOLLY
-              </h2>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6 font-mono text-xs">
-              <div className="border-2 border-black p-5 bg-[#fafafa] space-y-3">
-                <span className="font-black uppercase text-sm block border-b-2 border-black pb-2 text-neutral-600">
-                  THEIR WAY (TYPEFORM / JOTFORM)
-                </span>
-                <div className="flex justify-between py-1 border-b border-black/10 font-bold">
-                  <span>MONTHLY RETAINER</span>
-                  <span className="text-red-600">$39 TO $99/MO</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-black/10 font-bold">
-                  <span>RESPONSE CAP</span>
-                  <span className="text-red-600">100 RESPONSES / MO</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-black/10 font-bold">
-                  <span>WATERMARK REMOVAL</span>
-                  <span className="text-red-600">PAID TIER ONLY</span>
-                </div>
-                <div className="flex justify-between py-1 font-bold">
-                  <span>DATA PRIVACY</span>
-                  <span className="text-red-600">TRACKING COOKIES ACTIVE</span>
-                </div>
-              </div>
-
-              <div className="border-2 border-black p-5 bg-[#ffe600] space-y-3 shadow-[4px_4px_0px_#000]">
-                <span className="font-black uppercase text-sm block border-b-2 border-black pb-2 text-black">
-                  OUR WAY (FOLLY.SO)
-                </span>
-                <div className="flex justify-between py-1 border-b border-black/20 font-black">
-                  <span>MONTHLY RETAINER</span>
-                  <span className="text-black">$0.00 (ALWAYS FREE)</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-black/20 font-black">
-                  <span>RESPONSE CAP</span>
-                  <span className="text-black">UNLIMITED (NO CEILING)</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-black/20 font-black">
-                  <span>WATERMARK REMOVAL</span>
-                  <span className="text-black">FREE FOREVER</span>
-                </div>
-                <div className="flex justify-between py-1 font-black">
-                  <span>DATA PRIVACY</span>
-                  <span className="text-black">100% PRIVATE & UNTETHERED</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION: FAQS */}
-        <section id="faq" className="pt-12">
-          <div className="border-b-2 border-black pb-4 mb-8">
-            <span className="bg-[#ff90e8] text-black px-2 py-0.5 text-xs font-mono font-bold uppercase border-2 border-black shadow-[2px_2px_0px_#000]">
-              QUESTIONS ANSWERED
-            </span>
-            <h2 className="text-3xl font-black uppercase tracking-tight mt-2">
-              FREQUENTLY ASKED QUESTIONS
-            </h2>
-          </div>
-
-          <div className="space-y-4 max-w-3xl">
-            {FAQS.map((faq, idx) => (
-              <div
-                key={faq.q}
-                onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                className="border-2 border-black bg-white shadow-[4px_4px_0px_#000] cursor-pointer"
-              >
-                <div className="p-4 flex justify-between items-center font-bold text-sm uppercase">
-                  <span>{faq.q}</span>
-                  <span className="h-6 w-6 border-2 border-black flex items-center justify-center font-black bg-[#ffe600]">
-                    {activeFaq === idx ? '−' : '+'}
-                  </span>
-                </div>
-                {activeFaq === idx && (
-                  <div className="px-4 pb-4 pt-1 border-t-2 border-black text-xs font-bold text-neutral-700 bg-neutral-50 leading-relaxed">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* SECTION: BOTTOM CALL TO ACTION */}
-        <section className="pt-8">
-          <div className="border-2 border-black bg-[#ffe600] p-8 sm:p-14 shadow-[10px_10px_0px_#000] text-center space-y-6">
-            <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tight">
-              STOP WASTING MONEY ON FORMS.
-            </h2>
-            <p className="text-base sm:text-lg font-bold max-w-xl mx-auto">
-              Build your first form in 30 seconds. No credit card, no email confirmation runaround.
-            </p>
-            <button
-              onClick={go}
-              className="bg-black text-white font-black uppercase text-sm sm:text-base px-10 py-5 border-2 border-black shadow-[6px_6px_0px_#fff] hover:bg-[#ff90e8] hover:text-black transition"
-            >
-              CREATE YOUR FIRST FORM NOW ⚡
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-1">
+            <button onClick={() => jump('demo')} className={`${btn} bg-[#ffe600] px-8 py-4 text-sm`}>
+              Try the live demo ↓
+            </button>
+            <button onClick={go} className={`${btn} bg-white px-6 py-4 text-sm`}>
+              Create a form
             </button>
           </div>
         </section>
+
+        <section id="demo" className="scroll-mt-28 space-y-6">
+          <FormDemo />
+        </section>
+
+        <section id="blocks" className="grid scroll-mt-28 items-start gap-10 lg:grid-cols-12">
+          <div className="space-y-5 lg:sticky lg:top-28 lg:col-span-4">
+            <h2 className="text-4xl font-black uppercase leading-[1.15] tracking-tight sm:text-5xl sm:leading-[1.15]">
+              Type <span className="border-2 border-black bg-[#5ce1e6] px-2">/</span> to summon any block.
+            </h2>
+            <p className="text-base font-bold leading-relaxed text-neutral-800">
+              No sidebar, no drag-and-drop wizard. This is a working slice of the editor: build something here, then carry it into the real thing.
+            </p>
+            <ul className="space-y-2 text-sm font-bold">
+              {[
+                ['/', 'opens the block menu'],
+                ['/rat', 'filters it as you type'],
+                ['↑ ↓ Enter', 'picks a block'],
+                ['Enter', 'on plain text adds a question'],
+              ].map(([key, what]) => (
+                <li key={key} className="flex items-baseline gap-3">
+                  <kbd className="shrink-0 border-2 border-black bg-white px-2 py-0.5 font-mono text-xs font-bold shadow-[2px_2px_0px_#000]">{key}</kbd>
+                  <span>{what}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="lg:col-span-8">
+            <SlashDemo />
+          </div>
+        </section>
+
+        <div className="space-y-32 pt-4 lg:space-y-44 lg:pt-12">
+          <section id="self-host" className="grid scroll-mt-28 items-center gap-14 lg:grid-cols-2 lg:gap-20">
+            <div className="min-w-0 space-y-7">
+              <h2 className={h2}>Run it yourself.</h2>
+              <p className={`${lead} max-w-md`}>
+                The whole stack is one Compose file. Your forms and responses live in your own Postgres, on your own network.
+              </p>
+              <ul className="flex flex-wrap gap-3 text-xs font-black uppercase">
+                {['Express server', 'Postgres', 'One container', 'MIT licensed'].map((t) => (
+                  <li key={t} className="border-2 border-black bg-white px-3 py-1.5 shadow-[2px_2px_0px_#000]">
+                    {t}
+                  </li>
+                ))}
+              </ul>
+              <Link to="/docs" className="inline-block text-sm font-black uppercase underline decoration-2 underline-offset-4 hover:bg-[#ffe600]">
+                Read the docs
+              </Link>
+            </div>
+            <div className="min-w-0 space-y-6">
+              <CopyCommand lines={['git clone https://github.com/dionjoshualobo/folly.so.git', 'cd folly.so', 'docker compose up --build']} />
+              <p className="text-sm font-bold leading-relaxed text-neutral-700">Then open http://localhost:3001. Demo forms are seeded on first launch.</p>
+            </div>
+          </section>
+
+          <section className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="space-y-5 lg:col-span-4">
+              <h2 className={h2}>Frequently asked questions</h2>
+              <p className={lead}>
+                Something else on your mind?{' '}
+                <Link to="/docs" className="text-black underline decoration-2 underline-offset-4 hover:bg-[#ffe600]">
+                  The docs go deeper.
+                </Link>
+              </p>
+            </div>
+            <div className="space-y-6 lg:col-span-8">
+              {FAQS.map((faq) => (
+                <details key={faq.q} className="group border-2 border-black bg-white shadow-[4px_4px_0px_#000]">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 px-6 py-6 text-base font-black uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black sm:px-8 [&::-webkit-details-marker]:hidden">
+                    {faq.q}
+                    <span aria-hidden className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-black bg-[#ffe600] font-black">
+                      <span className="group-open:hidden">+</span>
+                      <span className="hidden group-open:inline">−</span>
+                    </span>
+                  </summary>
+                  <p className="border-t-2 border-black bg-neutral-50 px-6 py-6 text-base font-bold leading-relaxed text-neutral-700 sm:px-8">{faq.a}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+
+          <section className="space-y-9 border-2 border-black bg-[#ffe600] px-8 py-16 text-center shadow-[10px_10px_0px_#000] sm:px-14 sm:py-24">
+            <h2 className="mx-auto max-w-3xl text-4xl font-black uppercase leading-[1.05] tracking-tight sm:text-6xl">Stop wasting money on forms.</h2>
+            <p className="mx-auto max-w-xl text-base font-bold leading-relaxed sm:text-lg">
+              Build your first form in 30 seconds. No credit card, no email confirmation runaround.
+            </p>
+            <button onClick={go} className={`${btn} bg-black px-10 py-5 text-sm text-white shadow-[6px_6px_0px_#fff] hover:bg-[#ff90e8] hover:text-black sm:text-base`}>
+              Create your first form
+            </button>
+          </section>
+        </div>
       </main>
 
-      {/* Neo-brutalist Footer */}
-      <footer className="border-t-2 border-black bg-white py-12 px-6 text-xs font-mono font-bold mt-20">
-        <div className="mx-auto max-w-6xl flex flex-col sm:flex-row justify-between items-center gap-6">
+      <footer className="mt-20 border-t-2 border-black bg-white px-6 py-12 font-mono text-xs font-bold">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 sm:flex-row">
           <div className="flex items-center gap-3">
             <LogoMark className="h-6 w-6" />
-            <span className="text-sm font-black uppercase tracking-wider">
-              FOLLY.SO // NEO-BRUTALIST EDITION
-            </span>
+            <span className="text-sm font-black uppercase tracking-wider">Folly.so</span>
           </div>
-
           <div className="flex gap-6 uppercase text-neutral-600">
-            <Link to="/docs/how-to-use" className="text-black font-black hover:underline">
-              How to Use
+            <Link to="/docs/how-to-use" className="hover:text-black hover:underline">
+              How to use
             </Link>
             <Link to="/docs" className="hover:text-black hover:underline">
               Docs
@@ -454,12 +255,8 @@ export default function Landing() {
             <Link to="/forms" className="hover:text-black hover:underline">
               Dashboard
             </Link>
-            <a href="#features" className="hover:text-black hover:underline">
-              Features
-            </a>
           </div>
-
-          <span className="text-neutral-500">© 2026 FOLLY SO · UNLIMITED FORM FREEDOM</span>
+          <span className="text-neutral-500">© 2026 Folly.so · MIT licensed</span>
         </div>
       </footer>
     </div>
